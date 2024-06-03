@@ -28,7 +28,6 @@ class AuthService {
     }
 
     //TODO Create jwt token and response
-
     return ApiResponse.success<Auth.SignInResponse>({
       token: "",
     });

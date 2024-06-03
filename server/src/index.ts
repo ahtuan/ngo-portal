@@ -4,6 +4,7 @@ import Elysia from "elysia";
 import { Logestic } from "logestic";
 import { authController } from "@/controllers/auth.controller";
 import { mapResponseMiddleware } from "@/middlewares/map-response.middleware";
+import jwt from "@elysiajs/jwt";
 
 const corsConfig = {
   origin: "*",
@@ -29,6 +30,12 @@ const app = new Elysia({ prefix: "/api" })
   .use(Logestic.preset("common"))
   .use(swagger(swaggerConfig))
   .use(cors(corsConfig))
+  .use(
+    jwt({
+      name: "NgoPortal_JWT",
+      secret: process.env.JWT_SECRET || "default",
+    }),
+  )
   .use(authController)
   .listen(process.env.API_PORT || 3001);
 
