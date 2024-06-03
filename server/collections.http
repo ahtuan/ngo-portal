@@ -1,4 +1,11 @@
-GET {{host}}/
-Accept: application/json
 
+###
+POST {{host}}/api/auth/sign-in
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123S@31a2"
+}
 ###
