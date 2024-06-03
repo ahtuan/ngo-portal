@@ -12,10 +12,10 @@ import { metaDataMixin, timestampMixin } from "./mixin";
 import { relations } from "drizzle-orm";
 
 export const accounts = pgTable("accounts", {
-  id: serial("id").primaryKey(),
   fullName: varchar("full_name", { length: 256 }),
   username: varchar("username", { length: 256 }).notNull().unique(),
   password: varchar("password", { length: 256 }).notNull(),
+  isActive: boolean("is_active"),
   ...metaDataMixin,
 });
 
@@ -25,11 +25,11 @@ export const accountsRelation = relations(accounts, ({ one, many }) => ({
 }));
 
 export const roles = pgTable("roles", {
-  id: serial("id").primaryKey(),
   name: varchar("name", { length: 256 }),
   accountId: integer("account_id")
     .notNull()
     .references(() => accounts.id),
+  isActive: boolean("is_active"),
   ...metaDataMixin,
 });
 
@@ -41,6 +41,7 @@ export const permissions = pgTable("permissions", {
   id: serial("id").primaryKey(),
   code: varchar("code", { length: 256 }),
   description: varchar("description", { length: 256 }),
+  isActive: boolean("is_active"),
   ...timestampMixin,
 });
 
