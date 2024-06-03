@@ -4,7 +4,6 @@ const encoder = new TextEncoder();
 // @ts-ignore
 export const mapResponseMiddleware = ({ response, set }: Context) => {
   const isJson = typeof response === "object";
-  console.log("jump", { response });
   const text = isJson ? JSON.stringify(response) : response?.toString() ?? "";
   set.headers["Content-Encoding"] = "gzip";
 
@@ -14,5 +13,6 @@ export const mapResponseMiddleware = ({ response, set }: Context) => {
         isJson ? "application/json" : "text/plain"
       }; charset=utf-8`,
     },
+    status: response.statusCode,
   });
 };

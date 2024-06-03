@@ -1,11 +1,21 @@
 
-###
+### Sign in
 POST {{host}}/api/auth/sign-in
 Accept: application/json
 Content-Type: application/json
 
 {
-  "username": "admin",
+  "username": "test1",
+  "password": "123S@31aq2"
+}
+
+### Sign up
+POST {{host}}/api/auth/sign-up
+Accept: application/json
+Content-Type: application/json
+
+{
+  "fullName": "Test account 01",
+  "username": "test1",
   "password": "123S@31a2"
 }
-###

@@ -20,12 +20,6 @@ export const authController = new Elysia({
       body: "auth.sign-in",
     },
   )
-  .post(
-    "/sign-up",
-    async ({ body }) => ({
-      mes: "success",
-    }),
-    {
-      body: "auth.sign-up",
-    },
-  );
+  .post("/sign-up", async ({ body, service }) => await service.signUp(body), {
+    body: "auth.sign-up",
+  });
