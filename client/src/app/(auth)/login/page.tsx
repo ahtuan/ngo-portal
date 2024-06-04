@@ -1,7 +1,8 @@
 import React from "react";
+import Login from "@views/auth/login";
 
 const Page = () => {
-  return <div>Login</div>;
+  return <Login />;
 };
 
 export default Page;
