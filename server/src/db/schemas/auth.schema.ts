@@ -7,6 +7,7 @@ import {
   varchar,
   boolean,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { metaDataMixin, timestampMixin } from "./mixin";
 import { relations } from "drizzle-orm";
@@ -24,14 +25,20 @@ export const accountsRelation = relations(accounts, ({ one, many }) => ({
   sessions: many(sessions),
 }));
 
-export const roles = pgTable("roles", {
-  name: varchar("name", { length: 256 }),
-  accountId: integer("account_id")
-    .notNull()
-    .references(() => accounts.id),
-  isActive: boolean("is_active"),
-  ...metaDataMixin,
-});
+export const roles = pgTable(
+  "roles",
+  {
+    name: varchar("name", { length: 256 }),
+    accountId: integer("account_id")
+      .notNull()
+      .references(() => accounts.id),
+    isActive: boolean("is_active"),
+    ...metaDataMixin,
+  },
+  (t) => ({
+    uuidIdx: index("uuidIdx").on(t.uuid),
+  }),
+);
 
 export const rolesRelation = relations(roles, ({ many }) => ({
   rolesWithPermissions: many(rolesWithPermissions),
@@ -39,7 +46,7 @@ export const rolesRelation = relations(roles, ({ many }) => ({
 
 export const permissions = pgTable("permissions", {
   id: serial("id").primaryKey(),
-  code: varchar("code", { length: 256 }),
+  code: varchar("code", { length: 256 }).unique(),
   description: varchar("description", { length: 256 }),
   isActive: boolean("is_active"),
   ...timestampMixin,
