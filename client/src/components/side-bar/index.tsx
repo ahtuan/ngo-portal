@@ -16,35 +16,36 @@ import { usePathname } from "next/navigation";
 import { checkActiveRoute } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "/public/logo.svg";
+import { PATH } from "@/constants/path";
 
 const primaryMenu = [
   {
     icon: <Home className="h-5 w-5" />,
-    text: "Bảng điều khiển",
-    path: "/",
+    text: PATH.dashboard.text,
+    path: PATH.dashboard.path,
   },
   {
     icon: <ShoppingCart className="h-5 w-5" />,
-    text: "Đơn hàng",
-    path: "/order",
+    text: PATH.dashboard.routes.order.text,
+    path: PATH.dashboard.routes.order.path,
     disabled: true,
   },
   {
     icon: <Package className="h-5 w-5" />,
-    text: "Sản phẩm",
-    path: "/product",
+    text: PATH.dashboard.routes.product.text,
+    path: PATH.dashboard.routes.product.path,
     disabled: true,
   },
   {
     icon: <Users2 className="h-5 w-5" />,
-    text: "Khách hàng",
-    path: "/customer",
+    text: PATH.dashboard.routes.customer.text,
+    path: PATH.dashboard.routes.customer.path,
     disabled: true,
   },
   {
     icon: <LineChart className="h-5 w-5" />,
-    text: "Báo cáo",
-    path: "/report",
+    text: PATH.dashboard.routes.report.text,
+    path: PATH.dashboard.routes.report.path,
     disabled: true,
   },
 ];
@@ -52,8 +53,8 @@ const primaryMenu = [
 const secondaryMenu = [
   {
     icon: <Settings className="h-5 w-5" />,
-    text: "Cài đặt",
-    path: "/setting",
+    text: PATH.setting.text,
+    path: PATH.setting.path,
     disabled: true,
   },
 ];
