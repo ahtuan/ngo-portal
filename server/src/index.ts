@@ -5,6 +5,7 @@ import { Logestic } from "logestic";
 import { authController } from "@/controllers/auth.controller";
 import { mapResponseMiddleware } from "@/middlewares/map-response.middleware";
 import jwt from "@elysiajs/jwt";
+import { categoryController } from "@/controllers/category.controller";
 
 const corsConfig = {
   origin: "*",
@@ -37,6 +38,7 @@ const app = new Elysia({ prefix: "/api" })
     }),
   )
   .use(authController)
+  .use(categoryController)
   .listen(process.env.API_PORT || 3001);
 
 // Expose methods

@@ -80,3 +80,25 @@ export function getBreadcrumb(pathName: string) {
     ];
   }, [] as Array<Common.Breadcrumb>);
 }
+
+export const formatCurrency = (
+  input: string | number | readonly string[] | undefined,
+) => {
+  if (!input) {
+    return "";
+  }
+  let formattedValue = input.toString().replace(/[^0-9.-]+/g, "");
+  formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (formattedValue.includes(".")) {
+    const [dollars, cents] = formattedValue.split(".");
+    formattedValue = `${dollars}.${cents.slice(0, 2)}`;
+  }
+  return formattedValue;
+};
+
+/**
+ * Xóa đi ký tự `/` đầu tiên của path
+ */
+export const normalizePath = (path: string) => {
+  return path.startsWith("/") ? path.slice(1) : path;
+};

@@ -16,33 +16,58 @@ class CategoryService {
     });
     return ApiResponse.success(data);
   }
-  async getById(id: string) {
+
+  async getById(uuid?: string) {
+    if (!uuid) {
+      return new NotFoundError("Không tìm thấy dữ liệu");
+    }
     const data = await db.query.categories.findFirst({
-      where: (categories, { eq }) => eq(categories.uuid, id),
+      where: (categories, { eq }) => eq(categories.uuid, uuid),
     });
     if (!data) {
       return new NotFoundError("Không tìm thấy dữ liệu");
     }
     return ApiResponse.success(data);
   }
-  async create(body: Category.UpdateBody) {
-    const insertedData = await db.insert(categories).values(body).returning();
-    return ApiResponse.success(insertedData[0], "Tạo dữ liệu thành công", 201);
-  }
-  async update(id: string, body: Partial<Category.UpdateBody>) {
-    const response = await this.getById(id);
-    if (!response.data) {
-      return response;
+
+  async upsert(body: Category.Body) {
+    const result = await this.getById(body.uuid);
+    if (!result.data) {
+      // Create if not exist in database
+      const insertedData = await db
+        .insert(categories)
+        .values({
+          name: body.name,
+          price: body.price,
+        })
+        .returning();
+      return ApiResponse.success(
+        insertedData[0],
+        "Tạo dữ liệu thành công",
+        201,
+      );
     }
-    const updatedData = await db.update(categories).set(body).returning();
+    const partialData: Partial<Category.Body> = body;
+
+    delete partialData.uuid;
+    const updatedData = await db
+      .update(categories)
+      .set({
+        name: partialData.name,
+        price: partialData.price,
+        updatedAt: new Date(),
+      })
+      .where(eq(categories.id, result.data.id))
+      .returning();
     return ApiResponse.success(updatedData, "Chỉnh sửa dữ liệu thành công");
   }
-  async delete(id: string) {
-    const response = await this.getById(id);
+
+  async delete(uuid: string) {
+    const response = await this.getById(uuid);
     if (!response.data) {
       return response;
     }
-    await db.delete(categories).where(eq(categories.uuid, id));
+    await db.delete(categories).where(eq(categories.uuid, uuid));
 
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }

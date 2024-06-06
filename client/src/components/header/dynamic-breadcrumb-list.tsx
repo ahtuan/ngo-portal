@@ -22,7 +22,7 @@ const DynamicBreadcrumbList = ({ items }: { items: Common.Breadcrumb[] }) => {
               )}
             </BreadcrumbLink>
           </BreadcrumbItem>
-          {index < items.length && <BreadcrumbSeparator />}
+          {index < items.length - 1 && <BreadcrumbSeparator />}
         </React.Fragment>
       ))}
     </BreadcrumbList>

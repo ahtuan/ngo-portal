@@ -6,35 +6,34 @@ export const PATH = {
       customer: {
         path: "/customer",
         text: "Khách hàng",
+        disabled: true,
       },
       order: {
         path: "/order",
         text: "Đơn hàng",
+        disabled: true,
       },
       product: {
         path: "/product",
         text: "Sản phẩm",
         routes: {
           inventory: {
-            text: "Lo hang",
+            text: "Lô hàng",
             path: "/inventory",
-            routes: {
-              test: {
-                text: "test",
-                path: "/test",
-              },
-            },
           },
         },
+        disabled: false,
       },
       report: {
         path: "/report",
         text: "Báo cáo",
+        disabled: true,
       },
     },
   },
   setting: {
     path: "/setting",
     text: "Cài đặt",
+    disabled: true,
   },
 };

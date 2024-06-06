@@ -19,3 +19,7 @@ Content-Type: application/json
   "username": "test1",
   "password": "123S@31a2"
 }
+
+### Get all category
+GET {{host}}/api/category
+Content-Type: application/json
