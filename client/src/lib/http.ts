@@ -51,8 +51,6 @@ const request = async <Response>(
     ? `${baseUrl}${url}`
     : `${baseUrl}/${url}`;
 
-  console.log("fullUrl", fullUrl);
-  console.log("baseHeaders", baseHeaders);
   const res = await fetch(fullUrl, {
     ...options,
     headers: {
@@ -62,8 +60,7 @@ const request = async <Response>(
     body,
     method,
   });
-
-  const data: BaseResponse<Response> = await res.json();
+  const result: BaseResponse<Response> = await res.json();
 
   // Interceptor là nời chúng ta xử lý request và response trước khi trả về cho
   // phía component
@@ -123,7 +120,7 @@ const request = async <Response>(
   //     localStorage.removeItem("sessionTokenExpiresAt");
   //   }
   // }
-  return data;
+  return result;
 };
 
 const http = {

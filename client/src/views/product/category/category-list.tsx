@@ -1,86 +1,99 @@
 "use client";
 import React from "react";
-import CategoryEditableRow from "@views/product/category/category-editable-row";
+import EditableRow from "@views/product/category/editable-row";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@@/ui/table";
-import { CakeSlice } from "lucide-react";
 import { CategoryType } from "@/schemas/category.schema";
 import { CardContent } from "@@/ui/card";
 import AddMore from "@views/product/category/add-more";
-import { useRouter } from "next/navigation";
+import EmptyRow from "@views/product/category/empty-row";
+import useSWR from "swr";
+import {
+  categoryEndpoint as cacheKey,
+  categoryMutateOptions,
+  categoryRequest,
+} from "@/api-requests/category.request";
+import Loading from "@@/loading";
 
-type Props = {
-  data: CategoryType[]; // category list type
-};
+const CategoryList = () => {
+  const { data, isLoading, mutate } = useSWR(cacheKey, categoryRequest.getAll);
+  const [addedData, setAddedData] = React.useState<CategoryType | null>(null);
 
-const CategoryList = ({ data }: Props) => {
-  const [renderData, setRenderData] = React.useState<CategoryType[]>(data);
-  const router = useRouter();
-  const refresh = () => {
-    router.push("/product");
-    router.refresh();
-  };
+  if (isLoading) {
+    return <Loading className="h-full" />;
+  }
+
   const handleAddMore = () => {
-    setRenderData((pre) => [
-      ...pre,
-      {
-        uuid: "",
-        name: "",
-        price: 0,
-        defaultMode: true,
-      },
-    ]);
+    setAddedData({
+      uuid: "",
+      name: "",
+      price: 0,
+    });
   };
   const handleCancelAddMore = () => {
-    setRenderData((pre) => pre.filter((item) => item.uuid));
+    setAddedData(null);
   };
 
+  const upsertMutate = async (upsert: CategoryType, isCreate: boolean) => {
+    let categories = data ?? [];
+    if (isCreate) {
+      categories = [upsert, ...categories];
+    } else {
+      categories = categories.map((item) => {
+        if (item.uuid === upsert.uuid) {
+          return upsert;
+        }
+        return item;
+      });
+    }
+    await mutate(categories, categoryMutateOptions(categories));
+  };
+
+  const deleteMutate = async (id: string) => {
+    const categories = data?.filter((item) => item.uuid !== id) ?? [];
+    await mutate(categories, categoryMutateOptions(categories));
+  };
   return (
     <>
       <CardContent className="pb-2">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên</TableHead>
+              <TableHead className="pl-4 w-[130px]">Tên</TableHead>
               <TableHead className="pl-4">Giá</TableHead>
               <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {renderData.length > 0 ? (
-              renderData.map((item) => (
-                <CategoryEditableRow
-                  key={item.uuid}
-                  {...item}
-                  handleCancelAddMore={handleCancelAddMore}
-                  refresh={refresh}
-                />
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center py-4">
-                  <div className="flex flex-col items-center gap-4">
-                    <CakeSlice className="w-10 h-10 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      Không có loại sản phẩm
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
+            {data?.length
+              ? data.map((item) => (
+                  <EditableRow
+                    key={item.uuid}
+                    {...item}
+                    handleCancelAddMore={handleCancelAddMore}
+                    upsertMutate={upsertMutate}
+                    deleteMutate={deleteMutate}
+                  />
+                ))
+              : !addedData && <EmptyRow />}
+            {addedData && (
+              <EditableRow
+                {...addedData}
+                defaultMode={true}
+                handleCancelAddMore={handleCancelAddMore}
+                upsertMutate={upsertMutate}
+                deleteMutate={deleteMutate}
+              />
             )}
           </TableBody>
         </Table>
       </CardContent>
-      <AddMore
-        handleAddMore={handleAddMore}
-        disabled={renderData.some((item) => !item.uuid)}
-      />
+      <AddMore handleAddMore={handleAddMore} disabled={!!addedData} />
     </>
   );
 };

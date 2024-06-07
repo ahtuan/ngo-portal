@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { categoryRequest } from "@/api-requests/category.request";
+import { useToast } from "@@/ui/use-toast";
 
 type Props = {
   uuid: string;
@@ -24,17 +25,20 @@ type Props = {
   price: number;
   defaultMode?: boolean;
   handleCancelAddMore: () => void;
-  refresh: () => void;
+  upsertMutate: (upsert: CategoryType, isCreate: boolean) => Promise<void>;
+  deleteMutate: (id: string) => Promise<void>;
 };
 
-const CategoryEditableRow = ({
+const EditableRow = ({
   uuid,
   name,
   price,
   defaultMode = false,
   handleCancelAddMore,
-  refresh,
+  upsertMutate,
+  deleteMutate,
 }: Props) => {
+  const { toast } = useToast();
   const [isEdit, setIsEdit] = React.useState(defaultMode);
   const form = useForm<CategoryType>({
     resolver: zodResolver(CategoryBody),
@@ -63,11 +67,26 @@ const CategoryEditableRow = ({
     // the value here will be a string. Must parse to number before validation
     form.setValue("price", +values.price);
     const idValidForm = await form.trigger(["name", "price"]);
+
+    if (!form.formState.isDirty && idValidForm) {
+      toggleEditOff();
+      handleCancelAddMore();
+      return;
+    }
+
     if (idValidForm) {
       try {
-        const response = await categoryRequest.create(form.getValues());
+        const response = await categoryRequest.upsert(form.getValues());
+        if (!response.data) {
+          throw new Error("Có lỗi trong quá trình update dữ liệu");
+        }
+        toast({
+          title: "Phân loại sản phẩm",
+          description: response.message,
+        });
+        await upsertMutate(response.data, !values.uuid);
         toggleEditOff();
-        refresh();
+        handleCancelAddMore();
       } catch (error) {
         console.log(error);
       }
@@ -83,9 +102,12 @@ const CategoryEditableRow = ({
   };
   const handleOnDelete = async () => {
     try {
-      const response = await categoryRequest.delete(uuid);
-      console.log("response", response);
-      refresh();
+      const { message } = await categoryRequest.delete(uuid);
+      await deleteMutate(uuid);
+      toast({
+        title: "Phân loại sản phẩm",
+        description: message,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -109,7 +131,7 @@ const CategoryEditableRow = ({
               )}
             />
           ) : (
-            name
+            <span className="px-3">{name}</span>
           )}
         </TableCell>
         <TableCell>
@@ -144,4 +166,4 @@ const CategoryEditableRow = ({
   );
 };
 
-export default CategoryEditableRow;
+export default EditableRow;

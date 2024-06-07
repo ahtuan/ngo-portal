@@ -9,7 +9,7 @@ type Props = {
 };
 const AddMore = ({ handleAddMore, disabled }: Props) => {
   return (
-    <CardFooter className="justify-center border-t py-2 mx-6">
+    <CardFooter className="justify-center border-t py-2 mx-6 mt-auto">
       <Button
         size="sm"
         variant="ghost"

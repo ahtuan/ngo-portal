@@ -59,7 +59,7 @@ class CategoryService {
       })
       .where(eq(categories.id, result.data.id))
       .returning();
-    return ApiResponse.success(updatedData, "Chỉnh sửa dữ liệu thành công");
+    return ApiResponse.success(updatedData[0], "Chỉnh sửa dữ liệu thành công");
   }
 
   async delete(uuid: string) {

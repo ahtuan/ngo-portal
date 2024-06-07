@@ -1,13 +1,26 @@
 import http from "@/lib/http";
 import { CategoryType } from "@/schemas/category.schema";
 
+export const categoryEndpoint = "/api/category";
 export const categoryRequest = {
   // TODO Optimise caching
-  getAll: () =>
-    http.get<CategoryType[]>("/api/category", {
-      cache: "no-store",
-    }),
-  create: (data: CategoryType) =>
-    http.post<CategoryType>("/api/category", data),
-  delete: (id: string) => http.delete<CategoryType>(`/api/category/${id}`),
+  getAll: async () => {
+    const response = await http.get<CategoryType[]>(categoryEndpoint);
+    return response.data;
+  },
+  upsert: (data: CategoryType) =>
+    http.post<CategoryType>(categoryEndpoint, data),
+  delete: (id: string) =>
+    http.delete<CategoryType>(`${categoryEndpoint}/${id}`),
 };
+
+/**
+ * Options for SWR Mutate when delete category
+ * @param categories Category array after filter to deleted category
+ */
+export const categoryMutateOptions = (categories: CategoryType[]) => ({
+  optimisticData: categories,
+  rollbackOnError: true,
+  populateCache: true,
+  revalidate: false,
+});
