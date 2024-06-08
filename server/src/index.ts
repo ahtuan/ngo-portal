@@ -6,6 +6,7 @@ import { authController } from "@/controllers/auth.controller";
 import { mapResponseMiddleware } from "@/middlewares/map-response.middleware";
 import jwt from "@elysiajs/jwt";
 import { categoryController } from "@/controllers/category.controller";
+import { inventoryController } from "@/controllers/inventory.controller";
 
 const corsConfig = {
   origin: "*",
@@ -39,6 +40,7 @@ const app = new Elysia({ prefix: "/api" })
   )
   .use(authController)
   .use(categoryController)
+  .use(inventoryController)
   .listen(process.env.API_PORT || 3001);
 
 // Expose methods

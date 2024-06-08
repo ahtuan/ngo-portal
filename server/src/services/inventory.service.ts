@@ -1,10 +1,12 @@
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
-import { DEFAULT_PAGING, INVENTORY_ENUM } from "@/constants/common";
+import { DEFAULT_PAGING } from "@/constants/common";
 import { NotFoundError } from "@/libs/error";
 import {
   inventories,
-  inventoryDeliveries,
+  InventoryCreateType,
+  InventoryType,
+  InventoryUpdateType,
 } from "@/db/schemas/inventory.schema";
 import { eq } from "drizzle-orm";
 
@@ -12,61 +14,79 @@ class InventoryService {
   async getAll(query: Common.PagingQuery) {
     const limit = query.size || DEFAULT_PAGING.size;
     const offset = query.page || DEFAULT_PAGING.page;
-    const data = await db.query.inventories.findMany({
+    const data: InventoryType[] = await db.query.inventories.findMany({
       limit,
       offset,
       orderBy: (inventories, { asc }) => asc(inventories.createdAt),
     });
     return ApiResponse.success(data);
   }
-  async getById(id: string) {
+
+  // async getRecent() {
+  //   const result = await db
+  //     .select({
+  //       inventoryId: inventory.id,
+  //       totalWeight: sql<number>`SUM(${products.weight})`, // Calculate sum
+  // of weights }) .from(inventory) .innerJoin(products, eq(inventory.id,
+  // products.inventoryId)) // Join tables .where(eq(products.sold, false))  //
+  // Filter for unsold products .groupBy(inventory.id) // Group by inventory ID
+  // .orderBy(sql`SUM(${products.weight}) DESC`) // Order by total weight
+  // descending .limit(5); // Limit to top 5  return result; }
+
+  async getById(uuid: string) {
     const data = await db.query.inventories.findFirst({
-      where: (inventories, { eq }) => eq(inventories.uuid, id),
+      where: (inventories, { eq }) => eq(inventories.uuid, uuid),
     });
     if (!data) {
       return new NotFoundError("Không tìm thấy dữ liệu");
     }
     return ApiResponse.success(data);
   }
-  async create(body: Inventory.UpdateBody) {
-    const insertedData = await db.insert(inventories).values(body).returning();
+
+  async create(body: InventoryCreateType) {
+    const id = await this.getIdSequence();
+    const insertedData = await db
+      .insert(inventories)
+      .values({
+        ...body,
+        id,
+      })
+      .returning();
     return ApiResponse.success(insertedData[0], "Tạo thành công lô hàng", 201);
   }
-  async update(id: string, body: Partial<Inventory.UpdateBody>) {
-    const response = await this.getById(id);
+
+  async update(uuid: string, body: InventoryUpdateType) {
+    const response = await this.getById(uuid);
     if (!response.data) {
       return response;
     }
-    const updatedData = await db.update(inventories).set(body).returning();
-    return ApiResponse.success(updatedData, "Chỉnh sửa dữ liệu thành công");
+    const updatedData = await db
+      .update(inventories)
+      .set(body)
+      .where(eq(inventories.id, response.data.id))
+      .returning();
+    return ApiResponse.success(updatedData[0], "Chỉnh sửa dữ liệu thành công");
   }
+
   async delete(id: string) {
     const response = await this.getById(id);
     if (!response.data) {
       return response;
     }
     await db.delete(inventories).where(eq(inventories.uuid, id));
-
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }
-  async createDelivery(id: string, body: Inventory.DeliveryRequest) {
-    const response = await this.getById(id);
-    if (!response.data) {
-      return response;
-    }
-    const insertedData = await db
-      .insert(inventoryDeliveries)
-      .values({
-        ...body,
-        inventoryID: response.data.id,
-      })
-      .returning();
 
-    return ApiResponse.success(
-      insertedData[0],
-      "Tạo thông tin vận chuyển thành công",
-      201,
-    );
+  private async getIdSequence() {
+    const lasted = await db.query.inventories.findFirst({
+      orderBy: (record, { desc }) => [desc(record.createdAt)],
+    });
+    const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
+    let sequence = 1;
+    if (lasted) {
+      sequence = +lasted.id.slice(8, 10) + 1;
+    }
+    return `${todayString}${sequence.toString().padStart(2, "0")}`;
   }
 }
 

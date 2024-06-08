@@ -66,9 +66,11 @@ const EditableRow = ({
     // Due to type of Currency component was "text" for formatting, so
     // the value here will be a string. Must parse to number before validation
     form.setValue("price", +values.price);
+
     const idValidForm = await form.trigger(["name", "price"]);
 
-    if (!form.formState.isDirty && idValidForm) {
+    // If tick to submit when update but not change any field
+    if (!form.formState.isDirty && idValidForm && uuid) {
       toggleEditOff();
       handleCancelAddMore();
       return;

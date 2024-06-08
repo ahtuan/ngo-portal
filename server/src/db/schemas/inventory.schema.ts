@@ -1,12 +1,10 @@
 import {
   decimal,
+  index,
   integer,
   pgEnum,
   pgTable,
-  text,
-  timestamp,
   varchar,
-  index,
 } from "drizzle-orm/pg-core";
 import { metaDataMixin } from "./mixin";
 import { relations } from "drizzle-orm";
@@ -23,7 +21,7 @@ export const inventories = pgTable(
   "inventories",
   {
     ...metaDataMixin,
-    name: varchar("name", { length: 256 }).notNull(),
+    id: varchar("id", { length: 10 }).notNull().primaryKey(),
     price: integer("price").notNull(),
     grossWeight: decimal("gross_weight").notNull(),
     actualWeight: decimal("actual_weight"),
@@ -36,19 +34,17 @@ export const inventories = pgTable(
 );
 
 export const inventoryRelation = relations(inventories, ({ many }) => ({
-  deliveries: many(inventoryDeliveries),
   products: many(products),
 }));
 
-export const inventoryDeliveries = pgTable(
-  "inventory_deliveries",
-  {
-    ...metaDataMixin,
-    note: text("note"),
-    date: timestamp("date").notNull(),
-    inventoryID: integer("inventory_id").references(() => inventories.id),
-  },
-  (t) => ({
-    uuidIdx: index("inventory_deliveries_uuid_idx").on(t.uuid),
-  }),
-);
+type SelectInventory = typeof inventories.$inferSelect;
+type InsertInventory = typeof inventories.$inferInsert;
+
+export type InventoryType = Omit<SelectInventory, "id"> & {
+  inStockWeight?: number;
+};
+export type InventoryCreateType = Omit<
+  InsertInventory,
+  "createdAt" | "updatedAt" | "id" | "uuid"
+>;
+export type InventoryUpdateType = Partial<InventoryCreateType>;

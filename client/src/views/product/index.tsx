@@ -1,5 +1,6 @@
 import React from "react";
 import Category from "@views/product/category";
+import Inventory from "@views/product/inventory";
 
 const Index = () => {
   return (
@@ -9,7 +10,10 @@ const Index = () => {
           <div> Test</div>
         </div>
       </div>
-      <Category />
+      <div className="grid gap-4">
+        <Category />
+        <Inventory />
+      </div>
     </div>
   );
 };

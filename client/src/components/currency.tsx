@@ -14,7 +14,7 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Currency = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, value, onChange, maxLength = 13, ...props }, ref) => {
+  ({ type, value, onChange, maxLength = 13, ...props }, ref) => {
     const [formattedValue, setFormattedValue] = React.useState(
       formatCurrency(value) || "",
     );

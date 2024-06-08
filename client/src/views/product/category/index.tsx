@@ -3,7 +3,7 @@ import CategoryList from "@views/product/category/category-list";
 
 const Component = () => {
   return (
-    <Card className="min-h-64 flex flex-col">
+    <Card className="min-h-[42dvh] flex flex-col">
       <CardHeader>
         <CardTitle>Phân loại sản phẩm</CardTitle>
       </CardHeader>

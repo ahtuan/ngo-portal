@@ -1,4 +1,4 @@
-import { boolean, serial, timestamp, uuid } from "drizzle-orm/pg-core";
+import { serial, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const timestampMixin = {
   createdAt: timestamp("created_at").defaultNow(),
@@ -7,6 +7,6 @@ export const timestampMixin = {
 
 export const metaDataMixin = {
   ...timestampMixin,
-  uuid: uuid("uuid").defaultRandom(),
+  uuid: uuid("uuid").defaultRandom().notNull(),
   id: serial("id").primaryKey(),
 };

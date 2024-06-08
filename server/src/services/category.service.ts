@@ -3,7 +3,7 @@ import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
 import { eq } from "drizzle-orm";
-import { categories } from "@/db/schemas/category.schema";
+import { categories, CategoryCreateType } from "@/db/schemas/category.schema";
 
 class CategoryService {
   async getAll(query: Common.PagingQuery) {
@@ -30,7 +30,8 @@ class CategoryService {
     return ApiResponse.success(data);
   }
 
-  async upsert(body: Category.Body) {
+  async upsert(body: CategoryCreateType) {
+    console.log("jum");
     const result = await this.getById(body.uuid);
     if (!result.data) {
       // Create if not exist in database
@@ -47,7 +48,7 @@ class CategoryService {
         201,
       );
     }
-    const partialData: Partial<Category.Body> = body;
+    const partialData: Partial<CategoryCreateType> = body;
 
     delete partialData.uuid;
     const updatedData = await db

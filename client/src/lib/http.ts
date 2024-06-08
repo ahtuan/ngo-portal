@@ -12,7 +12,7 @@ type BaseResponse<T> = {
 let clientLogoutRequest: null | Promise<any> = null;
 export const isClient = () => typeof window !== "undefined";
 const request = async <Response>(
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
   options?: CustomOptions | undefined,
 ) => {
@@ -66,6 +66,9 @@ const request = async <Response>(
   // phía component
 
   //TODO Interceptor handler for response
+  if (!res.ok) {
+    throw new Error(result.message);
+  }
 
   // if (!res.ok) {
   //   if (res.status === ENTITY_ERROR_STATUS) {
@@ -143,6 +146,13 @@ const http = {
     options?: Omit<CustomOptions, "body"> | undefined,
   ) {
     return request<Response>("PUT", url, { ...options, body });
+  },
+  patch<Response>(
+    url: string,
+    body: any,
+    options?: Omit<CustomOptions, "body"> | undefined,
+  ) {
+    return request<Response>("PATCH", url, { ...options, body });
   },
   delete<Response>(
     url: string,

@@ -9,30 +9,36 @@ export const inventoryController = new Elysia({
 })
   .use(inventoryModel)
   .use(pagingModel)
-  .decorate("service", new InventoryService())
-  .get("/", async ({ service, query }) => await service.getAll(query), {
-    query: "pagination",
-  })
-  .get("/:id", async ({ service, params: { id } }) => await service.getById(id))
-  .post("/", async ({ body, service }) => await service.create(body), {
-    body: "inventory.create",
-  })
+  .decorate("inventoryService", new InventoryService())
+  .get(
+    "/",
+    async ({ inventoryService, query }) => await inventoryService.getAll(query),
+    {
+      query: "pagination",
+    },
+  )
+  .get(
+    "/:id",
+    async ({ inventoryService, params: { id } }) =>
+      await inventoryService.getById(id),
+  )
+  .post(
+    "/",
+    async ({ body, inventoryService }) => await inventoryService.create(body),
+    {
+      body: "inventory.create",
+    },
+  )
   .patch(
     "/:id",
-    async ({ body, service, params: { id } }) => await service.update(id, body),
+    async ({ body, inventoryService, params: { id } }) =>
+      await inventoryService.update(id, body),
     {
       body: "inventory.update",
     },
   )
   .delete(
     "/:id",
-    async ({ service, params: { id } }) => await service.delete(id),
-  )
-  .post(
-    "/:id/delivery",
-    async ({ service, body, params: { id } }) =>
-      await service.createDelivery(id, body),
-    {
-      body: "inventory.delivery",
-    },
+    async ({ inventoryService, params: { id } }) =>
+      await inventoryService.delete(id),
   );

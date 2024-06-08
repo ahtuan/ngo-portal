@@ -7,17 +7,30 @@ export const categoryController = new Elysia({
   name: "Controller.Category",
   prefix: "category",
 })
-  .decorate("service", new CategoryService())
+  .decorate("categoryService", new CategoryService())
   .use(categoryModel)
   .use(pagingModel)
-  .get("/", async ({ service, query }) => await service.getAll(query), {
-    query: "pagination",
-  })
-  .get("/:id", async ({ service, params: { id } }) => await service.getById(id))
-  .post("/", async ({ body, service }) => await service.upsert(body), {
-    body: "category.create",
-  })
+  .get(
+    "/",
+    async ({ categoryService, query }) => await categoryService.getAll(query),
+    {
+      query: "pagination",
+    },
+  )
+  .get(
+    "/:id",
+    async ({ categoryService, params: { id } }) =>
+      await categoryService.getById(id),
+  )
+  .post(
+    "/",
+    async ({ body, categoryService }) => await categoryService.upsert(body),
+    {
+      body: "category.create",
+    },
+  )
   .delete(
     "/:id",
-    async ({ service, params: { id } }) => await service.delete(id),
+    async ({ categoryService, params: { id } }) =>
+      await categoryService.delete(id),
   );

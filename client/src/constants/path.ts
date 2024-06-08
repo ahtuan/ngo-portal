@@ -20,6 +20,12 @@ export const PATH = {
           inventory: {
             text: "Lô hàng",
             path: "/inventory",
+            routes: {
+              upsert: {
+                text: "Tạo mới",
+                path: "/upsert",
+              },
+            },
           },
         },
         disabled: false,
@@ -36,4 +42,10 @@ export const PATH = {
     text: "Cài đặt",
     disabled: true,
   },
+};
+
+const baseInventory = "/product/inventory";
+export const InventoryPath = {
+  Base: baseInventory,
+  Upsert: `${baseInventory}/upsert`,
 };

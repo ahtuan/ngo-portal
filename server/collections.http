@@ -23,3 +23,29 @@ Content-Type: application/json
 ### Get all category
 GET {{host}}/api/category
 Content-Type: application/json
+
+### Create new category
+POST {{host}}/api/category
+Content-Type: application/json
+
+{
+  "uuid": "",
+  "name": "Chén",
+  "price": 35000
+}
+
+### Get all Inventory
+GET {{host}}/api/inventory
+Content-Type: application/json
+
+### Create new Inventory
+POST {{host}}/api/inventory
+Content-Type: application/json
+
+{
+  "price": 121231333,
+  "grossWeight": "11231",
+  "status": "CREATED",
+  "source": "http://test",
+  "unit": "kg"
+}

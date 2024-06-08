@@ -11,7 +11,6 @@ import {
 import { CategoryType } from "@/schemas/category.schema";
 import { CardContent } from "@@/ui/card";
 import AddMore from "@views/product/category/add-more";
-import EmptyRow from "@views/product/category/empty-row";
 import useSWR from "swr";
 import {
   categoryEndpoint as cacheKey,
@@ -19,6 +18,7 @@ import {
   categoryRequest,
 } from "@/api-requests/category.request";
 import Loading from "@@/loading";
+import EmptyRow from "@@/empty-row";
 
 const CategoryList = () => {
   const { data, isLoading, mutate } = useSWR(cacheKey, categoryRequest.getAll);
