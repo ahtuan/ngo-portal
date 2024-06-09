@@ -9,6 +9,6 @@ export const inventoryRequest = {
   },
   create: (data: InventorySubmit) =>
     http.post<InventoryType>(inventoryEndpoint, data),
-  update: (id: string, data: Partial<InventoryType>) =>
+  update: (id: string, data: Partial<InventorySubmit>) =>
     http.patch<InventoryType>(`${inventoryEndpoint}/${id}`, data),
 };

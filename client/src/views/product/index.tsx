@@ -1,10 +1,10 @@
 import React from "react";
 import Category from "@views/product/category";
-import Inventory from "@views/product/inventory";
+import WeightWidget from "@views/product/inventory/weight-widget";
 
 const Index = () => {
   return (
-    <div className="grid flex-1 items-start gap-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+    <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
           <div> Test</div>
@@ -12,7 +12,7 @@ const Index = () => {
       </div>
       <div className="grid gap-4">
         <Category />
-        <Inventory />
+        <WeightWidget />
       </div>
     </div>
   );

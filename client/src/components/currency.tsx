@@ -7,6 +7,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
 
@@ -19,6 +20,11 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
       formatCurrency(value) || "",
     );
 
+    useEffect(() => {
+      if (value) {
+        setFormattedValue(formatCurrency(value));
+      }
+    }, [value]);
     const handleChange = (e: any) => {
       const inputValue = e.target.value;
       const formattedValue = formatCurrency(inputValue);

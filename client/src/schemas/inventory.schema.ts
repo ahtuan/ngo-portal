@@ -4,6 +4,7 @@ import { price, weight } from "@/schemas/common.schema";
 export const InventoryBody = z.object({
   price: price,
   grossWeight: weight,
+  description: z.optional(z.string()),
   status: z.string(),
   source: z
     .string()
@@ -20,4 +21,8 @@ export type InventoryType = {
   id: string;
   uuid: string;
   actualWeight: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 } & InventoryCreate;

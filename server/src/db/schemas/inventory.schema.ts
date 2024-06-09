@@ -4,6 +4,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  text,
   varchar,
 } from "drizzle-orm/pg-core";
 import { metaDataMixin } from "./mixin";
@@ -27,6 +28,8 @@ export const inventories = pgTable(
     actualWeight: decimal("actual_weight"),
     unit: varchar("unit", { length: 20 }).default("kg"),
     status: inventoryEnum("status").default(INVENTORY_ENUM.CREATED),
+    source: text("source").notNull(),
+    description: text("description"),
   },
   (t) => ({
     uuidIdx: index("inventories_uuid_idx").on(t.uuid),

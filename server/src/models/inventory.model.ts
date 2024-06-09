@@ -13,6 +13,7 @@ const body = t.Object({
   }),
   status: t.Optional(t.String()),
   unit: t.Optional(t.String()),
+  description: t.Optional(t.String()),
 });
 export const inventoryModel = new Elysia({
   name: "Model.Inventory",

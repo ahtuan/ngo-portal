@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Table, TableHead, TableHeader, TableRow } from "@@/ui/table";
-import { CardContent } from "@/components/ui/card";
+import { CardContent } from "@@/ui/card";
 
 const InventoryList = () => {
   return (
