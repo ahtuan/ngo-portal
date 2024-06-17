@@ -21,8 +21,9 @@ const NoInventoryDialog = () => {
             Không thể nhập sản phẩm nếu không có thông tin lô hàng.
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Nhấn "Lô hàng" và chọn lô tương ứng để tiếp tục nhập sản phẩm <br />
-            Hoặc chọn "Trở về" để quay lại trang sản phẩm
+            Nhấn &ldquo;Lô hàng&rdquo; và chọn lô tương ứng để tiếp tục nhập sản
+            phẩm <br />
+            Hoặc chọn &ldquo;Trở về&rdquo; để quay lại trang sản phẩm
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

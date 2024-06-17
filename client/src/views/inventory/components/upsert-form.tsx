@@ -58,7 +58,6 @@ const UpsertForm = ({ data, onClose }: Props) => {
 
   useEffect(() => {
     if (data) {
-      console.log("herer");
       form.setValue("status", data.status);
       form.setValue("price", data.price);
       form.setValue("source", data.source);

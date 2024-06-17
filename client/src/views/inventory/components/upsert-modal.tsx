@@ -45,7 +45,7 @@ const UpsertModal = ({ trigger, data, setUpdatedData }: Props) => {
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>
           <DialogDescription>
-            Chỉnh sửa thông tin tại đây và nhấn "Lưu" để hoàn tất.
+            Chỉnh sửa thông tin tại đây và nhấn &ldquo;Lưu&rdquo; để hoàn tất.
           </DialogDescription>
         </DialogHeader>
         {isOpen && <UpsertForm onClose={handleOnClose} data={data} />}
