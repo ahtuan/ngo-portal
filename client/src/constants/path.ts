@@ -27,6 +27,10 @@ export const PATH = {
               },
             },
           },
+          create: {
+            text: "Nhập sản phẩm mới",
+            path: "/create",
+          },
         },
         disabled: false,
       },
@@ -48,4 +52,11 @@ const baseInventory = "/product/inventory";
 export const InventoryPath = {
   Base: baseInventory,
   Upsert: `${baseInventory}/upsert`,
+};
+
+const baseProduct = "/product";
+export const ProductPath = {
+  Base: baseProduct,
+  Create: `${baseProduct}/create`,
+  Update: `${baseProduct}/[uuid]`,
 };

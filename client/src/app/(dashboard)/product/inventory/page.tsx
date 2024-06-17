@@ -1,5 +1,5 @@
 import React from "react";
-import Inventory from "@views/product/inventory";
+import Inventory from "../../../../views/inventory";
 
 const Page = () => {
   return <Inventory />;

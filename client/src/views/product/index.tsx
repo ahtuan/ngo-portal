@@ -1,6 +1,7 @@
 import React from "react";
-import Category from "@views/product/category";
-import WeightWidget from "@views/product/inventory/weight-widget";
+import Category from "@views/category";
+import WeightWidget from "@views/inventory/weight-widget";
+import DetectInventory from "@views/product/components/detect-inventory";
 
 const Index = () => {
   return (
@@ -13,6 +14,7 @@ const Index = () => {
       <div className="grid gap-4">
         <Category />
         <WeightWidget />
+        <DetectInventory />
       </div>
     </div>
   );

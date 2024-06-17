@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@@/ui/dialog";
 import { InventoryType } from "@/schemas/inventory.schema";
-import UpsertForm from "@views/product/inventory/components/upsert-form";
+import UpsertForm from "@views/inventory/components/upsert-form";
 import { useEffect, useState } from "react";
 
 type Props = {

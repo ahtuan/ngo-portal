@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import CategoryList from "@views/product/category/category-list";
+import { Card, CardHeader, CardTitle } from "@@/ui/card";
+import CategoryList from "@views/category/category-list";
 
 const Component = () => {
   return (

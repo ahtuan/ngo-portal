@@ -5,3 +5,9 @@ export const InventoryStatus = {
   "Nhập kho": "IN_STOCK", // Hàng đã được soạn và đưa vào kho
   Huỷ: "CANCELLED",
 };
+
+export const ProductStatus = {
+  Kho: "IN_STOCK",
+  "Trưng bày": "READY",
+  "Đã bán": "SOLD",
+};

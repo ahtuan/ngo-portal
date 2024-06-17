@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
-import AddMore from "@views/product/inventory/components/add-more";
-import InventoryTable from "@views/product/inventory/components/inventory-table";
+import AddMore from "@views/inventory/components/add-more";
+import InventoryTable from "@views/inventory/components/inventory-table";
 
 const Index = () => {
   return (

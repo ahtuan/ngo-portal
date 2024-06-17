@@ -10,8 +10,8 @@ import { Button } from "@@/ui/button";
 import Link from "next/link";
 import { InventoryPath } from "@/constants/path";
 import { ArrowUpRight } from "lucide-react";
-import InventoryList from "@views/product/inventory/components/inventory-list";
-import AddMore from "@views/product/inventory/components/add-more";
+import InventoryList from "@views/inventory/components/inventory-list";
+import AddMore from "@views/inventory/components/add-more";
 
 const WeightWidget = () => {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@@/ui/button";
 import { PlusCircle } from "lucide-react";
-import UpsertModal from "@views/product/inventory/components/upsert-modal";
+import UpsertModal from "@views/inventory/components/upsert-modal";
 
 type Props = {
   variant?:

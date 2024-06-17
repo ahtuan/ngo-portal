@@ -18,7 +18,7 @@ import {
 } from "@/schemas/inventory.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@@/ui/input";
-import Item from "@views/product/inventory/components/item";
+import Item from "@views/inventory/components/item";
 import Currency from "@@/currency";
 import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
 import { formatCurrency } from "@/lib/utils";

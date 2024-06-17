@@ -11,4 +11,6 @@ export const inventoryRequest = {
     http.post<InventoryType>(inventoryEndpoint, data),
   update: (id: string, data: Partial<InventorySubmit>) =>
     http.patch<InventoryType>(`${inventoryEndpoint}/${id}`, data),
+  detectInspection: () =>
+    http.get<string | null>(`${inventoryEndpoint}/detect-inspection`),
 };

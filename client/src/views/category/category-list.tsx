@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import EditableRow from "@views/product/category/editable-row";
+import EditableRow from "@views/category/editable-row";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
 } from "@@/ui/table";
 import { CategoryType } from "@/schemas/category.schema";
 import { CardContent } from "@@/ui/card";
-import AddMore from "@views/product/category/add-more";
+import AddMore from "@views/category/add-more";
 import useSWR from "swr";
 import {
   categoryEndpoint as cacheKey,

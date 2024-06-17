@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { TableCell, TableRow } from "@@/ui/table";
-import ButtonAction from "@views/product/category/button-action";
+import ButtonAction from "@views/category/button-action";
 import Currency from "@@/currency";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@@/ui/input";
@@ -15,7 +15,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
+} from "@@/ui/form";
 import { categoryRequest } from "@/api-requests/category.request";
 import { useToast } from "@@/ui/use-toast";
 

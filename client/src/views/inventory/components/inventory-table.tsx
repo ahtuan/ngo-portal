@@ -19,7 +19,7 @@ import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
-import UpsertModal from "@views/product/inventory/components/upsert-modal";
+import UpsertModal from "@views/inventory/components/upsert-modal";
 import dayjs from "dayjs";
 import { InventoryStatus } from "@/constants/status";
 import Loading from "@@/loading";
