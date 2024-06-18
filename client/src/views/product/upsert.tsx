@@ -12,15 +12,21 @@ import { Form } from "@@/ui/form";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductStatus } from "@/constants/status";
-import { ProductBody, ProductCreate } from "@/schemas/product.schema";
+import {
+  ProductBarCode,
+  ProductBody,
+  ProductCreate,
+} from "@/schemas/product.schema";
 import { productRequest } from "@/api-requests/product.request";
 import BarcodePrintModal from "@views/product/components/barcode-print-modal";
+import { useToast } from "@@/ui/use-toast";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
 };
-const Create = () => {
+const Upsert = () => {
   const inventory = useSearchParams().get("inventory");
+  const { toast } = useToast();
   const form = useForm<ProductCreate>({
     resolver: zodResolver(ProductBody),
     defaultValues: {
@@ -29,26 +35,41 @@ const Create = () => {
       price: 0,
       weight: 0,
       status: ProductStatus.Kho,
-      isArchived: false,
+      categoryUuid: "",
+      imageUrls: [],
+      isUsedCategoryPrice: false,
     },
   });
 
   const [isOpen, setIsOpen] = React.useState(false);
+  const [createdProduct, setCreatedProduct] = React.useState<ProductBarCode>();
+
   if (!inventory) {
     return <NoInventoryDialog />;
   }
 
   const handleSubmit = async (values: ProductCreate) => {
     try {
-      // const createdData = await productRequest.create({
-      //   ...values,
-      //   categoryUuid:
-      //     values.categoryUuid === OtherOption.uuid ? "" :
-      // values.categoryUuid, });
-      form.reset();
-      setIsOpen(true);
+      const createdData = await productRequest.create({
+        ...values,
+        inventoryId: inventory ?? "",
+        categoryUuid:
+          values.categoryUuid === OtherOption.uuid ? "" : values.categoryUuid,
+      });
+      if (createdData.data) {
+        setCreatedProduct({
+          id: createdData.data.byDateId,
+          price: createdData.data.price,
+        });
+        form.reset();
+        setIsOpen(true);
+      } else {
+        toast({
+          description: createdData.message,
+        });
+      }
     } catch (error) {
-      console.log("error", error);
+      console.error(error);
     }
   };
 
@@ -74,9 +95,16 @@ const Create = () => {
           </div>
         </form>
       </Form>
-      {isOpen && <BarcodePrintModal isOpen={isOpen} setIsOpen={setIsOpen} />}
+      {isOpen && (
+        <BarcodePrintModal
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          product={createdProduct}
+          setProduct={setCreatedProduct}
+        />
+      )}
     </>
   );
 };
 
-export default Create;
+export default Upsert;

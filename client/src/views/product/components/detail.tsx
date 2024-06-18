@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@@/ui/form";
-import { CardItemProps } from "@views/product/create";
+import { CardItemProps } from "@views/product/upsert";
 
 const Detail = ({ form }: CardItemProps) => {
   return (

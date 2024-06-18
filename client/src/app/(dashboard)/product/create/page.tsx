@@ -1,10 +1,12 @@
 import React, { Suspense } from "react";
-import Create from "@views/product/create";
+import Upsert from "@views/product/upsert";
 
 const Page = () => {
-  return <Suspense>
-    <Create />
-  </Suspense>;
+  return (
+    <Suspense>
+      <Upsert />
+    </Suspense>
+  );
 };
 
 export default Page;

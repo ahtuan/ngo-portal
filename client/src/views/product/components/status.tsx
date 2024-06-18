@@ -1,6 +1,5 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
-import { Label } from "@@/ui/label";
 import {
   Select,
   SelectContent,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@@/ui/select";
-import { CardItemProps } from "@views/product/create";
+import { CardItemProps } from "@views/product/upsert";
 import {
   FormControl,
   FormField,
@@ -16,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@@/ui/form";
-import { InventoryStatus, ProductStatus } from "@/constants/status";
+import { ProductStatus } from "@/constants/status";
 
 const Status = ({ form }: CardItemProps) => {
   return (
@@ -35,6 +34,7 @@ const Status = ({ form }: CardItemProps) => {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>

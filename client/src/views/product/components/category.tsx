@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@@/ui/form";
-import { CardItemProps } from "@views/product/create";
+import { CardItemProps } from "@views/product/upsert";
 import { Switch } from "@@/ui/switch";
 import Currency from "@@/currency";
 
@@ -62,6 +62,7 @@ const Category = ({ form }: CardItemProps) => {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>

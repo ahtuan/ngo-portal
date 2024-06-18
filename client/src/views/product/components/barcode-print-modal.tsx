@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,76 +9,148 @@ import {
 import Barcode from "react-barcode";
 import { Button } from "@@/ui/button";
 
-import { DTPWeb, LPA_JobNames } from "dtpweb";
-import html2canvas from 'html2canvas';
+import { DTPWeb } from "dtpweb";
+import { ProductBarCode } from "@/schemas/product.schema";
+import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
+import { formatPrice } from "@/lib/utils";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  product?: ProductBarCode;
+  setProduct: (product?: ProductBarCode) => void;
 };
 
-const BarcodePrintModal = ({ isOpen, setIsOpen }: Props) => {
-  const onPrintBarcode = async () => {
+type Size = {
+  width: number;
+  height: number;
+};
 
+const LabelSize = {
+  small: {
+    width: 30,
+    height: 10,
+  },
+  medium: {
+    width: 50,
+    height: 30,
+  },
+};
+
+const BarcodePrintModal = ({
+  isOpen,
+  setIsOpen,
+  product,
+  setProduct,
+}: Props) => {
+  const [size, setSize] = useState<Size>({
+    width: 30,
+    height: 10,
+  });
+  const onPrintBarcode = async () => {
+    if (!product) {
+      return;
+    }
     const api = await DTPWeb.getInstance();
     DTPWeb.checkServer((value) => {
       if (!value) {
-          alert("No Detected DothanTech Printer Helper!");
+        alert("No Detected DothanTech Printer Helper!");
       }
-  })
-  const width = 30;
-  const height = 10;
-  const printerName = "P2 Label Printer";
-  const text = "202418060001"
-  const margin = 1
-  if (!api) return;
-  api.openPrinter((success) => {
-    if (success) {
-      api.startJob({
-        printerName, 
-        width, 
-        height
-      })
-      api.draw1DBarcode({text , 
-        width: width, 
-        height: height - margin * 4, 
-        x: 2, 
-        y: margin, 
-        barcodeType: 28,
-      })
-      const textPrice = "25k"
-      api.drawText({
-        text: text, 
-        x: width - 2 * margin, 
-        y: 7, 
-        fontName: "Arial", 
-        fontHeight: 2,
-        horizontalAlignment: 2
-      })
-      api.drawText({
-        text: textPrice, 
-        x: 1, 
-        y: 7, 
-        fontName: "Arial", 
-        fontHeight: 2,
-      })
-      api.commitJob(() => api.closePrinter())
-    } 
-  })
- 
-}
+    });
+
+    const printerName = "P2 Label Printer";
+    const text = product?.id;
+    const margin = 1;
+    if (!api) {
+      return;
+    }
+    api.openPrinter((success) => {
+      if (success) {
+        api.startJob({
+          printerName,
+          ...size,
+        });
+        api.draw1DBarcode({
+          text,
+          width: size.width,
+          height: size.height - margin * 4,
+          x: 2,
+          y: margin,
+          barcodeType: 28,
+        });
+        const textPrice = formatPrice(product.price);
+        api.drawText({
+          text: text,
+          x: size.width - 2 * margin,
+          y: 7,
+          fontName: "Arial",
+          fontHeight: 2,
+          horizontalAlignment: 2,
+        });
+        api.drawText({
+          text: textPrice,
+          x: margin,
+          y: 7,
+          fontName: "Arial",
+          fontHeight: 2,
+        });
+        api.commitJob(() => {
+          api.closePrinter();
+          onChangeDialog(false);
+        });
+      }
+    });
+  };
+
+  const getSizeComponent = (size: Size) => {
+    return (
+      <>
+        <p>Chiều dài: {size.width}</p>&nbsp;-&nbsp;
+        <p>Chiều rộng: {size.height}</p>
+      </>
+    );
+  };
+
+  const onChangeDialog = (open: boolean) => {
+    if (!open) {
+      setProduct();
+    }
+    setIsOpen(open);
+  };
+
+  if (!product) {
+    return;
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isOpen} onOpenChange={onChangeDialog}>
+      <DialogContent className="sm:max-w-[600px] gap-6">
         <DialogHeader>
           <DialogTitle>Thành công</DialogTitle>
           <DialogDescription>
             Tạo sản phẩm thành công với mã:{" "}
+            <span className="font-semibold">{product.id}</span>
           </DialogDescription>
         </DialogHeader>
-        <div id="barcode-canvas">
-          <Barcode value="2024006070001"/>
+        <div className="grid grid-cols-2 gap-4">
+          <Barcode value={product.id} />
+          <div>
+            <p className="mb-3 pl-4 text-sm text-mute-foreground">
+              Kích thước khổ in
+            </p>
+            <ToggleGroup
+              type="single"
+              defaultValue="small"
+              variant="outline"
+              className="flex flex-col gap-4"
+            >
+              {Object.entries(LabelSize).map(([key, size]) => (
+                <ToggleGroupItem key={key} value={key} className="p-4">
+                  {getSizeComponent(size)}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
         </div>
         <Button onClick={onPrintBarcode}>In</Button>
       </DialogContent>
@@ -87,4 +159,3 @@ const BarcodePrintModal = ({ isOpen, setIsOpen }: Props) => {
 };
 
 export default BarcodePrintModal;
-

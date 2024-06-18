@@ -11,13 +11,19 @@ export const ProductBody = z.object({
   status: z.string(),
   categoryUuid: z.string(),
   imageUrls: z.optional(z.array(z.string())),
-  isArchived: z.optional(z.boolean()),
   isUsedCategoryPrice: z.optional(z.boolean()),
 });
 
-export type ProductCreate = z.TypeOf<typeof ProductBody>;
+export type ProductCreate = z.TypeOf<typeof ProductBody> & {
+  inventoryId: string;
+};
 export type ProductType = ProductCreate & {
   id: number;
   byDateId: string;
   categoryName: string;
+};
+
+export type ProductBarCode = {
+  id: string;
+  price: number;
 };

@@ -1,7 +1,7 @@
 import http from "@/lib/http";
 import { ProductCreate, ProductType } from "@/schemas/product.schema";
 
-const productEndpoint = "/api/products";
+const productEndpoint = "/api/product";
 export const productRequest = {
   getALL: async () => {
     const response = await http.get<ProductType[]>(productEndpoint);

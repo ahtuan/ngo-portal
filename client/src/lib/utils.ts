@@ -102,3 +102,18 @@ export const formatCurrency = (
 export const normalizePath = (path: string) => {
   return path.startsWith("/") ? path.slice(1) : path;
 };
+
+export const formatPrice = (price: number) => {
+  const units = ["", "K", "M", "B", "T"];
+  const unitIndex = Math.floor(Math.log10(Math.abs(price)) / 3);
+
+  // Tính giá trị rút gọn
+  let shortValue = (price / Math.pow(1000, unitIndex)).toFixed(1);
+
+  // Loại bỏ ".0" nếu có
+  if (shortValue.endsWith(".0")) {
+    shortValue = shortValue.slice(0, -2);
+  }
+
+  return `${shortValue}${units[unitIndex]}`;
+};

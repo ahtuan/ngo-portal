@@ -23,6 +23,8 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
     useEffect(() => {
       if (value) {
         setFormattedValue(formatCurrency(value));
+      } else {
+        setFormattedValue("");
       }
     }, [value]);
     const handleChange = (e: any) => {

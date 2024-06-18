@@ -99,7 +99,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
       const updateRes = await inventoryRequest.update(data.uuid, payload);
       message = updateRes.message;
     } else {
-      // Create form
+      // Upsert form
       const createRes = await inventoryRequest.create({
         ...values,
         grossWeight: values.grossWeight.toString(), // Because of this field

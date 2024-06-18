@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,12 +8,21 @@ import {
 } from "@@/ui/card";
 import { Aperture } from "lucide-react";
 import Capture from "@@/capture";
-import { CardItemProps } from "@views/product/create";
+import { CardItemProps } from "@views/product/upsert";
 import DisplayImage from "@views/product/components/display-image";
 import { FormField } from "@@/ui/form";
 
 const ImageUpload = ({ form }: CardItemProps) => {
   const [image, setImage] = useState<string[]>([]);
+
+  const images = form.watch("imageUrls");
+
+  useEffect(() => {
+    if (!images?.length) {
+      setImage([]);
+    }
+  }, [images]);
+
   const onCapture = (value: string) => {
     const newImages = [...image, value];
 
