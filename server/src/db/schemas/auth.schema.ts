@@ -1,18 +1,17 @@
 import {
+  boolean,
+  index,
   integer,
-  pgTable,
   primaryKey,
   serial,
   text,
-  varchar,
-  boolean,
   timestamp,
-  index,
+  varchar,
 } from "drizzle-orm/pg-core";
-import { metaDataMixin, timestampMixin } from "./mixin";
+import { metaDataMixin, schema, timestampMixin } from "./mixin";
 import { relations } from "drizzle-orm";
 
-export const accounts = pgTable("accounts", {
+export const accounts = schema.table("accounts", {
   fullName: varchar("full_name", { length: 256 }),
   username: varchar("username", { length: 256 }).notNull().unique(),
   password: varchar("password", { length: 256 }).notNull(),
@@ -25,7 +24,7 @@ export const accountsRelation = relations(accounts, ({ one, many }) => ({
   sessions: many(sessions),
 }));
 
-export const roles = pgTable(
+export const roles = schema.table(
   "roles",
   {
     name: varchar("name", { length: 256 }),
@@ -44,7 +43,7 @@ export const rolesRelation = relations(roles, ({ many }) => ({
   rolesWithPermissions: many(rolesWithPermissions),
 }));
 
-export const permissions = pgTable("permissions", {
+export const permissions = schema.table("permissions", {
   id: serial("id").primaryKey(),
   code: varchar("code", { length: 256 }).unique(),
   description: varchar("description", { length: 256 }),
@@ -56,7 +55,7 @@ export const permissionsRelation = relations(permissions, ({ many }) => ({
   rolesWithPermissions: many(rolesWithPermissions),
 }));
 
-export const rolesWithPermissions = pgTable(
+export const rolesWithPermissions = schema.table(
   "rolesWithPermissions",
   {
     roleId: integer("role_id")
@@ -85,7 +84,7 @@ export const roleWithPermissionsRelation = relations(
   }),
 );
 
-export const sessions = pgTable("sessions", {
+export const sessions = schema.table("sessions", {
   id: serial("id").primaryKey(),
   token: text("token").notNull(),
   expiredAt: timestamp("expired_at").notNull(),

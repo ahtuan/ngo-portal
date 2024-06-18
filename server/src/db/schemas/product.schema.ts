@@ -1,32 +1,51 @@
 import {
+  boolean,
   decimal,
   index,
   integer,
-  pgTable,
+  pgEnum,
+  serial,
   text,
   varchar,
 } from "drizzle-orm/pg-core";
-import { timestampMixin } from "./mixin";
+import { schema, timestampMixin } from "./mixin";
 import { inventories } from "@/db/schemas/inventory.schema";
 import { categories } from "@/db/schemas/category.schema";
+import { invoiceItems } from "@/db/schemas/invoice.schema";
+import { relations } from "drizzle-orm";
+import { PRODUCT_STATUS_ENUM } from "@/constants/common";
 
-export const products = pgTable(
+export const productStatusEnum = pgEnum(
+  "inventory_enum",
+  // @ts-ignore
+  Object.values(PRODUCT_STATUS_ENUM),
+);
+export const products = schema.table(
   "products",
   {
     ...timestampMixin,
-    id: varchar("id", { length: 14 }).notNull().primaryKey(),
-    name: varchar("name", { length: 256 }).notNull(),
+    id: serial("id").primaryKey(),
+    byDateId: varchar("by_date_id", { length: 14 }).notNull().unique(),
+    name: varchar("name", { length: 256 }),
     description: text("description"),
     price: integer("price"),
     weight: decimal("weight"),
-    imageUrl: varchar("image_url"),
+    imageUrls: varchar("image_url"),
     inventoryId: varchar("inventory_id", { length: 10 }).references(
       () => inventories.id,
     ),
     categoryId: integer("category_id").references(() => categories.id),
-    // TODO Reference to Invoice Id
+    categoryName: varchar("category_name"),
+    status: productStatusEnum("status"), // READY, IN_STOCK, SOLD
+    isArchived: boolean("is_archived").default(false), // Use for tracking
+    // whether it was in stock or not able to sell and put in stock
+    isUsedCategoryPrice: boolean("is_used_category_price"),
   },
   (t) => ({
     inventoryIdx: index("products_inventory_idx").on(t.inventoryId),
   }),
 );
+
+export const productRelation = relations(products, ({ one }) => ({
+  invoiceItem: one(invoiceItems),
+}));

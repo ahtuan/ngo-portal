@@ -1,9 +1,9 @@
-import { index, integer, pgTable, varchar } from "drizzle-orm/pg-core";
-import { metaDataMixin } from "./mixin";
+import { index, integer, varchar } from "drizzle-orm/pg-core";
+import { metaDataMixin, schema } from "./mixin";
 import { relations } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 
-export const categories = pgTable(
+export const categories = schema.table(
   "categories",
   {
     name: varchar("name", { length: 256 }).notNull(),

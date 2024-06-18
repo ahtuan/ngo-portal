@@ -3,11 +3,10 @@ import {
   index,
   integer,
   pgEnum,
-  pgTable,
   text,
   varchar,
 } from "drizzle-orm/pg-core";
-import { metaDataMixin } from "./mixin";
+import { metaDataMixin, schema } from "./mixin";
 import { relations } from "drizzle-orm";
 import { INVENTORY_ENUM } from "@/constants/common";
 import { products } from "@/db/schemas/product.schema";
@@ -18,7 +17,7 @@ export const inventoryEnum = pgEnum(
   Object.values(INVENTORY_ENUM),
 );
 
-export const inventories = pgTable(
+export const inventories = schema.table(
   "inventories",
   {
     ...metaDataMixin,

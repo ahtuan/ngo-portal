@@ -6,6 +6,12 @@ export const INVENTORY_ENUM = {
   CANCELLED: "CANCELLED",
 };
 
+export const PRODUCT_STATUS_ENUM = {
+  READY: "READY",
+  IN_STOCK: "IN_STOCK",
+  SOLD: "SOLD",
+};
+
 export const DEFAULT_PAGING = {
   page: 0,
   size: 10,

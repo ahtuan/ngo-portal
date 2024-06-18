@@ -5,7 +5,7 @@ import { pagingModel } from "@/models/paging.model";
 
 export const productController = new Elysia({
   name: "Controller.Product",
-  prefix: "inventory",
+  prefix: "product",
 })
   .decorate("service", new ProductService())
   .use(productModel)

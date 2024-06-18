@@ -1,4 +1,4 @@
-import { serial, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgSchema, serial, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const timestampMixin = {
   createdAt: timestamp("created_at").defaultNow(),
@@ -10,3 +10,5 @@ export const metaDataMixin = {
   uuid: uuid("uuid").defaultRandom().notNull(),
   id: serial("id").primaryKey(),
 };
+
+export const schema = pgSchema("raw");

@@ -22,6 +22,10 @@ export const inventoryController = new Elysia({
     async ({ inventoryService, params: { id } }) =>
       await inventoryService.getById(id),
   )
+  .get(
+    "detect-inspection",
+    async ({ inventoryService }) => await inventoryService.detectInspection(),
+  )
   .post(
     "/",
     async ({ body, inventoryService }) => await inventoryService.create(body),

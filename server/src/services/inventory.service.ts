@@ -1,6 +1,6 @@
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
-import { DEFAULT_PAGING } from "@/constants/common";
+import { DEFAULT_PAGING, INVENTORY_ENUM } from "@/constants/common";
 import { NotFoundError } from "@/libs/error";
 import {
   inventories,
@@ -41,6 +41,18 @@ class InventoryService {
       return new NotFoundError("Không tìm thấy dữ liệu");
     }
     return ApiResponse.success(data);
+  }
+
+  async detectInspection() {
+    const data = await db.query.inventories.findFirst({
+      where: (inventories, { eq }) =>
+        eq(inventories.status, INVENTORY_ENUM.INSPECTION),
+    });
+
+    if (!data) {
+      return ApiResponse.success(null);
+    }
+    return ApiResponse.success(data.id);
   }
 
   async create(body: InventoryCreateType) {
