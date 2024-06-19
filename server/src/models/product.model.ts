@@ -36,4 +36,13 @@ export const productModel = new Elysia({
       status: t.String(),
     }),
   ),
+  "product.filter": t.Partial(
+    t.Object({
+      page: t.String(),
+      category: t.String(),
+      keyword: t.String(),
+      status: t.String(),
+      size: t.String(),
+    }),
+  ),
 });

@@ -3,8 +3,10 @@ import { ProductCreate, ProductType } from "@/schemas/product.schema";
 
 const productEndpoint = "/api/product";
 export const productRequest = {
-  getALL: async () => {
-    const response = await http.get<ProductType[]>(productEndpoint);
+  getALL: async (queryString: string) => {
+    const response = await http.get<Common.Paging<ProductType>>(
+      productEndpoint + `?${queryString}`,
+    );
     return response.data;
   },
   create: (data: ProductCreate) =>

@@ -1,15 +1,23 @@
 declare namespace Product {
   type Response = {
-    id: string;
+    id: number;
+    byDateId: string;
     name: string;
-    description: string;
+    description: string | null;
     price: number;
     weight: number;
-    imageUrl: string;
-    isSold: boolean;
-    inventoryId: number;
-    categoryId: number;
+    mainImage: string | null;
+    inventoryId: string;
+    categoryUuid: string | null;
+    categoryName: string | null;
+    status: string;
+    isUsedCategoryPrice: boolean | null;
+    isSold: boolean | null;
   };
+
+  type Detail = {
+    imageUrls: string[];
+  } & Omit<Response, "mainImage">;
 
   type ByIdBody = {
     id: string;
@@ -42,4 +50,12 @@ declare namespace Product {
     imageUrl?: string;
     categoryId?: number;
   };
+
+  type Filter = Partial<{
+    page: string;
+    category: string;
+    keyword: string;
+    status: string;
+    size: string;
+  }>;
 }

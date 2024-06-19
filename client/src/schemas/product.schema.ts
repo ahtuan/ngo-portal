@@ -17,10 +17,11 @@ export const ProductBody = z.object({
 export type ProductCreate = z.TypeOf<typeof ProductBody> & {
   inventoryId: string;
 };
-export type ProductType = ProductCreate & {
+export type ProductType = Omit<ProductCreate, "imageUrls"> & {
   id: number;
   byDateId: string;
   categoryName: string;
+  mainImage: string;
 };
 
 export type ProductBarCode = {

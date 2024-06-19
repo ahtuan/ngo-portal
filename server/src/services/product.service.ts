@@ -2,20 +2,82 @@ import { DEFAULT_PAGING } from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
-import { eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
+import { categories } from "@/db/schemas/category.schema";
 
 class ProductService {
-  async getAll(query: Common.PagingQuery) {
-    const limit = query.size || DEFAULT_PAGING.size;
-    const offset = query.page || DEFAULT_PAGING.page;
-    const data = await db.query.products.findMany({
-      limit,
-      offset,
-      orderBy: (products, { asc }) => asc(products.createdAt),
-    });
-    return ApiResponse.success(data);
+  async getAll(query: Product.Filter) {
+    const limit = query.size ? +query.size : DEFAULT_PAGING.size;
+    const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
+
+    const sq = db.$with("sq").as(
+      db
+        .select({
+          id: products.id,
+          byDateId: products.byDateId,
+          name: products.name,
+          description: products.description,
+          price: products.price,
+          weight: products.weight,
+          inventoryId: products.inventoryId,
+          categoryUuid: categories.uuid,
+          categoryName: products.categoryName,
+          status: products.status,
+          isUsedCategoryPrice: products.isUsedCategoryPrice,
+          isSold: products.isSold,
+          imageUrls: products.imageUrls,
+        })
+        .from(products)
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .orderBy(desc(products.updatedAt)),
+    );
+
+    const data = await db
+      .with(sq)
+      .select()
+      .from(sq)
+      .limit(limit)
+      .offset(offset * limit);
+
+    const totalRecord = (
+      await db
+        .with(sq)
+        .select({
+          count: sql`count('*')`.mapWith(Number),
+        })
+        .from(sq)
+    )[0].count;
+    const totalPage = Math.ceil(totalRecord / limit);
+    const mapped: Product.Response[] = await Promise.all(
+      data.map(async (product) => ({
+        id: product.id,
+        byDateId: product.byDateId,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        weight: +(product.weight as string),
+        inventoryId: product.inventoryId,
+        categoryUuid: product.categoryUuid,
+        categoryName: product.categoryName,
+        status: product.status,
+        isUsedCategoryPrice: product.isUsedCategoryPrice,
+        isSold: product.isSold,
+        mainImage: (
+          await helperService.readImages(product.imageUrls ?? "", true)
+        )[0],
+      })),
+    );
+
+    const response: Common.Paging<Product.Response> = {
+      page: offset + 1,
+      totalPage: totalPage,
+      totalRecord: totalRecord,
+      size: limit,
+      data: mapped,
+    };
+    return ApiResponse.success(response);
   }
 
   async getById(byDateId: string) {

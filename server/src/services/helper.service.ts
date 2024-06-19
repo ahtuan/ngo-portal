@@ -17,6 +17,14 @@ class HelperService {
     return await Promise.all(data.map((base64) => this.saveImage(base64)));
   }
 
+  async readImages(urls: string, takeOne: boolean = false) {
+    const paths = urls.split(";");
+    if (takeOne) {
+      return [await this.readImage(paths[0])];
+    }
+    return await Promise.all(paths.map((url) => this.readImage(url)));
+  }
+
   private getUploadPath = () => {
     const path = process.env.IMAGES_LOCATION;
     if (!path) {
@@ -52,6 +60,18 @@ class HelperService {
     const test = await Bun.write(filePath, imageData);
 
     return filePath;
+  }
+
+  private async readImage(url: string) {
+    try {
+      const file = Bun.file(url);
+      const byteArray = await file.arrayBuffer();
+      const starter = `data:${file.type};base64,`;
+      return starter + btoa(String.fromCharCode(...new Uint8Array(byteArray)));
+    } catch (error) {
+      console.error("Error during read image", error);
+    }
+    return "";
   }
 }
 

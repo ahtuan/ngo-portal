@@ -3,4 +3,12 @@ declare namespace Common {
     page?: number;
     size?: number;
   };
+
+  type Paging<T> = {
+    data: Array<T>;
+    totalRecord: number;
+    totalPage: number;
+    page: number;
+    size: number;
+  };
 }

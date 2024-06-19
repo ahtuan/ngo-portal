@@ -1,7 +1,6 @@
 import Elysia from "elysia";
 import ProductService from "@/services/product.service";
 import { productModel } from "@/models/product.model";
-import { pagingModel } from "@/models/paging.model";
 
 export const productController = new Elysia({
   name: "Controller.Product",
@@ -9,9 +8,8 @@ export const productController = new Elysia({
 })
   .decorate("service", new ProductService())
   .use(productModel)
-  .use(pagingModel)
   .get("/", async ({ service, query }) => await service.getAll(query), {
-    query: "pagination",
+    query: "product.filter",
   })
   .get("/:id", async ({ service, params: { id } }) => await service.getById(id))
   .post("/", async ({ body, service }) => await service.create(body), {

@@ -6,11 +6,13 @@ type Props = {
   colSpan?: number;
   icon?: React.ReactNode;
   description?: string;
+  className?: string;
 };
 const EmptyRow = ({
   colSpan = 3,
   icon = <CakeSlice className="w-10 h-10 text-muted-foreground" />,
   description = "Không có dữ liệu",
+  className,
 }: Props) => {
   return (
     <TableRow>

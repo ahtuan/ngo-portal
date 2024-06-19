@@ -26,20 +26,21 @@ export const products = schema.table(
     ...timestampMixin,
     id: serial("id").primaryKey(),
     byDateId: varchar("by_date_id", { length: 14 }).notNull().unique(),
-    name: varchar("name", { length: 256 }),
+    name: varchar("name", { length: 256 }).notNull(),
     description: text("description"),
-    price: integer("price"),
-    weight: decimal("weight"),
+    price: integer("price").notNull(),
+    weight: decimal("weight").notNull(),
     imageUrls: varchar("image_url"),
-    inventoryId: varchar("inventory_id", { length: 10 }).references(
-      () => inventories.id,
-    ),
+    inventoryId: varchar("inventory_id", { length: 10 })
+      .references(() => inventories.id)
+      .notNull(),
     categoryId: integer("category_id").references(() => categories.id),
     categoryName: varchar("category_name"),
-    status: productStatusEnum("status"), // READY, IN_STOCK, SOLD
+    status: productStatusEnum("status").notNull(), // READY, IN_STOCK, SOLD
     isArchived: boolean("is_archived").default(false), // Use for tracking
     // whether it was in stock or not able to sell and put in stock
-    isUsedCategoryPrice: boolean("is_used_category_price"),
+    isUsedCategoryPrice: boolean("is_used_category_price").default(false),
+    isSold: boolean("is_sold").default(false),
   },
   (t) => ({
     inventoryIdx: index("products_inventory_idx").on(t.inventoryId),
