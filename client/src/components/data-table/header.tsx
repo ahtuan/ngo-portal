@@ -11,11 +11,17 @@ import { Table } from "@tanstack/table-core";
 
 type Props<T> = {
   table: Table<T>;
+  search?: React.ReactNode;
+  filter?: React.ReactNode;
 };
 
-const Header = <T extends {}>({ table }: Props<T>) => {
+const Header = <T extends {}>({ table, search, filter }: Props<T>) => {
   return (
-    <div className="flex justify-end py-4">
+    <div className="flex justify-between py-4">
+      <div className="flex gap-2">
+        {search}
+        {filter}
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="ml-auto">

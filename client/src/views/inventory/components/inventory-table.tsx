@@ -7,7 +7,7 @@ import {
   inventoryEndpoint as cacheKey,
   inventoryRequest,
 } from "@/api-requests/inventory.request";
-import Index from "@@/data-table";
+import DataTable from "@@/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -131,7 +131,7 @@ const InventoryTable = () => {
 
   return (
     <>
-      <Index<InventoryType> data={data} columns={columns(setUpdatedData)} />
+      <DataTable<InventoryType> data={data} columns={columns(setUpdatedData)} />
       <UpsertModal data={updatedData} setUpdatedData={setUpdatedData} />
     </>
   );

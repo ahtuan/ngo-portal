@@ -28,10 +28,10 @@ const NoInventoryDialog = () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>
-            <Link href={ProductPath.Base}>Trở về</Link>
+            <Link href={`${ProductPath.Base}?page=1`}>Trở về</Link>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Link href={InventoryPath.Base}>Lô hàng</Link>
+            <Link href={`${InventoryPath.Base}?page=1`}>Lô hàng</Link>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

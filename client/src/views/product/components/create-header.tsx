@@ -12,7 +12,7 @@ type CreateHeaderProps = {
 const CreateHeader = ({ title }: CreateHeaderProps) => {
   return (
     <>
-      <Link href={ProductPath.Base}>
+      <Link href={`${ProductPath.Base}?page=1`}>
         <Button variant="outline" size="icon" className="h-7 w-7">
           <ChevronLeft className="h-4 w-4" />
           <span className="sr-only">Trở về</span>
@@ -25,12 +25,12 @@ const CreateHeader = ({ title }: CreateHeaderProps) => {
         Đang soạn hàng
       </Badge>
       <div className="hidden items-center gap-2 md:ml-auto md:flex">
-        <Link href={ProductPath.Base}>
+        <Link href={`${ProductPath.Base}?page=1`}>
           <Button variant="outline" size="sm">
             Huỷ
           </Button>
         </Link>
-        
+
         <Button size="sm">Lưu</Button>
       </div>
     </>

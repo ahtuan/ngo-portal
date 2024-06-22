@@ -25,7 +25,9 @@ type Props<T> = {
   data: T[];
   columns: ColumnDef<T>[];
   pagination?: Paging;
-  onPageChange: (page: number) => void;
+  onPageChange?: (page: number) => void;
+  search?: React.ReactNode;
+  filter?: React.ReactNode;
 };
 
 const Index = <T extends {}>({
@@ -33,6 +35,8 @@ const Index = <T extends {}>({
   columns,
   pagination,
   onPageChange,
+  search,
+  filter,
 }: Props<T>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -64,7 +68,7 @@ const Index = <T extends {}>({
 
   return (
     <div className="w-full">
-      <Header<T> table={table} />
+      <Header<T> table={table} search={search} filter={filter} />
       <div className="rounded-md border min-h-[530px]">
         <Body table={table} totalColSpan={columns.length} />
       </div>

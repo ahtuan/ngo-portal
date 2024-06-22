@@ -2,7 +2,7 @@ import { DEFAULT_PAGING } from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
 import { categories } from "@/db/schemas/category.schema";
@@ -12,6 +12,12 @@ class ProductService {
     const limit = query.size ? +query.size : DEFAULT_PAGING.size;
     const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
 
+    const uuidCollection = (query.category?.split(";") || [])
+      .map((category) => `'${category}'`)
+      .join(",");
+    const statusCollection = (query.status?.split(";") || [])
+      .map((category) => `'${category}'`)
+      .join(",");
     const sq = db.$with("sq").as(
       db
         .select({
@@ -31,6 +37,22 @@ class ProductService {
         })
         .from(products)
         .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(
+          and(
+            query.keyword
+              ? or(
+                  like(products.byDateId, `%${query.keyword}%`),
+                  sql`unaccent(${products.name}) ilike unaccent(${sql.raw(`'%${query.keyword}%'`)})`,
+                )
+              : undefined,
+            query.category
+              ? sql`${categories.uuid} in ${sql.raw(`(${uuidCollection})`)}`
+              : undefined,
+            query.status
+              ? sql`${products.status} in ${sql.raw(`(${statusCollection})`)}`
+              : undefined,
+          ),
+        )
         .orderBy(desc(products.updatedAt)),
     );
 
@@ -123,7 +145,7 @@ class ProductService {
     }
     // TODO Store images and get URL
     const imgUrls = await helperService.saveImages(body.imageUrls);
-    console.log("imgUrls", imgUrls);
+
     const payload: Product.InsertCreateTable = {
       ...body,
       byDateId,

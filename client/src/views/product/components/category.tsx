@@ -43,7 +43,7 @@ const Category = ({ form }: CardItemProps) => {
 
       form.setValue("price", categoryPrice);
     }
-  }, [isUsedCategoryPrice, category]);
+  }, [isUsedCategoryPrice, category, data, form]);
 
   return (
     <Card>

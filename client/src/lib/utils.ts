@@ -117,3 +117,17 @@ export const formatPrice = (price: number) => {
 
   return `${shortValue}${units[unitIndex]}`;
 };
+
+export const getQueryString = (query: any, page?: number) => {
+  if (!query.page) {
+    query.page = 1;
+  }
+  return Object.entries(query)
+    .map(([key, value]) => `${key}=${key === "page" && page ? page : value}`)
+    .join("&");
+};
+
+export const generateSearchParams = (query: string) => {
+  const searchParams = new URLSearchParams(query);
+  return Object.fromEntries(searchParams.entries());
+};

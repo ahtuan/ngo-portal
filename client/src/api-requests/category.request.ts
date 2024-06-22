@@ -8,6 +8,12 @@ export const categoryRequest = {
     const response = await http.get<CategoryType[]>(categoryEndpoint);
     return response.data;
   },
+  getAllOptions: async () => {
+    const response = await http.get<Common.Option[]>(
+      `${categoryEndpoint}/options`,
+    );
+    return response.data;
+  },
   upsert: (data: CategoryType) =>
     http.post<CategoryType>(categoryEndpoint, data),
   delete: (id: string) =>

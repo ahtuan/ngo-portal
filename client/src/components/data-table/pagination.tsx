@@ -12,7 +12,7 @@ import { Paging } from "@@/data-table/index";
 type Props<T> = {
   pagination: Paging;
   table: Table<T>;
-  onPageChange: (page: number) => void;
+  onPageChange?: (page: number) => void;
 };
 
 const Pagination = <T extends {}>({
@@ -34,7 +34,7 @@ const Pagination = <T extends {}>({
         <Button
           variant="outline"
           className="hidden h-8 w-8 p-0 lg:flex"
-          onClick={() => onPageChange(1)}
+          onClick={() => onPageChange?.(1)}
           disabled={page < 2}
         >
           <span className="sr-only">Go to first page</span>
@@ -43,7 +43,7 @@ const Pagination = <T extends {}>({
         <Button
           variant="outline"
           className="h-8 w-8 p-0"
-          onClick={() => onPageChange(page - 1)}
+          onClick={() => onPageChange?.(page - 1)}
           disabled={page === 1}
         >
           <span className="sr-only">Go to previous page</span>
@@ -52,7 +52,7 @@ const Pagination = <T extends {}>({
         <Button
           variant="outline"
           className="h-8 w-8 p-0"
-          onClick={() => onPageChange(page + 1)}
+          onClick={() => onPageChange?.(page + 1)}
           disabled={page === totalPages}
         >
           <span className="sr-only">Go to next page</span>
@@ -61,7 +61,7 @@ const Pagination = <T extends {}>({
         <Button
           variant="outline"
           className="hidden h-8 w-8 p-0 lg:flex"
-          onClick={() => onPageChange(totalPages)}
+          onClick={() => onPageChange?.(totalPages)}
           disabled={page === totalPages}
         >
           <span className="sr-only">Go to last page</span>

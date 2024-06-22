@@ -29,6 +29,7 @@ const MenuItem = ({
               ? "bg-primary text-primary-foreground hover:text-primary-foreground"
               : "",
           )}
+          replace={true}
         >
           {icon}
         </Link>

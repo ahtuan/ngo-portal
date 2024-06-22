@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { TableCell, TableRow } from "@@/ui/table";
 import ButtonAction from "@views/category/button-action";
 import Currency from "@@/currency";
@@ -49,17 +49,18 @@ const EditableRow = ({
     },
   });
 
-  useEffect(() => {
-    if (defaultMode) {
-      toggleEdit();
-    }
-  }, [defaultMode]);
-  const toggleEdit = () => {
+  const toggleEdit = useCallback(() => {
     setIsEdit(true);
     form.setValue("uuid", uuid);
     form.setValue("name", name);
     form.setValue("price", price);
-  };
+  }, [form, uuid, name, price]);
+
+  useEffect(() => {
+    if (defaultMode) {
+      toggleEdit();
+    }
+  }, [defaultMode, toggleEdit]);
 
   const toggleEditOff = () => setIsEdit(false);
   const handleOnComplete = async (values: CategoryType) => {

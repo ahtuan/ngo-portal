@@ -11,4 +11,9 @@ declare namespace Common {
     page: number;
     size: number;
   };
+
+  type Option = {
+    label: string;
+    value: string;
+  };
 }

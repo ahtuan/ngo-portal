@@ -22,6 +22,10 @@ export const categoryController = new Elysia({
     async ({ categoryService, params: { id } }) =>
       await categoryService.getById(id),
   )
+  .get(
+    "/options",
+    async ({ categoryService }) => await categoryService.getAllOptions(),
+  )
   .post(
     "/",
     async ({ body, categoryService }) => await categoryService.upsert(body),

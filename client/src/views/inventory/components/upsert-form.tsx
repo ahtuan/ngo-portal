@@ -64,7 +64,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
       form.setValue("grossWeight", data.grossWeight);
       form.setValue("description", data.description ?? "");
     }
-  }, [data]);
+  }, [data, form]);
 
   const priceWatches = form.watch(["price", "grossWeight"]);
   const status = form.watch("status");

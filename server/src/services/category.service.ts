@@ -30,8 +30,18 @@ class CategoryService {
     return ApiResponse.success(data);
   }
 
+  async getAllOptions() {
+    const data = await db
+      .select({
+        label: categories.name,
+        value: categories.uuid,
+      })
+      .from(categories);
+
+    return ApiResponse.success(data);
+  }
+
   async upsert(body: CategoryCreateType) {
-    console.log("jum");
     const result = await this.getById(body.uuid);
     if (!result.data) {
       // Create if not exist in database

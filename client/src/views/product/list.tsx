@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 import { inventoryEndpoint as cacheKey } from "@/api-requests/inventory.request";
 import Loading from "@@/loading";
 import { productRequest } from "@/api-requests/product.request";
 import { ProductType } from "@/schemas/product.schema";
 import { ColumnDef } from "@tanstack/react-table";
-import { formatCurrency, formatPrice } from "@/lib/utils";
+import { formatCurrency, formatPrice, generateSearchParams } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,12 +20,20 @@ import { ProductStatus } from "@/constants/status";
 import DataTable from "@@/data-table";
 import { Badge } from "@@/ui/badge";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import Search from "@@/data-table/search";
+import { SearchParamsProps } from "@/app/(dashboard)/product/page";
+import {
+  categoryEndpoint as categoryCacheKey,
+  categoryRequest,
+} from "@/api-requests/category.request";
+import { FacetedFilter } from "@@/data-table/faceted-filter";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
 const columns = (
   setUpdatedData: (data: ProductType) => void,
@@ -153,30 +161,22 @@ const columns = (
   ];
 };
 
-const List = () => {
+type Props = {
+  queryString: string;
+  searchParams: SearchParamsProps;
+};
+
+const List = ({ queryString, searchParams }: Props) => {
   const router = useRouter();
-
-  const searchParams = useSearchParams();
   const pathName = usePathname();
-  const [query, setQuery] = React.useState<{
-    [p: string]: string;
-  }>({});
-
-  const getQueryString = (page?: number) => {
-    return Object.entries(query)
-      .map(([key, value]) => `${key}=${key === "page" && page ? page : value}`)
-      .join("&");
-  };
-  const queryString = getQueryString();
-
-  useEffect(() => {
-    const params = Object.fromEntries(searchParams.entries());
-    setQuery(params);
-  }, [searchParams]);
 
   const { data: res, isLoading } = useSWR(
     queryString ? cacheKey + `?${queryString}` : null,
     () => productRequest.getALL(queryString),
+  );
+  const { data: categoryOptions } = useSWR(
+    categoryCacheKey + "/options",
+    categoryRequest.getAllOptions,
   );
   const [updatedData, setUpdatedData] = useState<ProductType>();
 
@@ -188,10 +188,38 @@ const List = () => {
   }
 
   const onPageChange = (page: number) => {
-    const queryString = Object.entries(query)
-      .map(([key, value]) => `${key}=${key === "page" ? page : value}`)
+    const pageChangeString = queryString
+      .split("&")
+      .map((query) => (/^page=/.test(query) ? `page=${page}` : query))
       .join("&");
-    router.push(`${pathName}?${queryString}`);
+    router.push(`${pathName}?${pageChangeString}`);
+  };
+
+  const onSearch = (keyword: string) => {
+    let gencParams = generateSearchParams(queryString);
+    gencParams.keyword = keyword;
+    gencParams.page = "1";
+    const keywordChangedString = Object.entries(gencParams)
+      .map(([key, value]) => `${key}=${key === "keyword" ? keyword : value}`)
+      .join("&");
+    router.push(`${pathName}?${keywordChangedString}`);
+  };
+
+  const onFilter = (name: string, value: string[]) => {
+    const joinedValue = value.join(";");
+
+    let gencParams = generateSearchParams(queryString);
+    gencParams[name] = joinedValue;
+    gencParams.page = "1";
+
+    const queryChangedString = Object.entries(gencParams)
+      .map(([key, value]) => `${key}=${key === name ? joinedValue : value}`)
+      .join("&");
+    router.push(`${pathName}?${queryChangedString}`);
+  };
+
+  const handleReset = () => {
+    router.push(`${pathName}`);
   };
 
   return (
@@ -205,6 +233,50 @@ const List = () => {
           totalPages: res.totalPage,
         }}
         onPageChange={onPageChange}
+        search={
+          <Search
+            value={searchParams.keyword}
+            placeholder="Nhập mã hoặc tên sản phẩm"
+            className="w-52"
+            onSearch={onSearch}
+          />
+        }
+        filter={
+          <div className="flex gap-2">
+            <FacetedFilter
+              options={categoryOptions || []}
+              selectedValues={
+                searchParams.category?.split(";")?.filter(Boolean) || []
+              }
+              title="Phân loại"
+              onFilter={(value) => onFilter("category", value)}
+            />
+            <FacetedFilter
+              options={Object.entries(ProductStatus).map(([key, value]) => ({
+                label: key,
+                value,
+              }))}
+              selectedValues={
+                searchParams.status?.split(";")?.filter(Boolean) || []
+              }
+              title="Trạng thái"
+              onFilter={(value) => onFilter("status", value)}
+            />
+
+            {(searchParams.status ||
+              searchParams.keyword ||
+              searchParams.category) && (
+              <Button
+                variant="ghost"
+                onClick={handleReset}
+                className="h-8 px-2 lg:px-3"
+              >
+                Bỏ lọc
+                <Cross2Icon className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        }
       />
     </>
   );
