@@ -20,7 +20,7 @@ const Pagination = <T extends {}>({
   pagination,
   onPageChange,
 }: Props<T>) => {
-  const { total, totalPages, page } = pagination;
+  const { total = 0, totalPages = 0, page = 0 } = pagination;
 
   return (
     <div className="flex items-center justify-end space-x-2 pt-4">

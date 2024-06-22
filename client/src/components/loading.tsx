@@ -18,7 +18,7 @@ const Loading = ({ size = "medium", className }: Props) => {
         className = "w-8 h-8";
         break;
       case "large":
-        className = "h-10 h-10";
+        className = "w-10 h-10";
         break;
     }
     return className;

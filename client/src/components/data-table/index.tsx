@@ -14,11 +14,12 @@ import {
 import Pagination from "@@/data-table/pagination";
 import Header from "@@/data-table/header";
 import Body from "@@/data-table/body";
+import Loading from "@@/loading";
 
 export type Paging = {
-  total: number;
-  totalPages: number;
-  page: number;
+  total?: number;
+  totalPages?: number;
+  page?: number;
 };
 
 type Props<T> = {
@@ -28,15 +29,17 @@ type Props<T> = {
   onPageChange?: (page: number) => void;
   search?: React.ReactNode;
   filter?: React.ReactNode;
+  loading?: boolean;
 };
 
-const Index = <T extends {}>({
+const DataTable = <T extends {}>({
   data,
   columns,
   pagination,
   onPageChange,
   search,
   filter,
+  loading,
 }: Props<T>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -69,8 +72,12 @@ const Index = <T extends {}>({
   return (
     <div className="w-full">
       <Header<T> table={table} search={search} filter={filter} />
-      <div className="rounded-md border min-h-[530px]">
-        <Body table={table} totalColSpan={columns.length} />
+      <div className="rounded-md border min-h-[530px] flex flex-col">
+        {loading ? (
+          <Loading className="my-auto" size="large" />
+        ) : (
+          <Body table={table} totalColSpan={columns.length} />
+        )}
       </div>
       {pagination && (
         <Pagination<T>
@@ -82,4 +89,4 @@ const Index = <T extends {}>({
     </div>
   );
 };
-export default Index;
+export default DataTable;

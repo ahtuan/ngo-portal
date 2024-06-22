@@ -19,6 +19,7 @@ type Props = {
   setIsOpen: (isOpen: boolean) => void;
   product?: ProductBarCode;
   setProduct: (product?: ProductBarCode) => void;
+  mode?: "print" | "alert";
 };
 
 type Size = {
@@ -42,6 +43,7 @@ const BarcodePrintModal = ({
   setIsOpen,
   product,
   setProduct,
+  mode = "alert",
 }: Props) => {
   const [size, setSize] = useState<Size>({
     width: 30,
@@ -125,13 +127,15 @@ const BarcodePrintModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onChangeDialog}>
       <DialogContent className="sm:max-w-[600px] gap-6">
-        <DialogHeader>
-          <DialogTitle>Thành công</DialogTitle>
-          <DialogDescription>
-            Tạo sản phẩm thành công với mã:{" "}
-            <span className="font-semibold">{product.id}</span>
-          </DialogDescription>
-        </DialogHeader>
+        {mode === "alert" && (
+          <DialogHeader>
+            <DialogTitle>Thành công</DialogTitle>
+            <DialogDescription>
+              Tạo sản phẩm thành công với mã:{" "}
+              <span className="font-semibold">{product.id}</span>
+            </DialogDescription>
+          </DialogHeader>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <Barcode value={product.id} />
           <div>

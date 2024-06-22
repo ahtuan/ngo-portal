@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { inventoryEndpoint as cacheKey } from "@/api-requests/inventory.request";
 import Loading from "@@/loading";
 import { productRequest } from "@/api-requests/product.request";
-import { ProductType } from "@/schemas/product.schema";
+import { ProductBarCode, ProductType } from "@/schemas/product.schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatPrice, generateSearchParams } from "@/lib/utils";
 import {
@@ -34,9 +34,10 @@ import {
 } from "@/api-requests/category.request";
 import { FacetedFilter } from "@@/data-table/faceted-filter";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import BarcodePrintModal from "@views/product/components/barcode-print-modal";
 
 const columns = (
-  setUpdatedData: (data: ProductType) => void,
+  onPrint: (data: ProductBarCode) => void,
 ): ColumnDef<ProductType>[] => {
   return [
     {
@@ -140,6 +141,7 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
+        const { byDateId, price } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -149,10 +151,17 @@ const columns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setUpdatedData(row.original)}>
-                Chỉnh sửa
+              <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  onPrint({
+                    id: byDateId,
+                    price: price,
+                  })
+                }
+              >
+                In mã vạch
               </DropdownMenuItem>
-              <DropdownMenuItem>In mã vạch</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -178,12 +187,10 @@ const List = ({ queryString, searchParams }: Props) => {
     categoryCacheKey + "/options",
     categoryRequest.getAllOptions,
   );
-  const [updatedData, setUpdatedData] = useState<ProductType>();
+  const [printData, setPrintData] = useState<ProductBarCode>();
+  const [isOpenPrint, setIsOpenPrint] = React.useState(false);
 
-  if (isLoading) {
-    return <Loading className="m-auto" />;
-  }
-  if (!res) {
+  if (!res && !isLoading) {
     return null;
   }
 
@@ -222,15 +229,21 @@ const List = ({ queryString, searchParams }: Props) => {
     router.push(`${pathName}`);
   };
 
+  const onPrint = (data: ProductBarCode) => {
+    setIsOpenPrint(true);
+    setPrintData(data);
+  };
+
   return (
     <>
       <DataTable<ProductType>
-        data={res.data}
-        columns={columns(setUpdatedData)}
+        loading={isLoading}
+        data={res?.data || []}
+        columns={columns(onPrint)}
         pagination={{
-          page: res.page,
-          total: res.totalRecord,
-          totalPages: res.totalPage,
+          page: res?.page,
+          total: res?.totalRecord,
+          totalPages: res?.totalPage,
         }}
         onPageChange={onPageChange}
         search={
@@ -278,6 +291,15 @@ const List = ({ queryString, searchParams }: Props) => {
           </div>
         }
       />
+      {isOpenPrint && (
+        <BarcodePrintModal
+          isOpen={isOpenPrint}
+          setIsOpen={setIsOpenPrint}
+          product={printData}
+          setProduct={setPrintData}
+          mode="print"
+        />
+      )}
     </>
   );
 };
