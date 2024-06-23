@@ -58,5 +58,5 @@ const baseProduct = "/product";
 export const ProductPath = {
   Base: baseProduct,
   Create: `${baseProduct}/create`,
-  Update: `${baseProduct}/[uuid]`,
+  Update: (byDateId: string) => `${baseProduct}/${byDateId}`,
 };

@@ -20,6 +20,8 @@ const ImageUpload = ({ form }: CardItemProps) => {
   useEffect(() => {
     if (!images?.length) {
       setImage([]);
+    } else {
+      setImage(images);
     }
   }, [images]);
 

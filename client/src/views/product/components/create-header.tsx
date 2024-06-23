@@ -1,15 +1,19 @@
+"use client";
+
 import React from "react";
 import { Button } from "@@/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@@/ui/badge";
 import Link from "next/link";
 import { ProductPath } from "@/constants/path";
+import { useRouter } from "next/navigation";
 
 type CreateHeaderProps = {
-  title: string;
+  title?: string;
 };
 
 const CreateHeader = ({ title }: CreateHeaderProps) => {
+  const router = useRouter();
   return (
     <>
       <Link href={`${ProductPath.Base}?page=1`}>
@@ -25,7 +29,10 @@ const CreateHeader = ({ title }: CreateHeaderProps) => {
         Đang soạn hàng
       </Badge>
       <div className="hidden items-center gap-2 md:ml-auto md:flex">
-        <Link href={`${ProductPath.Base}?page=1`}>
+        <Link
+          href={`${ProductPath.Base}?page=1`}
+          onClick={() => router.prefetch(ProductPath.Base)}
+        >
           <Button variant="outline" size="sm">
             Huỷ
           </Button>

@@ -25,6 +25,8 @@ import {
 import { CardItemProps } from "@views/product/upsert";
 import { Switch } from "@@/ui/switch";
 import Currency from "@@/currency";
+import { Input } from "@@/ui/input";
+import { cn } from "@/lib/utils";
 
 export const OtherOption = {
   uuid: "other",
@@ -42,6 +44,11 @@ const Category = ({ form }: CardItemProps) => {
         data?.find((item) => item.uuid === category)?.price ?? 0;
 
       form.setValue("price", categoryPrice);
+    }
+    if (category === OtherOption.uuid) {
+      form.setValue("isUsedCategoryPrice", false);
+    } else {
+      form.setValue("categoryName", undefined);
     }
   }, [isUsedCategoryPrice, category, data, form]);
 
@@ -82,27 +89,51 @@ const Category = ({ form }: CardItemProps) => {
               )}
             />
             <div className="grid gap-3 sm:col-span-2">
-              {category && category !== OtherOption.uuid && (
-                <FormField
-                  control={form.control}
-                  name="isUsedCategoryPrice"
-                  render={({ field }) => (
-                    <FormItem className="flex justify-between items-center h-full">
-                      <div className="grid gap-4">
-                        <FormLabel>Đồng giá</FormLabel>
-                        <FormDescription>
-                          Sử dụng giá của phân loại để làm giá sản phẩm
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+              {category && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="isUsedCategoryPrice"
+                    render={({ field }) => (
+                      <FormItem
+                        className={cn(
+                          "flex justify-between items-center" + " h-full",
+                          category !== OtherOption.uuid ? "visible" : "hidden",
+                        )}
+                      >
+                        <div className="grid gap-4">
+                          <FormLabel>Đồng giá</FormLabel>
+                          <FormDescription>
+                            Sử dụng giá của phân loại để làm giá sản phẩm
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="categoryName"
+                    render={({ field }) => (
+                      <FormItem
+                        className={
+                          category === OtherOption.uuid ? "visible" : "hidden"
+                        }
+                      >
+                        <FormLabel>Tên phân loại</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import NoInventoryDialog from "@views/product/components/no-inventory-dialog";
 import CreateHeader from "@views/product/components/create-header";
 import Detail from "@views/product/components/detail";
@@ -16,56 +16,94 @@ import {
   ProductBarCode,
   ProductBody,
   ProductCreate,
+  ProductDetail,
+  ProductUpdate,
 } from "@/schemas/product.schema";
 import { productRequest } from "@/api-requests/product.request";
 import BarcodePrintModal from "@views/product/components/barcode-print-modal";
 import { useToast } from "@@/ui/use-toast";
+import { getDirtyValues } from "@/lib/utils";
+import { ProductPath } from "@/constants/path";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
 };
-const Upsert = () => {
-  const inventory = useSearchParams().get("inventory");
+
+type Props = {
+  detailData?: ProductDetail;
+  mode?: "create" | "edit";
+};
+const Upsert = ({ detailData, mode = "create" }: Props) => {
+  const inventory = useSearchParams().get("inventory") ?? "";
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<ProductCreate>({
     resolver: zodResolver(ProductBody),
     defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      weight: 0,
-      status: ProductStatus.Kho,
-      categoryUuid: "",
-      imageUrls: [],
-      isUsedCategoryPrice: false,
+      name: detailData?.name ?? "",
+      description: detailData?.description ?? "",
+      price: detailData?.price ?? 0,
+      weight: detailData?.weight ?? 0,
+      status: detailData?.status ?? ProductStatus.Kho,
+      categoryUuid: detailData?.categoryUuid ?? "",
+      categoryName: detailData?.categoryName ?? "",
+      imageUrls: detailData?.imageUrls ?? [],
+      isUsedCategoryPrice: detailData?.isUsedCategoryPrice ?? false,
     },
   });
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [createdProduct, setCreatedProduct] = React.useState<ProductBarCode>();
 
-  if (!inventory) {
+  if (
+    (!inventory && mode === "create") ||
+    (mode === "edit" && !detailData?.inventoryId)
+  ) {
     return <NoInventoryDialog />;
   }
 
   const handleSubmit = async (values: ProductCreate) => {
     try {
-      const createdData = await productRequest.create({
-        ...values,
-        inventoryId: inventory ?? "",
-        categoryUuid:
-          values.categoryUuid === OtherOption.uuid ? "" : values.categoryUuid,
-      });
-      if (createdData.data) {
-        setCreatedProduct({
-          id: createdData.data.byDateId,
-          price: createdData.data.price,
+      if (mode === "create") {
+        const createdData = await productRequest.create({
+          ...values,
+          inventoryId: inventory ?? "",
+          categoryUuid:
+            values.categoryUuid === OtherOption.uuid ? "" : values.categoryUuid,
         });
-        form.reset();
-        setIsOpen(true);
+        if (createdData.data) {
+          setCreatedProduct({
+            id: createdData.data.byDateId,
+            price: createdData.data.price,
+          });
+          form.reset();
+          setIsOpen(true);
+        } else {
+          toast({
+            description: createdData.message,
+          });
+        }
       } else {
+        if (!detailData?.byDateId) {
+          throw "Sản phẩm không có ID";
+        }
+
+        const payload = getDirtyValues<ProductCreate>(values, detailData);
+        if (payload.categoryUuid) {
+          payload.categoryUuid =
+            payload.categoryUuid === OtherOption.uuid
+              ? ""
+              : values.categoryUuid;
+        }
+        const updatedData = await productRequest.update(
+          detailData?.byDateId,
+          payload,
+        );
+        if (updatedData.data) {
+          router.push(ProductPath.Base);
+        }
         toast({
-          description: createdData.message,
+          description: updatedData.message,
         });
       }
     } catch (error) {
@@ -81,7 +119,9 @@ const Upsert = () => {
           onSubmit={form.handleSubmit(handleSubmit)}
         >
           <div className="flex items-center gap-4">
-            <CreateHeader title={inventory} />
+            <CreateHeader
+              title={mode === "create" ? inventory : detailData?.inventoryId}
+            />
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">

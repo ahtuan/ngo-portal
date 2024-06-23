@@ -7,6 +7,22 @@ import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
 import { categories } from "@/db/schemas/category.schema";
 
+const baseSelect = {
+  id: products.id,
+  byDateId: products.byDateId,
+  name: products.name,
+  description: products.description,
+  price: products.price,
+  weight: products.weight,
+  inventoryId: products.inventoryId,
+  categoryUuid: categories.uuid,
+  categoryName: products.categoryName,
+  status: products.status,
+  isUsedCategoryPrice: products.isUsedCategoryPrice,
+  isSold: products.isSold,
+  imageUrls: products.imageUrls,
+};
+
 class ProductService {
   async getAll(query: Product.Filter) {
     const limit = query.size ? +query.size : DEFAULT_PAGING.size;
@@ -20,21 +36,7 @@ class ProductService {
       .join(",");
     const sq = db.$with("sq").as(
       db
-        .select({
-          id: products.id,
-          byDateId: products.byDateId,
-          name: products.name,
-          description: products.description,
-          price: products.price,
-          weight: products.weight,
-          inventoryId: products.inventoryId,
-          categoryUuid: categories.uuid,
-          categoryName: products.categoryName,
-          status: products.status,
-          isUsedCategoryPrice: products.isUsedCategoryPrice,
-          isSold: products.isSold,
-          imageUrls: products.imageUrls,
-        })
+        .select(baseSelect)
         .from(products)
         .leftJoin(categories, eq(products.categoryId, categories.id))
         .where(
@@ -102,14 +104,24 @@ class ProductService {
     return ApiResponse.success(response);
   }
 
-  async getById(byDateId: string) {
-    const data = await db.query.products.findFirst({
-      where: (products, { eq }) => eq(products.byDateId, byDateId),
-    });
-    if (!data) {
-      return new NotFoundError("Không tìm thấy dữ liệu");
+  async getDetail(byDateId: string) {
+    const result = await db
+      .select(baseSelect)
+      .from(products)
+      .where(eq(products.byDateId, byDateId))
+      .leftJoin(categories, eq(products.categoryId, categories.id));
+
+    const rawData = result[0];
+    if (!rawData) {
+      return new NotFoundError();
     }
-    return ApiResponse.success(data);
+    const mappedData: Product.Detail = {
+      ...rawData,
+      weight: +rawData.weight,
+      imageUrls: await helperService.readImages(rawData.imageUrls ?? ""),
+    };
+
+    return ApiResponse.success(mappedData);
   }
 
   async create(body: Product.CreateBody) {
@@ -128,7 +140,7 @@ class ProductService {
     // Create ID for Product
     const byDateId = await this.getIdSequence();
     let categoryId: number = 0;
-    let categoryName: string = "";
+    let categoryName: string | undefined = body.categoryName;
     if (categoryUuid) {
       const category = await db.query.categories.findFirst({
         where: (category, { eq }) => eq(category.uuid, categoryUuid),
@@ -141,6 +153,7 @@ class ProductService {
         // If can not find category and isUsedCategoryPrice equal true, It's
         // not make sense, must be set to be false
         body.isUsedCategoryPrice = false;
+        categoryName = undefined;
       }
     }
     // TODO Store images and get URL
@@ -161,21 +174,73 @@ class ProductService {
 
   async update(id: string, body: Partial<Product.UpdateBody>) {
     const response = await this.getById(id);
-    if (!response.data) {
+    if (!response) {
       return response;
     }
-    const updatedData = await db.update(products).set(body).returning();
+    const { categoryUuid } = body;
+    let modifiedData: {
+      categoryId?: number | null;
+      imageUrls?: string;
+    } = {};
+    if (categoryUuid) {
+      const category = await db.query.categories.findFirst({
+        where: (category, { eq }) => eq(category.uuid, categoryUuid),
+      });
+
+      if (category) {
+        body.categoryName = category.name;
+        modifiedData.categoryId = category.id;
+      } else {
+        // If can not find category and isUsedCategoryPrice equal true, It's
+        // not make sense, must be set to be false
+        body.isUsedCategoryPrice = false;
+        body.categoryName = undefined;
+      }
+    } else if (response.categoryId) {
+      modifiedData.categoryId = null;
+    }
+
+    if (body.imageUrls) {
+      // Delete old image with url from Database
+      helperService.deleteImages((response.imageUrls ?? "").split(";"));
+      modifiedData.imageUrls = (
+        await helperService.saveImages(body.imageUrls)
+      ).join(";");
+    }
+
+    const updatedData = await db
+      .update(products)
+      .set({
+        ...body,
+        ...modifiedData,
+        imageUrls: modifiedData.imageUrls,
+        weight: body.weight?.toString(),
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, response.id))
+      .returning();
+
     return ApiResponse.success(updatedData, "Chỉnh sửa dữ liệu thành công");
   }
 
   async delete(byDateId: string) {
     const response = await this.getById(byDateId);
-    if (!response.data) {
+    if (!response) {
       return response;
     }
-    await db.delete(products).where(eq(products.id, response.data.id));
+    await db.delete(products).where(eq(products.id, response.id));
 
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
+  }
+
+  private async getById(byDateId: string) {
+    const data = await db.query.products.findFirst({
+      where: (products, { eq }) => eq(products.byDateId, byDateId),
+    });
+    if (!data) {
+      return undefined;
+    }
+    return data;
   }
 
   private async getIdSequence() {

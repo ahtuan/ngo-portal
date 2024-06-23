@@ -31,6 +31,7 @@ declare namespace Product {
     weight: number;
     imageUrls?: string[];
     categoryUuid: string;
+    categoryName?: string;
     isUsedCategoryPrice: boolean;
     status: string;
   };
@@ -38,17 +39,21 @@ declare namespace Product {
   type InsertCreateTable = {
     byDateId: string;
     categoryId: number;
-    categoryName: string;
+    categoryName?: string;
     weight: string;
     imageUrls: string;
   } & Omit<CreateBody, "categoryUuid" | "weight" | "imageUrls">;
 
   type UpdateBody = {
     name: string;
-    description?: string;
+    description: string;
     price: number;
-    imageUrl?: string;
-    categoryId?: number;
+    weight: number;
+    imageUrls: string[];
+    categoryUuid: string;
+    categoryName: string;
+    isUsedCategoryPrice: boolean;
+    status: string;
   };
 
   type Filter = Partial<{

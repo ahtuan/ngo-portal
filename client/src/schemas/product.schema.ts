@@ -10,6 +10,7 @@ export const ProductBody = z.object({
   description: z.optional(z.string()),
   status: z.string(),
   categoryUuid: z.string(),
+  categoryName: z.optional(z.string()),
   imageUrls: z.optional(z.array(z.string())),
   isUsedCategoryPrice: z.optional(z.boolean()),
 });
@@ -24,7 +25,15 @@ export type ProductType = Omit<ProductCreate, "imageUrls"> & {
   mainImage: string;
 };
 
+export type ProductDetail = {
+  id: number;
+  byDateId: string;
+  categoryName: string;
+} & ProductCreate;
+
 export type ProductBarCode = {
   id: string;
   price: number;
 };
+
+export type ProductUpdate = Partial<ProductCreate>;

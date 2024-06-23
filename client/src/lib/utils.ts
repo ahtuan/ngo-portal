@@ -131,3 +131,22 @@ export const generateSearchParams = (query: string) => {
   const searchParams = new URLSearchParams(query);
   return Object.fromEntries(searchParams.entries());
 };
+
+export const getDirtyValues = <T extends {}>(
+  allValue: T,
+  originalValue: any,
+) => {
+  // Update form
+  const payload: Partial<T> = {
+    ...allValue,
+  };
+
+  Object.entries(allValue).map(([key, value]) => {
+    if (value?.toString() === originalValue[key]?.toString()) {
+      // @ts-ignore
+      delete payload[key];
+    }
+  });
+
+  return payload;
+};

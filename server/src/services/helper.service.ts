@@ -1,6 +1,7 @@
 import * as process from "node:process";
 import { ApiResponse } from "@/libs/api-response";
 import { mkdir } from "node:fs/promises";
+import { unlinkSync } from "node:fs";
 
 class HelperService {
   /**
@@ -23,6 +24,11 @@ class HelperService {
       return [await this.readImage(paths[0])];
     }
     return await Promise.all(paths.map((url) => this.readImage(url)));
+  }
+
+  deleteImages(urls: string[]) {
+    urls.forEach((url) => unlinkSync(url));
+    return;
   }
 
   private getUploadPath = () => {

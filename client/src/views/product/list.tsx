@@ -35,6 +35,8 @@ import {
 import { FacetedFilter } from "@@/data-table/faceted-filter";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import BarcodePrintModal from "@views/product/components/barcode-print-modal";
+import Link from "next/link";
+import { ProductPath } from "@/constants/path";
 
 const columns = (
   onPrint: (data: ProductBarCode) => void,
@@ -151,7 +153,9 @@ const columns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+              <Link href={`${ProductPath.Update(byDateId)}`}>
+                <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem
                 onClick={() =>
                   onPrint({

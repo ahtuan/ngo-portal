@@ -9,7 +9,7 @@ export class EntityError extends ApiResponse {
 
 export class NotFoundError extends ApiResponse {
   constructor(message?: string) {
-    super(undefined, "Not Found", 404, message);
+    super(undefined, "Không tìm thấy dữ liệu", 404, message);
   }
 }
 

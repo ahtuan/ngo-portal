@@ -11,18 +11,23 @@ export const productController = new Elysia({
   .get("/", async ({ service, query }) => await service.getAll(query), {
     query: "product.filter",
   })
-  .get("/:id", async ({ service, params: { id } }) => await service.getById(id))
+  .get(
+    "/:byDateId",
+    async ({ service, params: { byDateId } }) =>
+      await service.getDetail(byDateId),
+  )
   .post("/", async ({ body, service }) => await service.create(body), {
     body: "product.create",
   })
   .patch(
-    "/:id",
-    async ({ body, service, params: { id } }) => await service.update(id, body),
+    "/:byDateId",
+    async ({ body, service, params: { byDateId } }) =>
+      await service.update(byDateId, body),
     {
       body: "product.update",
     },
   )
   .delete(
-    "/:id",
-    async ({ service, params: { id } }) => await service.delete(id),
+    "/:byDateId",
+    async ({ service, params: { byDateId } }) => await service.delete(byDateId),
   );
