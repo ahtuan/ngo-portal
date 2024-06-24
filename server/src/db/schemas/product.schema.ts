@@ -16,7 +16,7 @@ import { relations } from "drizzle-orm";
 import { PRODUCT_STATUS_ENUM } from "@/constants/common";
 
 export const productStatusEnum = pgEnum(
-  "inventory_enum",
+  "product_status_enum",
   // @ts-ignore
   Object.values(PRODUCT_STATUS_ENUM),
 );
