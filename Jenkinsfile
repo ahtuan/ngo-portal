@@ -24,7 +24,7 @@ pipeline {
                         dir('D:\\NgoGom\\client') {
                             bat "bun install"
                             bat "bun run build"
-                            bat "bun run start"
+                            bat "nohup bun run start &"
                         }
                     }
                 }
@@ -34,7 +34,7 @@ pipeline {
                             bat "bun install"
                             bat "bun run db:genc"
                             bat "bun run db:migrate"
-                            bat "bun run start"
+                            bat "nohup bun run start & "
                         }
                     }
                 }
