@@ -9,7 +9,6 @@ import {
 import Barcode from "react-barcode";
 import { Button } from "@@/ui/button";
 
-import { DTPWeb } from "dtpweb";
 import { ProductBarCode } from "@/schemas/product.schema";
 import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
 import { formatPrice } from "@/lib/utils";

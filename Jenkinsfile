@@ -4,23 +4,11 @@ pipeline {
         nodejs '20.10.0'
     }
     stages {
-        stage("Checking build success") {
-            parallel {
-                stage("Build Client") {
-                    steps {
-                        dir('client') {
-                            bat "bun install"
-                            bat "bun run build"
-                        }
-                    }
-                }
-                stage("Build Server") {
-                    steps {
-                        dir('server') {
-                            bat "bun install"
-                            bat "bun run db:genc"
-                        }
-                    }
+        stage("Check lint Client") {
+            steps {
+                dir('client') {
+                    bat "bun install"
+                    bat "bun run lint"
                 }
             }
         }
@@ -29,9 +17,27 @@ pipeline {
                 build job: "Get_code_Ngo_Gom", wait: true
             }
         }
-        stage("Deploy") {
-            steps {
-                echo "Deployingg"
+        stage("Build") {
+            parallel {
+                stage("Build for client") {
+                    steps {
+                        dir('D:\\NgoGom\\client') {
+                            bat "bun install"
+                            bat "bun run build"
+                            bat "bun run start"
+                        }
+                    }
+                }
+                stage("Build for server") {
+                    steps {
+                        dir('D:\\NgoGom\\server') {
+                            bat "bun install"
+                            bat "bun run db:genc"
+                            bat "bun run db:migrate"
+                            bat "bun run start"
+                        }
+                    }
+                }
             }
         }
     }
