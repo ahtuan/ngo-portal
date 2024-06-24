@@ -63,4 +63,11 @@ declare namespace Product {
     status: string;
     size: string;
   }>;
+
+  type Print = {
+    byDateId: string;
+    width: number;
+    height: number;
+    price?: string;
+  };
 }

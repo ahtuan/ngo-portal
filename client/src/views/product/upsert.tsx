@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NoInventoryDialog from "@views/product/components/no-inventory-dialog";
 import CreateHeader from "@views/product/components/create-header";
@@ -17,13 +17,16 @@ import {
   ProductBody,
   ProductCreate,
   ProductDetail,
-  ProductUpdate,
 } from "@/schemas/product.schema";
-import { productRequest } from "@/api-requests/product.request";
+import {
+  productEndpoint as cacheKey,
+  productRequest,
+} from "@/api-requests/product.request";
 import BarcodePrintModal from "@views/product/components/barcode-print-modal";
 import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
+import { mutate } from "swr";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -45,7 +48,8 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       price: detailData?.price ?? 0,
       weight: detailData?.weight ?? 0,
       status: detailData?.status ?? ProductStatus.Kho,
-      categoryUuid: detailData?.categoryUuid ?? "",
+      categoryUuid:
+        mode === "edit" ? detailData?.categoryUuid ?? OtherOption.uuid : "",
       categoryName: detailData?.categoryName ?? "",
       imageUrls: detailData?.imageUrls ?? [],
       isUsedCategoryPrice: detailData?.isUsedCategoryPrice ?? false,
@@ -100,7 +104,8 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           payload,
         );
         if (updatedData.data) {
-          router.push(ProductPath.Base);
+          await mutate(`${cacheKey}?page=1`);
+          router.push(`${ProductPath.Base}?page=1`);
         }
         toast({
           description: updatedData.message,

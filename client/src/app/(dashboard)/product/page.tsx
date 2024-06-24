@@ -27,3 +27,4 @@ const Page = ({ searchParams }: { searchParams: SearchParamsProps }) => {
 };
 
 export default Page;
+export const dynamic = "force-dynamic";

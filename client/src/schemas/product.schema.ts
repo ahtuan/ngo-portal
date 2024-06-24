@@ -37,3 +37,10 @@ export type ProductBarCode = {
 };
 
 export type ProductUpdate = Partial<ProductCreate>;
+
+export type ProductPrint = {
+  byDateId: string;
+  width: number;
+  height: number;
+  price: string;
+};

@@ -6,28 +6,44 @@ export const productController = new Elysia({
   name: "Controller.Product",
   prefix: "product",
 })
-  .decorate("service", new ProductService())
+  .decorate("productService", new ProductService())
   .use(productModel)
-  .get("/", async ({ service, query }) => await service.getAll(query), {
-    query: "product.filter",
-  })
+  .get(
+    "/",
+    async ({ productService, query }) => await productService.getAll(query),
+    {
+      query: "product.filter",
+    },
+  )
   .get(
     "/:byDateId",
-    async ({ service, params: { byDateId } }) =>
-      await service.getDetail(byDateId),
+    async ({ productService, params: { byDateId } }) =>
+      await productService.getDetail(byDateId),
   )
-  .post("/", async ({ body, service }) => await service.create(body), {
-    body: "product.create",
-  })
+  .post(
+    "/",
+    async ({ body, productService }) => await productService.create(body),
+    {
+      body: "product.create",
+    },
+  )
+  .post(
+    "/print-barcode",
+    async ({ body, productService }) => await productService.printBarcode(body),
+    {
+      body: "product.printBarcode",
+    },
+  )
   .patch(
     "/:byDateId",
-    async ({ body, service, params: { byDateId } }) =>
-      await service.update(byDateId, body),
+    async ({ body, productService, params: { byDateId } }) =>
+      await productService.update(byDateId, body),
     {
       body: "product.update",
     },
   )
   .delete(
     "/:byDateId",
-    async ({ service, params: { byDateId } }) => await service.delete(byDateId),
+    async ({ productService, params: { byDateId } }) =>
+      await productService.delete(byDateId),
   );

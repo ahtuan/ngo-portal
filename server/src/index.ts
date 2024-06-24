@@ -27,7 +27,7 @@ const swaggerConfig = {
     },
   },
 };
-
+process.env.TZ = "Asia/Jakarta";
 const app = new Elysia({ prefix: "/api" })
   .mapResponse(mapResponseMiddleware)
   .use(Logestic.preset("common"))
@@ -55,5 +55,5 @@ export const PUT = app.handle;
 export type API = typeof app;
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
+  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port} on ${new Date()}`,
 );

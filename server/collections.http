@@ -49,3 +49,12 @@ Content-Type: application/json
   "source": "http://test",
   "unit": "kg"
 }
+
+
+### Create new Inventory
+POST {{host}}/api/product/print-barcode
+Content-Type: application/json
+
+{
+  "byDateId": "121231333"
+}

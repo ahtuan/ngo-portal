@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { inventoryEndpoint as cacheKey } from "@/api-requests/inventory.request";
-import Loading from "@@/loading";
-import { productRequest } from "@/api-requests/product.request";
+import {
+  productRequest,
+  productEndpoint as cacheKey,
+} from "@/api-requests/product.request";
 import { ProductBarCode, ProductType } from "@/schemas/product.schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatPrice, generateSearchParams } from "@/lib/utils";
@@ -183,10 +184,20 @@ const List = ({ queryString, searchParams }: Props) => {
   const router = useRouter();
   const pathName = usePathname();
 
-  const { data: res, isLoading } = useSWR(
-    queryString ? cacheKey + `?${queryString}` : null,
-    () => productRequest.getALL(queryString),
+  const {
+    data: res,
+    isLoading,
+    mutate,
+  } = useSWR(queryString ? cacheKey + `?${queryString}` : null, () =>
+    productRequest.getALL(queryString),
   );
+
+  useEffect(() => {
+    if (!isLoading) {
+      mutate();
+    }
+  }, []);
+
   const { data: categoryOptions } = useSWR(
     categoryCacheKey + "/options",
     categoryRequest.getAllOptions,

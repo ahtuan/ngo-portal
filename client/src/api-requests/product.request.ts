@@ -2,10 +2,11 @@ import http from "@/lib/http";
 import {
   ProductCreate,
   ProductDetail,
+  ProductPrint,
   ProductType,
 } from "@/schemas/product.schema";
 
-const productEndpoint = "/api/product";
+export const productEndpoint = "/api/product";
 export const productRequest = {
   getALL: async (queryString: string) => {
     const response = await http.get<Common.Paging<ProductType>>(
@@ -16,9 +17,14 @@ export const productRequest = {
   getDetail: async (byDateId: string) => {
     const response = await http.get<ProductDetail>(
       productEndpoint + "/" + byDateId,
+      {
+        cache: "no-cache",
+      },
     );
     return response.data;
   },
+  print: async (payload: ProductPrint) =>
+    http.post(`${productEndpoint}/print-barcode`, payload),
   create: (data: ProductCreate) =>
     http.post<ProductType>(productEndpoint, data),
   update: (id: string, data: Partial<ProductType>) =>

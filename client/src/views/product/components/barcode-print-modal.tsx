@@ -13,6 +13,8 @@ import { DTPWeb } from "dtpweb";
 import { ProductBarCode } from "@/schemas/product.schema";
 import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
 import { formatPrice } from "@/lib/utils";
+import { productRequest } from "@/api-requests/product.request";
+import { useToast } from "@@/ui/use-toast";
 
 type Props = {
   isOpen: boolean;
@@ -49,59 +51,23 @@ const BarcodePrintModal = ({
     width: 30,
     height: 10,
   });
+  const { toast } = useToast();
   const onPrintBarcode = async () => {
     if (!product) {
       return;
     }
-    const api = await DTPWeb.getInstance();
-    DTPWeb.checkServer((value) => {
-      if (!value) {
-        alert("No Detected DothanTech Printer Helper!");
-      }
-    });
-
-    const printerName = "P2 Label Printer";
-    const text = product?.id;
-    const margin = 1;
-    if (!api) {
-      return;
+    try {
+      const response = await productRequest.print({
+        byDateId: product.id,
+        price: formatPrice(product.price),
+        ...size,
+      });
+      toast({
+        description: response.message,
+      });
+    } catch (error) {
+      console.error(error);
     }
-    api.openPrinter((success) => {
-      if (success) {
-        api.startJob({
-          printerName,
-          ...size,
-        });
-        api.draw1DBarcode({
-          text,
-          width: size.width,
-          height: size.height - margin * 4,
-          x: 2,
-          y: margin,
-          barcodeType: 28,
-        });
-        const textPrice = formatPrice(product.price);
-        api.drawText({
-          text: text,
-          x: size.width - 2 * margin,
-          y: 7,
-          fontName: "Arial",
-          fontHeight: 2,
-          horizontalAlignment: 2,
-        });
-        api.drawText({
-          text: textPrice,
-          x: margin,
-          y: 7,
-          fontName: "Arial",
-          fontHeight: 2,
-        });
-        api.commitJob(() => {
-          api.closePrinter();
-          onChangeDialog(false);
-        });
-      }
-    });
   };
 
   const getSizeComponent = (size: Size) => {

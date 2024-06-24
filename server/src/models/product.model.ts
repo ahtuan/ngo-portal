@@ -47,4 +47,7 @@ export const productModel = new Elysia({
       size: t.String(),
     }),
   ),
+  "product.printBarcode": t.Object({
+    byDateId: t.String(),
+  }),
 });

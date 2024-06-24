@@ -6,6 +6,9 @@ import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
 import { categories } from "@/db/schemas/category.schema";
+import { getCurrentDate } from "@/libs/date";
+import * as http from "node:http";
+import * as process from "node:process";
 
 const baseSelect = {
   id: products.id,
@@ -124,6 +127,32 @@ class ProductService {
     return ApiResponse.success(mappedData);
   }
 
+  async printBarcode(body: Product.Print) {
+    const options = {
+      hostname: process.env.PRINT_HOST ?? "https://localhost",
+      port: process.env.PRINT_PORT ?? 5001,
+      path: "/print",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    let result = false;
+    const req = http.request(options, (res) => {
+      console.log(`STATUS: ${res.statusCode}`);
+      console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+      result = true;
+    });
+
+    // Write data to request body
+    req.write(body);
+    req.end();
+    if (result) {
+      return ApiResponse.success(result);
+    }
+    return ApiResponse.error("Không thể in");
+  }
+
   async create(body: Product.CreateBody) {
     const { inventoryId, categoryUuid } = body;
     // Check ID of Inventory
@@ -207,7 +236,6 @@ class ProductService {
         await helperService.saveImages(body.imageUrls)
       ).join(";");
     }
-
     const updatedData = await db
       .update(products)
       .set({
@@ -215,7 +243,7 @@ class ProductService {
         ...modifiedData,
         imageUrls: modifiedData.imageUrls,
         weight: body.weight?.toString(),
-        updatedAt: new Date(),
+        updatedAt: getCurrentDate(),
       })
       .where(eq(products.id, response.id))
       .returning();
