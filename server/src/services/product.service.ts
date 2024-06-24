@@ -7,7 +7,6 @@ import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
 import { categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
-import * as http from "node:http";
 import * as process from "node:process";
 
 const baseSelect = {
@@ -128,29 +127,26 @@ class ProductService {
   }
 
   async printBarcode(body: Product.Print) {
-    const options = {
-      hostname: process.env.PRINT_HOST ?? "https://localhost",
-      port: process.env.PRINT_PORT ?? 5001,
-      path: "/print",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
-    let result = false;
-    const req = http.request(options, (res) => {
-      console.log(`STATUS: ${res.statusCode}`);
-      console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-      result = true;
-    });
-
-    // Write data to request body
-    req.write(body);
-    req.end();
-    if (result) {
-      return ApiResponse.success(result);
+    try {
+      const url = process.env.PRINT_URL || "https://localhost:5001/print";
+      const response = await fetch(url, {
+        tls: {
+          rejectUnauthorized: false,
+        },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const res = await response.json();
+      if (res.status === 200 || res === true) {
+        return ApiResponse.success(true);
+      }
+      throw "Request failed";
+    } catch (error) {
+      return ApiResponse.error("Không thể in");
     }
-    return ApiResponse.error("Không thể in");
   }
 
   async create(body: Product.CreateBody) {
