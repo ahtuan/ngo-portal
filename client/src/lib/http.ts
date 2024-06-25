@@ -67,7 +67,7 @@ const request = async <Response>(
 
   //TODO Interceptor handler for response
   if (!res.ok) {
-    throw new Error(result.message);
+    throw result;
   }
 
   // if (!res.ok) {

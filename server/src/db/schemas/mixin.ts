@@ -13,7 +13,7 @@ export const timestampMixin = {
 
 export const byUserMixin = {
   createdBy: varchar("created_by", { length: 255 }).default("admin"),
-  updatedBy: varchar("created_by", { length: 255 }).default("admin"),
+  updatedBy: varchar("updated_by", { length: 255 }).default("admin"),
 };
 
 export const metaDataMixin = {

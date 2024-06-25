@@ -38,7 +38,7 @@ declare namespace Product {
 
   type InsertCreateTable = {
     byDateId: string;
-    categoryId: number;
+    categoryId: number | null;
     categoryName?: string;
     weight: string;
     imageUrls: string;

@@ -65,7 +65,11 @@ const BarcodePrintModal = ({
         description: response.message,
       });
     } catch (error) {
-      console.error(error);
+      // @ts-ignore
+      let message = error.error ?? "Không thể in";
+      toast({
+        description: message,
+      });
     }
   };
 

@@ -164,7 +164,7 @@ class ProductService {
 
     // Create ID for Product
     const byDateId = await this.getIdSequence();
-    let categoryId: number = 0;
+    let categoryId: number | null = null;
     let categoryName: string | undefined = body.categoryName;
     if (categoryUuid) {
       const category = await db.query.categories.findFirst({
@@ -183,7 +183,6 @@ class ProductService {
     }
     // TODO Store images and get URL
     const imgUrls = await helperService.saveImages(body.imageUrls);
-
     const payload: Product.InsertCreateTable = {
       ...body,
       byDateId,
