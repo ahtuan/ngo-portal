@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@@/ui/button";
-import { Pencil, Trash, X, Check } from "lucide-react";
+import { Check, Pencil, Trash, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ const ButtonAction = ({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:scale-[115%] transition-all"
+            className="text-muted-foreground hover:text-primary"
             onClick={onCancel}
           >
             <X className="h-4 w-4 " />
@@ -42,7 +42,7 @@ const ButtonAction = ({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:scale-[115%] transition-all"
+            className="text-muted-foreground hover:text-primary"
             onClick={onComplete}
           >
             <Check className="h-4 w-4" />
@@ -53,7 +53,7 @@ const ButtonAction = ({
           <Button
             variant="ghost"
             size="icon"
-            className="hover:scale-[115%] transition-all"
+            className="text-muted-foreground hover:text-primary"
             onClick={toggleEdit}
           >
             <Pencil className="h-4 w-4 " />
@@ -63,7 +63,7 @@ const ButtonAction = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:scale-[115%] transition-all"
+                className="text-muted-foreground hover:text-primary"
               >
                 <Trash className="h-4 w-4" />
               </Button>

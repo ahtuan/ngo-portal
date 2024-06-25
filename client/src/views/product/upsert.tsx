@@ -67,6 +67,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
   }
 
   const handleSubmit = async (values: ProductCreate) => {
+    console.log("values", values);
     try {
       if (mode === "create") {
         const createdData = await productRequest.create({
@@ -105,6 +106,10 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
         );
         if (updatedData.data) {
           await mutate(`${cacheKey}?page=1`);
+          await mutate(
+            `${cacheKey}/${updatedData.data.byDateId}`,
+            updatedData.data,
+          );
           router.push(`${ProductPath.Base}?page=1`);
         }
         toast({
@@ -115,7 +120,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       console.error(error);
     }
   };
-
+  console.log(form.formState.errors);
   return (
     <>
       <Form {...form}>
@@ -128,12 +133,12 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
               title={mode === "create" ? inventory : detailData?.inventoryId}
             />
           </div>
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+          <div className="grid gap-4 md:grid-cols-[1fr_250px] md:grid-cols-3 md:gap-6 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 md:col-span-2 md:gap-6 lg:gap-8">
               <Detail form={form} />
               <Category form={form} />
             </div>
-            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4  md:gap-6 lg:gap-8">
               <Status form={form} />
               <ImageUpload form={form} />
             </div>

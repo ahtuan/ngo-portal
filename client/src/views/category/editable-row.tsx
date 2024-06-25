@@ -156,7 +156,7 @@ const EditableRow = ({
           )}
         </TableCell>
       </Form>
-      <TableCell>
+      <TableCell className="p-0 flex">
         <ButtonAction
           isEdit={isEdit}
           toggleEdit={toggleEdit}

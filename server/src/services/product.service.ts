@@ -120,7 +120,9 @@ class ProductService {
     const mappedData: Product.Detail = {
       ...rawData,
       weight: +rawData.weight,
-      imageUrls: await helperService.readImages(rawData.imageUrls ?? ""),
+      imageUrls: (
+        await helperService.readImages(rawData.imageUrls ?? "")
+      ).filter(Boolean),
     };
 
     return ApiResponse.success(mappedData);

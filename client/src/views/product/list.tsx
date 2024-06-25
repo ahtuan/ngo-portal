@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 import {
-  productRequest,
   productEndpoint as cacheKey,
+  productRequest,
 } from "@/api-requests/product.request";
 import { ProductBarCode, ProductType } from "@/schemas/product.schema";
 import { ColumnDef } from "@tanstack/react-table";
@@ -196,7 +196,7 @@ const List = ({ queryString, searchParams }: Props) => {
     if (!isLoading) {
       mutate();
     }
-  }, []);
+  }, [isLoading, mutate]);
 
   const { data: categoryOptions } = useSWR(
     categoryCacheKey + "/options",

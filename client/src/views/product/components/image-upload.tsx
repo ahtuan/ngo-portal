@@ -39,7 +39,7 @@ const ImageUpload = ({ form }: CardItemProps) => {
   };
 
   return (
-    <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>Trực quan sản phẩm</CardTitle>
         <CardDescription>

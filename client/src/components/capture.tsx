@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@@/ui/dialog";
 import { Camera } from "react-camera-pro";
 import { Aperture } from "lucide-react";
 import { Button } from "@@/ui/button";
+import Image from "next/image";
 
 type Props = {
   children?: React.ReactNode;

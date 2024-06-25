@@ -2,6 +2,7 @@ import * as process from "node:process";
 import { ApiResponse } from "@/libs/api-response";
 import { mkdir } from "node:fs/promises";
 import { unlinkSync } from "node:fs";
+import * as url from "node:url";
 
 class HelperService {
   /**
@@ -15,7 +16,9 @@ class HelperService {
     if (typeof data === "string") {
       return [await this.saveImage(data)];
     }
-    return await Promise.all(data.map((base64) => this.saveImage(base64)));
+    return (
+      await Promise.all(data.map((base64) => this.saveImage(base64)))
+    ).filter(Boolean);
   }
 
   async readImages(urls: string, takeOne: boolean = false) {
@@ -27,7 +30,11 @@ class HelperService {
   }
 
   deleteImages(urls: string[]) {
-    urls.forEach((url) => unlinkSync(url));
+    try {
+      urls.forEach((url) => url && unlinkSync(url));
+    } catch (error) {
+      console.error("Can not delete images from the server with url: ", url);
+    }
     return;
   }
 
