@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'server-01'
+    }
     tools {
         nodejs '20.10.0'
     }
@@ -24,7 +26,6 @@ pipeline {
                         dir('D:\\NgoGom\\client') {
                             bat "bun install"
                             bat "bun run build"
-                            bat "nohup bun run start &"
                         }
                     }
                 }
@@ -34,9 +35,15 @@ pipeline {
                             bat "bun install"
                             bat "bun run db:genc"
                             bat "bun run db:migrate"
-                            bat "nohup bun run start & "
                         }
                     }
+                }
+            }
+        }
+        stage('Run Application') {
+            steps {
+                dir('D:\\NgoGom') {
+                    echo "Manually run client and server ..."
                 }
             }
         }
