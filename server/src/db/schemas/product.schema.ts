@@ -8,7 +8,7 @@ import {
   text,
   varchar,
 } from "drizzle-orm/pg-core";
-import { schema, timestampMixin } from "./mixin";
+import { byUserMixin, schema, timestampMixin } from "./mixin";
 import { inventories } from "@/db/schemas/inventory.schema";
 import { categories } from "@/db/schemas/category.schema";
 import { invoiceItems } from "@/db/schemas/invoice.schema";
@@ -24,6 +24,7 @@ export const products = schema.table(
   "products",
   {
     ...timestampMixin,
+    ...byUserMixin,
     id: serial("id").primaryKey(),
     byDateId: varchar("by_date_id", { length: 14 }).notNull().unique(),
     name: varchar("name", { length: 256 }).notNull(),

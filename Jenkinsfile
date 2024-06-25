@@ -44,8 +44,16 @@ pipeline {
             steps {
                 dir('D:\\NgoGom') {
                     echo "Manually run client and server ..."
+                    script {
+                        bat 'run_script.bat'
+                    }
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline completed'
         }
     }
 }

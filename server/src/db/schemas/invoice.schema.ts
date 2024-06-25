@@ -5,12 +5,18 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { metaDataMixin, schema, timestampMixin } from "@/db/schemas/mixin";
+import {
+  byUserMixin,
+  metaDataMixin,
+  schema,
+  timestampMixin,
+} from "@/db/schemas/mixin";
 import { relations } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 
 export const invoices = schema.table("products", {
   ...timestampMixin,
+  ...byUserMixin,
   id: serial("id").primaryKey(),
   byDateId: varchar("by_date_id", { length: 12 }).notNull().unique(),
   price: integer("price").notNull(),
