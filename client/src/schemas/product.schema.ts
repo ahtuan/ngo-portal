@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { weight } from "@/schemas/common.schema";
 
+// export const CollectionItem = z.object({
+//   status: z.string().min(1, "Vui lòng nhập tình trạng sản phẩm"),
+//   quantity: z.number().min(1, "Phải có ít nhất một sản phẩm"),
+// });
+// export const ProductCollection = z.object({
+//   isInCollection: z.optional(z.boolean()),
+//   name: z.string().trim().min(1, "Vui lòng nhập tên sản phẩm"),
+//   items: z.array(CollectionItem),
+// });
+
 export const ProductBody = z.object({
   price: z.coerce.number({
     message: "Sản phẩm phải có đơn giá",
@@ -14,6 +24,8 @@ export const ProductBody = z.object({
   imageUrls: z.optional(z.array(z.string())),
   isUsedCategoryPrice: z.optional(z.boolean()),
   categoryUuidByKg: z.optional(z.string()),
+
+  // collection: z.optional(ProductCollection),
 });
 
 export type ProductCreate = z.TypeOf<typeof ProductBody> & {

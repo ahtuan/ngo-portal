@@ -27,6 +27,7 @@ import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
 import { mutate } from "swr";
+import Collection from "@views/product/components/collection";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -51,8 +52,13 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       categoryUuid:
         mode === "edit" ? detailData?.categoryUuid ?? OtherOption.uuid : "",
       categoryName: detailData?.categoryName ?? "",
+      categoryUuidByKg: detailData?.categoryUuidByKg,
       imageUrls: detailData?.imageUrls ?? [],
       isUsedCategoryPrice: detailData?.isUsedCategoryPrice ?? false,
+      // collection: {
+      //   isInCollection: false,
+      //   items: [],
+      // },
     },
   });
 
@@ -119,7 +125,6 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       console.error(error);
     }
   };
-  console.log(form.formState.errors);
   return (
     <>
       <Form {...form}>
@@ -142,6 +147,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
               <ImageUpload form={form} />
             </div>
           </div>
+          {/*{mode === "create" && <Collection form={form} />}*/}
         </form>
       </Form>
       {isOpen && (
