@@ -12,6 +12,10 @@ export const PRODUCT_STATUS_ENUM = {
   SOLD: "SOLD",
 };
 
+export const UNIT_ENUM = {
+  KG: "KG",
+  PCS: "PCS", // Cái hoặc chiếc
+};
 export const DEFAULT_PAGING = {
   page: 0,
   size: 10,

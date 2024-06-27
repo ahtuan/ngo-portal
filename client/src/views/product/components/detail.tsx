@@ -39,7 +39,12 @@ const Detail = ({ form }: CardItemProps) => {
               <FormItem>
                 <FormLabel>Mô tả</FormLabel>
                 <FormControl>
-                  <Textarea {...field} className="min-h-24" />
+                  <Textarea
+                    {...field}
+                    className="min-h-24"
+                    placeholder={`Kích thước: Dài x Rộng x Cao
+Tình trạng:`}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

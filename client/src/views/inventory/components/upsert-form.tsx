@@ -211,7 +211,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
           </span>
           <p className="sm:col-span-3">{getPricePerUnit()}</p>
         </div>
-        {status === InventoryStatus["Nhập kho"] && (
+        {status === InventoryStatus["Đã trong kho"] && (
           <div className="sm:grid sm:grid-cols-4 sm:items-center sm:gap-4 pt-2 text-muted-foreground">
             <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 sm:text-right">
               Giá đề xuất

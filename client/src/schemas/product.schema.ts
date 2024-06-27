@@ -13,6 +13,7 @@ export const ProductBody = z.object({
   categoryName: z.optional(z.string()),
   imageUrls: z.optional(z.array(z.string())),
   isUsedCategoryPrice: z.optional(z.boolean()),
+  categoryUuidByKg: z.optional(z.string()),
 });
 
 export type ProductCreate = z.TypeOf<typeof ProductBody> & {
@@ -23,6 +24,7 @@ export type ProductType = Omit<ProductCreate, "imageUrls"> & {
   byDateId: string;
   categoryName: string;
   mainImage: string;
+  unit: string;
 };
 
 export type ProductDetail = {

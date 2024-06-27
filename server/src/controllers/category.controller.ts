@@ -18,13 +18,9 @@ export const categoryController = new Elysia({
     },
   )
   .get(
-    "/:id",
-    async ({ categoryService, params: { id } }) =>
-      await categoryService.getById(id),
-  )
-  .get(
-    "/options",
-    async ({ categoryService }) => await categoryService.getAllOptions(),
+    "/options/:unit",
+    async ({ categoryService, params: { unit } }) =>
+      await categoryService.getAllOptions(unit),
   )
   .post(
     "/",
@@ -34,7 +30,7 @@ export const categoryController = new Elysia({
     },
   )
   .delete(
-    "/:id",
-    async ({ categoryService, params: { id } }) =>
-      await categoryService.delete(id),
+    "/:unit/:id",
+    async ({ categoryService, params: { id, unit } }) =>
+      await categoryService.delete(id, unit),
   );

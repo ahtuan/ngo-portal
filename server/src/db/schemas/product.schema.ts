@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { byUserMixin, schema, timestampMixin } from "./mixin";
 import { inventories } from "@/db/schemas/inventory.schema";
-import { categories } from "@/db/schemas/category.schema";
+import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { invoiceItems } from "@/db/schemas/invoice.schema";
 import { relations } from "drizzle-orm";
 import { PRODUCT_STATUS_ENUM } from "@/constants/common";
@@ -29,7 +29,7 @@ export const products = schema.table(
     byDateId: varchar("by_date_id", { length: 14 }).notNull().unique(),
     name: varchar("name", { length: 256 }).notNull(),
     description: text("description"),
-    price: integer("price").notNull(),
+    price: integer("price"),
     weight: decimal("weight").notNull(),
     imageUrls: varchar("image_url"),
     inventoryId: varchar("inventory_id", { length: 10 })
@@ -37,6 +37,9 @@ export const products = schema.table(
       .notNull(),
     categoryId: integer("category_id").references(() => categories.id),
     categoryName: varchar("category_name"),
+    categoryIdByKg: integer("category_id_by_kg").references(
+      () => byKgCategories.id,
+    ),
     status: productStatusEnum("status").notNull(), // READY, IN_STOCK, SOLD
     isArchived: boolean("is_archived").default(false), // Use for tracking
     // whether it was in stock or not able to sell and put in stock

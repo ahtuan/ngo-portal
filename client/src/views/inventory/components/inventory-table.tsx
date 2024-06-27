@@ -23,6 +23,8 @@ import UpsertModal from "@views/inventory/components/upsert-modal";
 import dayjs from "dayjs";
 import { InventoryStatus } from "@/constants/status";
 import Loading from "@@/loading";
+import Link from "next/link";
+import { ProductPath } from "@/constants/path";
 
 const columns = (
   setUpdatedData: (data: InventoryType) => void,
@@ -94,6 +96,7 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
+        const { status, id } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -106,6 +109,13 @@ const columns = (
               <DropdownMenuItem onClick={() => setUpdatedData(row.original)}>
                 Chỉnh sửa
               </DropdownMenuItem>
+              {status === InventoryStatus["Soạn hàng"] && (
+                <DropdownMenuItem>
+                  <Link href={`${ProductPath.Create}?inventory=${id}`}>
+                    Nhập hàng
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem disabled>Huỷ</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

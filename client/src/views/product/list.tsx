@@ -129,7 +129,12 @@ const columns = (
       accessorKey: "price",
       header: "Giá",
       cell: ({ row }) => {
-        return formatCurrency(row.getValue("price")) + " đ";
+        const { unit } = row.original;
+        return (
+          formatCurrency(row.getValue("price")) +
+          " đ" +
+          (unit === "KG" ? "/kg" : "")
+        );
       },
     },
     {
@@ -199,8 +204,8 @@ const List = ({ queryString, searchParams }: Props) => {
   }, [isLoading, mutate]);
 
   const { data: categoryOptions } = useSWR(
-    categoryCacheKey + "/options",
-    categoryRequest.getAllOptions,
+    categoryCacheKey + "/options/all",
+    () => categoryRequest.getAllOptions("all"),
   );
   const [printData, setPrintData] = useState<ProductBarCode>();
   const [isOpenPrint, setIsOpenPrint] = React.useState(false);

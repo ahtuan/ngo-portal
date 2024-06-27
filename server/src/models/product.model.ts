@@ -22,6 +22,7 @@ export const productModel = new Elysia({
     categoryUuid: t.String(),
     categoryName: t.Optional(t.String()),
     isUsedCategoryPrice: t.Boolean(),
+    categoryUuidByKg: t.Optional(t.String()),
     status: t.String(),
   }),
   "product.update": t.Partial(
@@ -36,6 +37,7 @@ export const productModel = new Elysia({
       categoryName: t.Optional(t.String()),
       isUsedCategoryPrice: t.Boolean(),
       status: t.String(),
+      categoryUuidByKg: t.Optional(t.String()),
     }),
   ),
   "product.filter": t.Partial(

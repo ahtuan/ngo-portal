@@ -1,55 +1,86 @@
-import { DEFAULT_PAGING } from "@/constants/common";
+import { UNIT_ENUM } from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
-import { NotFoundError } from "@/libs/error";
-import { eq } from "drizzle-orm";
-import { categories, CategoryCreateType } from "@/db/schemas/category.schema";
+import { desc, eq } from "drizzle-orm";
+import {
+  byKgCategories,
+  categories,
+  CategoryCreateType,
+} from "@/db/schemas/category.schema";
+import { getCurrentDate } from "@/libs/date";
+import { unionAll } from "drizzle-orm/pg-core";
 
 class CategoryService {
   async getAll(query: Common.PagingQuery) {
-    const limit = query.size || DEFAULT_PAGING.size;
-    const offset = query.page || DEFAULT_PAGING.page;
-    const data = await db.query.categories.findMany({
-      limit,
-      offset,
-      orderBy: (categories, { asc }) => asc(categories.createdAt),
-    });
-    return ApiResponse.success(data);
-  }
-
-  async getById(uuid?: string) {
-    if (!uuid) {
-      return new NotFoundError("Không tìm thấy dữ liệu");
-    }
-    const data = await db.query.categories.findFirst({
-      where: (categories, { eq }) => eq(categories.uuid, uuid),
-    });
-    if (!data) {
-      return new NotFoundError("Không tìm thấy dữ liệu");
-    }
-    return ApiResponse.success(data);
-  }
-
-  async getAllOptions() {
-    const data = await db
+    const pcsData = db
       .select({
-        label: categories.name,
-        value: categories.uuid,
+        uuid: categories.uuid,
+        name: categories.name,
+        price: categories.price,
+        unit: categories.unit,
+        updatedAt: categories.updatedAt,
       })
       .from(categories);
+    const kgData = db
+      .select({
+        uuid: byKgCategories.uuid,
+        name: byKgCategories.name,
+        price: byKgCategories.price,
+        unit: byKgCategories.unit,
+        updatedAt: byKgCategories.updatedAt,
+      })
+      .from(byKgCategories);
+    // @ts-ignore
+    const data = await unionAll(pcsData, kgData).orderBy((category) =>
+      desc(category.updatedAt),
+    );
+
+    return ApiResponse.success(data);
+  }
+
+  async getAllOptions(unit: string = UNIT_ENUM.PCS) {
+    let data: Common.Option[] = [];
+    if (unit === UNIT_ENUM.PCS || unit === UNIT_ENUM.KG) {
+      const isKgTable = unit === UNIT_ENUM.KG;
+      const table = isKgTable ? byKgCategories : categories;
+      data = await db
+        .select({
+          label: table.name,
+          value: table.uuid,
+        })
+        .from(table)
+        .where(eq(table.unit, unit.toUpperCase()));
+    } else {
+      const pcsData = db
+        .select({
+          value: categories.uuid,
+          label: categories.name,
+        })
+        .from(categories);
+      const kgData = db
+        .select({
+          value: byKgCategories.uuid,
+          label: byKgCategories.name,
+        })
+        .from(byKgCategories);
+      // @ts-ignore
+      data = await unionAll(pcsData, kgData);
+    }
 
     return ApiResponse.success(data);
   }
 
   async upsert(body: CategoryCreateType) {
-    const result = await this.getById(body.uuid);
-    if (!result.data) {
+    const result = await this.getById(body.uuid, body.unit === UNIT_ENUM.KG);
+    const isKgTable = body.name.toUpperCase().includes("(KG)");
+    if (!result) {
       // Create if not exist in database
       const insertedData = await db
-        .insert(categories)
+        .insert(isKgTable ? byKgCategories : categories)
         .values({
           name: body.name,
           price: body.price,
+          unit: isKgTable ? UNIT_ENUM.KG : UNIT_ENUM.PCS,
         })
         .returning();
       return ApiResponse.success(
@@ -62,25 +93,44 @@ class CategoryService {
 
     delete partialData.uuid;
     const updatedData = await db
-      .update(categories)
+      .update(isKgTable ? byKgCategories : categories)
       .set({
         name: partialData.name,
         price: partialData.price,
-        updatedAt: new Date(),
+        unit: isKgTable ? UNIT_ENUM.KG : UNIT_ENUM.PCS,
+        updatedAt: getCurrentDate(),
       })
-      .where(eq(categories.id, result.data.id))
+      .where(eq(categories.id, result.id))
       .returning();
     return ApiResponse.success(updatedData[0], "Chỉnh sửa dữ liệu thành công");
   }
 
-  async delete(uuid: string) {
-    const response = await this.getById(uuid);
-    if (!response.data) {
+  async delete(uuid: string, unit?: string) {
+    const isKgUuid = unit?.toUpperCase() === UNIT_ENUM.KG;
+    const response = await this.getById(uuid, isKgUuid);
+    if (!response) {
       return response;
     }
-    await db.delete(categories).where(eq(categories.uuid, uuid));
+    await db
+      .delete(isKgUuid ? byKgCategories : categories)
+      .where(eq(isKgUuid ? byKgCategories.uuid : categories.uuid, uuid));
 
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
+  }
+
+  private async getById(uuid?: string, isKGTable?: boolean) {
+    if (!uuid || !isKGTable) {
+      return undefined;
+    }
+    const data = await db
+      .select()
+      .from(isKGTable ? byKgCategories : categories)
+      .where((category) => eq(category.uuid, uuid));
+
+    if (!data) {
+      return undefined;
+    }
+    return data[0];
   }
 }
 

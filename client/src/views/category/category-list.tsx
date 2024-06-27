@@ -19,8 +19,12 @@ import {
 } from "@/api-requests/category.request";
 import Loading from "@@/loading";
 import EmptyRow from "@@/empty-row";
+import { mutate as globalMutate } from "swr";
 
-const CategoryList = () => {
+type Props = {
+  queryString: string;
+};
+const CategoryList = ({ queryString }: Props) => {
   const { data, isLoading, mutate } = useSWR(cacheKey, categoryRequest.getAll);
   const [addedData, setAddedData] = React.useState<CategoryType | null>(null);
 
@@ -52,6 +56,7 @@ const CategoryList = () => {
       });
     }
     await mutate(categories, categoryMutateOptions(categories));
+    await globalMutate(queryString);
   };
 
   const deleteMutate = async (id: string) => {

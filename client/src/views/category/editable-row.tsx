@@ -63,6 +63,7 @@ const EditableRow = ({
   }, [defaultMode, toggleEdit]);
 
   const toggleEditOff = () => setIsEdit(false);
+
   const handleOnComplete = async (values: CategoryType) => {
     // Due to type of Currency component was "text" for formatting, so
     // the value here will be a string. Must parse to number before validation
@@ -71,7 +72,13 @@ const EditableRow = ({
     const idValidForm = await form.trigger(["name", "price"]);
 
     // If tick to submit when update but not change any field
-    if (!form.formState.isDirty && idValidForm && uuid) {
+    if (
+      name === values.name &&
+      price === +values.price &&
+      idValidForm &&
+      uuid
+    ) {
+      // check again
       toggleEditOff();
       handleCancelAddMore();
       return;
@@ -120,7 +127,7 @@ const EditableRow = ({
     <TableRow>
       <Form {...form}>
         <TableCell>
-          {isEdit ? (
+          {isEdit && !uuid ? (
             <FormField
               control={form.control}
               name="name"
@@ -156,7 +163,7 @@ const EditableRow = ({
           )}
         </TableCell>
       </Form>
-      <TableCell className="p-0 flex">
+      <TableCell className="flex items-center">
         <ButtonAction
           isEdit={isEdit}
           toggleEdit={toggleEdit}

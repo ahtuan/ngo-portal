@@ -67,7 +67,6 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
   }
 
   const handleSubmit = async (values: ProductCreate) => {
-    console.log("values", values);
     try {
       if (mode === "create") {
         const createdData = await productRequest.create({
@@ -125,7 +124,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
     <>
       <Form {...form}>
         <form
-          className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4"
+          className="mx-auto grid lg:max-w-[59rem] w-full flex-1 auto-rows-max gap-4"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
           <div className="flex items-center gap-4">
@@ -133,12 +132,12 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
               title={mode === "create" ? inventory : detailData?.inventoryId}
             />
           </div>
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] md:grid-cols-3 md:gap-6 lg:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 md:col-span-2 md:gap-6 lg:gap-8">
+          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
               <Detail form={form} />
               <Category form={form} />
             </div>
-            <div className="grid auto-rows-max items-start gap-4  md:gap-6 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
               <Status form={form} />
               <ImageUpload form={form} />
             </div>

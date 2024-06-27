@@ -4,20 +4,23 @@ declare namespace Product {
     byDateId: string;
     name: string;
     description: string | null;
-    price: number;
+    price: number | null;
     weight: number;
     mainImage: string | null;
     inventoryId: string;
     categoryUuid: string | null;
     categoryName: string | null;
+    categoryUuidByKg: string | null;
+    categoryNameByKg: string | null;
     status: string;
     isUsedCategoryPrice: boolean | null;
     isSold: boolean | null;
+    unit: string | null;
   };
 
   type Detail = {
     imageUrls: string[];
-  } & Omit<Response, "mainImage">;
+  } & Omit<Response, "mainImage" | "unit">;
 
   type ByIdBody = {
     id: string;
@@ -27,11 +30,12 @@ declare namespace Product {
     name: string;
     inventoryId: string;
     description?: string;
-    price: number;
+    price: number | null;
     weight: number;
     imageUrls?: string[];
     categoryUuid: string;
     categoryName?: string;
+    categoryUuidByKg?: string;
     isUsedCategoryPrice: boolean;
     status: string;
   };
@@ -39,6 +43,7 @@ declare namespace Product {
   type InsertCreateTable = {
     byDateId: string;
     categoryId: number | null;
+    categoryIdByKg?: number | null;
     categoryName?: string;
     weight: string;
     imageUrls: string;
@@ -47,10 +52,11 @@ declare namespace Product {
   type UpdateBody = {
     name: string;
     description: string;
-    price: number;
+    price: number | null;
     weight: number;
     imageUrls: string[];
     categoryUuid: string;
+    categoryUuidByKg?: string;
     categoryName: string;
     isUsedCategoryPrice: boolean;
     status: string;

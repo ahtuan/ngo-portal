@@ -8,9 +8,9 @@ export const categoryRequest = {
     const response = await http.get<CategoryType[]>(categoryEndpoint);
     return response.data;
   },
-  getAllOptions: async () => {
+  getAllOptions: async (unit: string = "PCS") => {
     const response = await http.get<Common.Option[]>(
-      `${categoryEndpoint}/options`,
+      `${categoryEndpoint}/options/${unit}`,
     );
     return response.data;
   },

@@ -1,11 +1,11 @@
-import { DEFAULT_PAGING } from "@/constants/common";
+import { DEFAULT_PAGING, UNIT_ENUM } from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
 import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
-import { categories } from "@/db/schemas/category.schema";
+import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
 import * as process from "node:process";
 
@@ -15,10 +15,14 @@ const baseSelect = {
   name: products.name,
   description: products.description,
   price: products.price,
+  categoryPrice: categories.price,
+  byKgCategoryPrice: byKgCategories.price,
   weight: products.weight,
   inventoryId: products.inventoryId,
   categoryUuid: categories.uuid,
+  categoryUuidByKg: byKgCategories.uuid,
   categoryName: products.categoryName,
+  categoryNameByKg: byKgCategories.name,
   status: products.status,
   isUsedCategoryPrice: products.isUsedCategoryPrice,
   isSold: products.isSold,
@@ -36,11 +40,16 @@ class ProductService {
     const statusCollection = (query.status?.split(";") || [])
       .map((category) => `'${category}'`)
       .join(",");
+
     const sq = db.$with("sq").as(
       db
         .select(baseSelect)
         .from(products)
         .leftJoin(categories, eq(products.categoryId, categories.id))
+        .leftJoin(
+          byKgCategories,
+          eq(products.categoryIdByKg, byKgCategories.id),
+        )
         .where(
           and(
             query.keyword
@@ -50,7 +59,7 @@ class ProductService {
                 )
               : undefined,
             query.category
-              ? sql`${categories.uuid} in ${sql.raw(`(${uuidCollection})`)}`
+              ? sql`${categories.uuid} in ${sql.raw(`(${uuidCollection})`)} or ${byKgCategories.uuid} in ${sql.raw(`(${uuidCollection})`)}`
               : undefined,
             query.status
               ? sql`${products.status} in ${sql.raw(`(${statusCollection})`)}`
@@ -82,17 +91,24 @@ class ProductService {
         byDateId: product.byDateId,
         name: product.name,
         description: product.description,
-        price: product.price,
+        price: product.isUsedCategoryPrice
+          ? product.byKgCategoryPrice
+            ? product.byKgCategoryPrice
+            : product.categoryPrice
+          : product.price,
         weight: +(product.weight as string),
         inventoryId: product.inventoryId,
         categoryUuid: product.categoryUuid,
         categoryName: product.categoryName,
+        categoryUuidByKg: product.categoryUuidByKg,
+        categoryNameByKg: product.categoryNameByKg,
         status: product.status,
         isUsedCategoryPrice: product.isUsedCategoryPrice,
         isSold: product.isSold,
         mainImage: (
           await helperService.readImages(product.imageUrls ?? "", true)
         )[0],
+        unit: product.categoryUuidByKg ? UNIT_ENUM.KG : UNIT_ENUM.PCS,
       })),
     );
 
@@ -111,14 +127,19 @@ class ProductService {
       .select(baseSelect)
       .from(products)
       .where(eq(products.byDateId, byDateId))
-      .leftJoin(categories, eq(products.categoryId, categories.id));
-
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(byKgCategories, eq(products.categoryIdByKg, byKgCategories.id));
     const rawData = result[0];
     if (!rawData) {
       return new NotFoundError();
     }
     const mappedData: Product.Detail = {
       ...rawData,
+      price: rawData.isUsedCategoryPrice
+        ? rawData.byKgCategoryPrice
+          ? rawData.byKgCategoryPrice
+          : rawData.categoryPrice
+        : rawData.price,
       weight: +rawData.weight,
       imageUrls: (
         await helperService.readImages(rawData.imageUrls ?? "")
@@ -152,7 +173,7 @@ class ProductService {
   }
 
   async create(body: Product.CreateBody) {
-    const { inventoryId, categoryUuid } = body;
+    const { inventoryId, categoryUuid, categoryUuidByKg } = body;
     // Check ID of Inventory
     const inventory = await db.query.inventories.findFirst({
       where: (inventories, { eq }) => eq(inventories.id, inventoryId),
@@ -166,30 +187,51 @@ class ProductService {
 
     // Create ID for Product
     const byDateId = await this.getIdSequence();
-    let categoryId: number | null = null;
-    let categoryName: string | undefined = body.categoryName;
+    const categoryRef: {
+      categoryId: number | null;
+      categoryIdByKg?: number | null;
+      categoryName?: string;
+    } = {
+      categoryId: null,
+      categoryIdByKg: null,
+      categoryName: body.categoryName,
+    };
+
     if (categoryUuid) {
       const category = await db.query.categories.findFirst({
         where: (category, { eq }) => eq(category.uuid, categoryUuid),
       });
 
       if (category) {
-        categoryName = category.name;
-        categoryId = category.id;
+        categoryRef.categoryName = category.name;
+        categoryRef.categoryId = category.id;
+
+        if (body.isUsedCategoryPrice) {
+          body.price = null; // Do not set the price when use category price,
+          // set price back to 0
+
+          if (categoryUuidByKg) {
+            const categoryByKg = await db.query.byKgCategories.findFirst({
+              where: (category, { eq }) => eq(category.uuid, categoryUuidByKg),
+            });
+            if (categoryByKg) {
+              categoryRef.categoryIdByKg = categoryByKg.id;
+            }
+          }
+        }
       } else {
         // If can not find category and isUsedCategoryPrice equal true, It's
         // not make sense, must be set to be false
         body.isUsedCategoryPrice = false;
-        categoryName = undefined;
+        categoryRef.categoryName = undefined;
       }
     }
     // TODO Store images and get URL
     const imgUrls = await helperService.saveImages(body.imageUrls);
     const payload: Product.InsertCreateTable = {
       ...body,
+      ...categoryRef,
       byDateId,
-      categoryId,
-      categoryName,
       weight: body.weight.toString(),
       imageUrls: imgUrls.join(";"),
     };
@@ -203,9 +245,10 @@ class ProductService {
     if (!response) {
       return response;
     }
-    const { categoryUuid } = body;
+    const { categoryUuid, categoryUuidByKg } = body;
     let modifiedData: {
       categoryId?: number | null;
+      categoryIdByKg?: number | null;
       imageUrls?: string;
     } = {};
     if (categoryUuid) {
@@ -216,14 +259,31 @@ class ProductService {
       if (category) {
         body.categoryName = category.name;
         modifiedData.categoryId = category.id;
+        if (body.isUsedCategoryPrice) {
+          body.price = null; // Do not set the price when use category price,
+          // set price back to 0
+        }
       } else {
         // If can not find category and isUsedCategoryPrice equal true, It's
         // not make sense, must be set to be false
         body.isUsedCategoryPrice = false;
         body.categoryName = undefined;
       }
+    } else if (categoryUuid === undefined) {
+      delete modifiedData.categoryId;
     } else if (response.categoryId) {
       modifiedData.categoryId = null;
+    }
+
+    if (categoryUuidByKg) {
+      const categoryByKg = await db.query.byKgCategories.findFirst({
+        where: (category, { eq }) => eq(category.uuid, categoryUuidByKg),
+      });
+      if (categoryByKg) {
+        modifiedData.categoryIdByKg = categoryByKg.id;
+      }
+    } else {
+      delete modifiedData.categoryIdByKg;
     }
 
     if (body.imageUrls) {

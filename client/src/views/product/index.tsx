@@ -5,6 +5,7 @@ import DetectInventory from "@views/product/components/detect-inventory";
 import List from "@views/product/list";
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
 import { SearchParamsProps } from "@/app/(dashboard)/product/page";
+import { productEndpoint as cacheKey } from "@/api-requests/product.request";
 
 type Props = {
   queryString: string;
@@ -27,7 +28,7 @@ const Index = ({ queryString, searchParams }: Props) => {
         </Card>
       </div>
       <div className="grid gap-4">
-        <Category />
+        <Category queryString={`${cacheKey}?${queryString}`} />
         <WeightWidget />
         <DetectInventory />
       </div>
