@@ -38,8 +38,17 @@ const UpsertModal = ({ trigger, data, setUpdatedData }: Props) => {
     setIsOpen(false);
     setUpdatedData?.(); // reset data after update
   };
+
+  const handleOnChangeOpen = (open: boolean) => {
+    if (open) {
+      setIsOpen(true);
+    } else {
+      handleOnClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOnChangeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>

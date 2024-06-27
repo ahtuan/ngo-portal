@@ -27,7 +27,6 @@ import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
 import { mutate } from "swr";
-import Collection from "@views/product/components/collection";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -55,6 +54,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       categoryUuidByKg: detailData?.categoryUuidByKg,
       imageUrls: detailData?.imageUrls ?? [],
       isUsedCategoryPrice: detailData?.isUsedCategoryPrice ?? false,
+      quantity: detailData?.quantity ?? 1,
       // collection: {
       //   isInCollection: false,
       //   items: [],

@@ -73,14 +73,25 @@ const View = ({ detailData, onClose, onEdit }: Props) => {
                       className="min-h-24"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="weight">Cân nặng (kg)</Label>
-                    <Input
-                      value={detailData.weight}
-                      readOnly
-                      name="weight"
-                      type="number"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="weight">Cân nặng (kg)</Label>
+                      <Input
+                        value={detailData.weight}
+                        readOnly
+                        name="weight"
+                        type="number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="quantity">Số lượng (cái/chiếc))</Label>
+                      <Input
+                        value={detailData.quantity}
+                        readOnly
+                        name="quantity"
+                        type="number"
+                      />
+                    </div>
                   </div>
                 </div>
               </CardContent>

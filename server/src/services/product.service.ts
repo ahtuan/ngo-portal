@@ -25,8 +25,9 @@ const baseSelect = {
   categoryNameByKg: byKgCategories.name,
   status: products.status,
   isUsedCategoryPrice: products.isUsedCategoryPrice,
-  isSold: products.isSold,
   imageUrls: products.imageUrls,
+  quantity: products.quantity,
+  soldOut: products.soldOut,
 };
 
 class ProductService {
@@ -104,7 +105,8 @@ class ProductService {
         categoryNameByKg: product.categoryNameByKg,
         status: product.status,
         isUsedCategoryPrice: product.isUsedCategoryPrice,
-        isSold: product.isSold,
+        quantity: product.quantity,
+        soldOut: product.soldOut,
         mainImage: (
           await helperService.readImages(product.imageUrls ?? "", true)
         )[0],

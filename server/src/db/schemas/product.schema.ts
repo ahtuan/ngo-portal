@@ -44,7 +44,8 @@ export const products = schema.table(
     isArchived: boolean("is_archived").default(false), // Use for tracking
     // whether it was in stock or not able to sell and put in stock
     isUsedCategoryPrice: boolean("is_used_category_price").default(false),
-    isSold: boolean("is_sold").default(false),
+    quantity: integer("quantity").notNull(),
+    soldOut: integer("sold_out").notNull().default(0),
   },
   (t) => ({
     inventoryIdx: index("products_inventory_idx").on(t.inventoryId),

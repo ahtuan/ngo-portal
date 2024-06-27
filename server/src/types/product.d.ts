@@ -14,8 +14,9 @@ declare namespace Product {
     categoryNameByKg: string | null;
     status: string;
     isUsedCategoryPrice: boolean | null;
-    isSold: boolean | null;
     unit: string | null;
+    quantity: number;
+    soldOut: number;
   };
 
   type Detail = {
@@ -37,6 +38,7 @@ declare namespace Product {
     categoryName?: string;
     categoryUuidByKg?: string;
     isUsedCategoryPrice: boolean;
+    quantity: number;
     status: string;
   };
 

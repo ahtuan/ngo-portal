@@ -24,6 +24,11 @@ export const productModel = new Elysia({
     isUsedCategoryPrice: t.Boolean(),
     categoryUuidByKg: t.Optional(t.String()),
     status: t.String(),
+    quantity: t.Number({
+      required: true,
+      message: "Mặt hàng phải có số lượng",
+      minimum: 1,
+    }),
   }),
   "product.update": t.Partial(
     t.Object({
@@ -38,6 +43,11 @@ export const productModel = new Elysia({
       isUsedCategoryPrice: t.Boolean(),
       status: t.String(),
       categoryUuidByKg: t.Optional(t.String()),
+      quantity: t.Number({
+        required: true,
+        message: "Mặt hàng phải có số lượng",
+        minimum: 1,
+      }),
     }),
   ),
   "product.filter": t.Partial(

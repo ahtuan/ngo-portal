@@ -126,6 +126,10 @@ const columns = (
       },
     },
     {
+      accessorKey: "quantity",
+      header: "Số lượng",
+    },
+    {
       accessorKey: "price",
       header: "Giá",
       cell: ({ row }) => {
@@ -141,8 +145,16 @@ const columns = (
       accessorKey: "categoryName",
       header: "Phân loại",
       cell: ({ row }) => {
-        const { categoryName } = row.original;
-        return categoryName ?? "Khác";
+        const { categoryName, categoryNameByKg, isUsedCategoryPrice } =
+          row.original;
+        return (
+          <span>
+            {categoryName ?? "Khác"}
+            {categoryNameByKg
+              ? `/ ${categoryNameByKg}`
+              : isUsedCategoryPrice && " - Đồng giá"}
+          </span>
+        );
       },
     },
     {

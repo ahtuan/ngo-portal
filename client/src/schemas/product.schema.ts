@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { weight } from "@/schemas/common.schema";
+import { weight } from "@/schemas/common.schema"; // export const CollectionItem
+                                                // = z.object({
 
 // export const CollectionItem = z.object({
 //   status: z.string().min(1, "Vui lòng nhập tình trạng sản phẩm"),
@@ -23,8 +24,8 @@ export const ProductBody = z.object({
   categoryName: z.optional(z.string()),
   imageUrls: z.optional(z.array(z.string())),
   isUsedCategoryPrice: z.optional(z.boolean()),
-  categoryUuidByKg: z.optional(z.string()),
-
+  categoryUuidByKg: z.optional(z.string()).nullable(),
+  quantity: z.coerce.number().min(1, "Vui lòng nhập số lượng lớn hơn bằng 1"),
   // collection: z.optional(ProductCollection),
 });
 
@@ -35,8 +36,10 @@ export type ProductType = Omit<ProductCreate, "imageUrls"> & {
   id: number;
   byDateId: string;
   categoryName: string;
+  categoryNameByKg?: string;
   mainImage: string;
   unit: string;
+  soldOut: number;
 };
 
 export type ProductDetail = {
