@@ -201,7 +201,7 @@ class ProductService {
       categoryIdByKg: null,
       categoryName: body.categoryName,
     };
-
+    let price = body.price;
     if (categoryUuid) {
       const category = await db.query.categories.findFirst({
         where: (category, { eq }) => eq(category.uuid, categoryUuid),
@@ -214,13 +214,14 @@ class ProductService {
         if (body.isUsedCategoryPrice) {
           body.price = null; // Do not set the price when use category price,
           // set price back to 0
-
+          price = category.price;
           if (categoryUuidByKg) {
             const categoryByKg = await db.query.byKgCategories.findFirst({
               where: (category, { eq }) => eq(category.uuid, categoryUuidByKg),
             });
             if (categoryByKg) {
               categoryRef.categoryIdByKg = categoryByKg.id;
+              price = categoryByKg.price;
             }
           }
         }
@@ -240,8 +241,10 @@ class ProductService {
       weight: body.weight.toString(),
       imageUrls: imgUrls.join(";"),
     };
+
     // Insert into database
     const insertedData = await db.insert(products).values(payload).returning();
+    insertedData[0].price = price;
     return ApiResponse.success(insertedData[0], "Tạo dữ liệu thành công", 201);
   }
 

@@ -16,6 +16,7 @@ import { productRequest } from "@/api-requests/product.request";
 import { useToast } from "@@/ui/use-toast";
 import { Label } from "@@/ui/label";
 import { Input } from "@@/ui/input";
+import { Switch } from "@@/ui/switch";
 
 type Props = {
   isOpen: boolean;
@@ -53,6 +54,7 @@ const BarcodePrintModal = ({
     height: 10,
   });
   const [quantity, setQuantity] = useState<number>(product.quantity);
+  const [includePrice, setIncludePrice] = useState<boolean>(true);
   const { toast } = useToast();
   const onPrintBarcode = async () => {
     if (!product) {
@@ -61,13 +63,12 @@ const BarcodePrintModal = ({
     try {
       const response = await productRequest.print({
         byDateId: product.id,
-        price: formatPrice(product.price),
+        price: includePrice ? formatPrice(product.price) : "",
         ...size,
         quantity: quantity,
       });
-      toast({
-        description: response.message,
-      });
+      setQuantity(1);
+      setIncludePrice(true);
     } catch (error) {
       // @ts-ignore
       let message = error.error ?? "Không thể in";
@@ -127,15 +128,25 @@ const BarcodePrintModal = ({
                 ))}
               </ToggleGroup>
             </div>
-            <div>
-              <Label htmlFor="quantity">Số lượng</Label>
-              <Input
-                type="number"
-                min={1}
-                name="quantity"
-                value={quantity}
-                onChange={(event) => setQuantity(+event.target.value)}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="quantity">Số lượng</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  name="quantity"
+                  value={quantity}
+                  onChange={(event) => setQuantity(+event.target.value)}
+                />
+              </div>
+              <div className="flex flex-col h-full space-y-2 pt-1.5">
+                <Label htmlFor="includePrice">In giá</Label>
+                <Switch
+                  checked={includePrice}
+                  onCheckedChange={setIncludePrice}
+                  name="includePrice"
+                />
+              </div>
             </div>
           </div>
         </div>
