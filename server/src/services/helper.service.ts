@@ -76,6 +76,9 @@ class HelperService {
   }
 
   private async readImage(url: string) {
+    if (!url) {
+      return "";
+    }
     try {
       const file = Bun.file(url);
       const byteArray = await file.arrayBuffer();

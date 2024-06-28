@@ -58,5 +58,6 @@ const baseProduct = "/product";
 export const ProductPath = {
   Base: baseProduct,
   Create: `${baseProduct}/create`,
-  Update: (byDateId: string) => `${baseProduct}/${byDateId}`,
+  Update: (byDateId: string) =>
+    `${baseProduct}/${byDateId}?time=${new Date().getTime()}`,
 };
