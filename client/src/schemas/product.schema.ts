@@ -24,7 +24,7 @@ export const ProductBody = z.object({
   categoryName: z.optional(z.string()),
   imageUrls: z.optional(z.array(z.string())),
   isUsedCategoryPrice: z.optional(z.boolean()),
-  categoryUuidByKg: z.optional(z.string()).nullable(),
+  categoryUuidByKg: z.optional(z.string()),
   quantity: z.coerce.number().min(1, "Vui lòng nhập số lượng lớn hơn bằng 1"),
   // collection: z.optional(ProductCollection),
 });

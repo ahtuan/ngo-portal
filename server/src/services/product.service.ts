@@ -8,6 +8,7 @@ import { helperService } from "@/services/helper.service";
 import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
 import * as process from "node:process";
+import { defaultValue } from "@/libs/helpers";
 
 const baseSelect = {
   id: products.id,
@@ -101,8 +102,8 @@ class ProductService {
         inventoryId: product.inventoryId,
         categoryUuid: product.categoryUuid,
         categoryName: product.categoryName,
-        categoryUuidByKg: product.categoryUuidByKg,
-        categoryNameByKg: product.categoryNameByKg,
+        categoryUuidByKg: defaultValue(product.categoryUuidByKg) as string,
+        categoryNameByKg: defaultValue(product.categoryNameByKg) as string,
         status: product.status,
         isUsedCategoryPrice: product.isUsedCategoryPrice,
         quantity: product.quantity,
@@ -137,6 +138,8 @@ class ProductService {
     }
     const mappedData: Product.Detail = {
       ...rawData,
+      categoryUuidByKg: defaultValue(rawData.categoryUuidByKg) as string,
+      categoryNameByKg: defaultValue(rawData.categoryNameByKg) as string,
       price: rawData.isUsedCategoryPrice
         ? rawData.byKgCategoryPrice
           ? rawData.byKgCategoryPrice
