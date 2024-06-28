@@ -133,7 +133,7 @@ class ProductService {
       .leftJoin(byKgCategories, eq(products.categoryIdByKg, byKgCategories.id));
     const rawData = result[0];
     if (!rawData) {
-      return new NotFoundError();
+      return new NotFoundError("Không tìm thấy mã sản phẩm: " + byDateId);
     }
     const mappedData: Product.Detail = {
       ...rawData,

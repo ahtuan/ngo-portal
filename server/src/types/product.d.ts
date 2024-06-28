@@ -77,5 +77,6 @@ declare namespace Product {
     width: number;
     height: number;
     price?: string;
+    quantity: number;
   };
 }

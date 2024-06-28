@@ -33,8 +33,6 @@ pipeline {
                     steps {
                         dir('D:\\NgoGom\\server') {
                             bat "bun install"
-                            bat "bun run db:genc"
-                            bat "bun run db:migrate"
                         }
                     }
                 }

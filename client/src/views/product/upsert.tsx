@@ -27,6 +27,7 @@ import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
 import { mutate } from "swr";
+import { create } from "node:domain";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -85,6 +86,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           setCreatedProduct({
             id: createdData.data.byDateId,
             price: createdData.data.price,
+            quantity: createdData.data.quantity,
           });
           form.reset();
           setIsOpen(true);
@@ -150,7 +152,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           {/*{mode === "create" && <Collection form={form} />}*/}
         </form>
       </Form>
-      {isOpen && (
+      {isOpen && createdProduct && (
         <BarcodePrintModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}

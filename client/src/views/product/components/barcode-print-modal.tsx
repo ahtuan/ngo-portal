@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,13 @@ import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
 import { formatPrice } from "@/lib/utils";
 import { productRequest } from "@/api-requests/product.request";
 import { useToast } from "@@/ui/use-toast";
+import { Label } from "@@/ui/label";
+import { Input } from "@@/ui/input";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  product?: ProductBarCode;
+  product: ProductBarCode;
   setProduct: (product?: ProductBarCode) => void;
   mode?: "print" | "alert";
 };
@@ -50,6 +52,7 @@ const BarcodePrintModal = ({
     width: 30,
     height: 10,
   });
+  const [quantity, setQuantity] = useState<number>(product.quantity);
   const { toast } = useToast();
   const onPrintBarcode = async () => {
     if (!product) {
@@ -60,6 +63,7 @@ const BarcodePrintModal = ({
         byDateId: product.id,
         price: formatPrice(product.price),
         ...size,
+        quantity: quantity,
       });
       toast({
         description: response.message,
@@ -105,24 +109,34 @@ const BarcodePrintModal = ({
             </DialogDescription>
           </DialogHeader>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2">
           <Barcode value={product.id} />
-          <div>
-            <p className="mb-3 pl-4 text-sm text-mute-foreground">
-              Kích thước khổ in
-            </p>
-            <ToggleGroup
-              type="single"
-              defaultValue="small"
-              variant="outline"
-              className="flex flex-col gap-4"
-            >
-              {Object.entries(LabelSize).map(([key, size]) => (
-                <ToggleGroupItem key={key} value={key} className="p-4">
-                  {getSizeComponent(size)}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+          <div className="mb-3 grid gap-4">
+            <div>
+              <Label>Kích thước khổ in</Label>
+              <ToggleGroup
+                type="single"
+                defaultValue="small"
+                variant="outline"
+                className="flex flex-col gap-4"
+              >
+                {Object.entries(LabelSize).map(([key, size]) => (
+                  <ToggleGroupItem key={key} value={key} className="p-4">
+                    {getSizeComponent(size)}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+            <div>
+              <Label htmlFor="quantity">Số lượng</Label>
+              <Input
+                type="number"
+                min={1}
+                name="quantity"
+                value={quantity}
+                onChange={(event) => setQuantity(+event.target.value)}
+              />
+            </div>
           </div>
         </div>
         <Button onClick={onPrintBarcode}>In</Button>

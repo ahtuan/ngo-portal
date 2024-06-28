@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { weight } from "@/schemas/common.schema"; // export const CollectionItem
-                                                // = z.object({
+// = z.object({
 
 // export const CollectionItem = z.object({
 //   status: z.string().min(1, "Vui lòng nhập tình trạng sản phẩm"),
@@ -51,6 +51,7 @@ export type ProductDetail = {
 export type ProductBarCode = {
   id: string;
   price: number;
+  quantity: number;
 };
 
 export type ProductUpdate = Partial<ProductCreate>;
@@ -60,4 +61,5 @@ export type ProductPrint = {
   width: number;
   height: number;
   price: string;
+  quantity: number;
 };

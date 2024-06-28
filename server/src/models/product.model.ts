@@ -64,5 +64,6 @@ export const productModel = new Elysia({
     width: t.Number(),
     height: t.Number(),
     price: t.Optional(t.String()),
+    quantity: t.Number(),
   }),
 });

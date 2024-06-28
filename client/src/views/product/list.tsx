@@ -161,7 +161,7 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const { byDateId, price } = row.original;
+        const { byDateId, price, quantity } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -179,6 +179,7 @@ const columns = (
                   onPrint({
                     id: byDateId,
                     price: price,
+                    quantity,
                   })
                 }
               >
@@ -323,7 +324,7 @@ const List = ({ queryString, searchParams }: Props) => {
           </div>
         }
       />
-      {isOpenPrint && (
+      {isOpenPrint && printData && (
         <BarcodePrintModal
           isOpen={isOpenPrint}
           setIsOpen={setIsOpenPrint}

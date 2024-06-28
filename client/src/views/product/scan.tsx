@@ -13,6 +13,7 @@ import Html5QrcodePlugin from "@@/Html5QrcodePlugin";
 import useSWRMutation from "swr/mutation";
 import { productRequest } from "@/api-requests/product.request";
 import View from "@views/product/view";
+import { useToast } from "@@/ui/use-toast";
 
 type Props = {
   trigger?: React.ReactNode;
@@ -21,12 +22,18 @@ type Props = {
 const Scan = ({ trigger }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewId, setViewId] = useState<string>();
-
+  const { toast } = useToast();
   const {
     data,
     trigger: fetcher,
     reset,
-  } = useSWRMutation(viewId ? viewId : undefined, productRequest.getDetail);
+  } = useSWRMutation(viewId ? viewId : undefined, productRequest.getDetail, {
+    onError: (err, key, config) => {
+      toast({
+        description: err.message,
+      });
+    },
+  });
 
   const onNewScanResult = (decodedText: string) => {
     if (decodedText && decodedText !== viewId) {
