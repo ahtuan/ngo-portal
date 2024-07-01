@@ -15,6 +15,7 @@ import Pagination from "@@/data-table/pagination";
 import Header from "@@/data-table/header";
 import Body from "@@/data-table/body";
 import Loading from "@@/loading";
+import { cn } from "@/lib/utils";
 
 export type Paging = {
   total?: number;
@@ -30,6 +31,7 @@ type Props<T> = {
   search?: React.ReactNode;
   filter?: React.ReactNode;
   loading?: boolean;
+  minHeightClass?: string;
 };
 
 const DataTable = <T extends {}>({
@@ -40,6 +42,7 @@ const DataTable = <T extends {}>({
   search,
   filter,
   loading,
+  minHeightClass = "min-h-[calc(100%-7rem)]",
 }: Props<T>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -72,7 +75,7 @@ const DataTable = <T extends {}>({
   return (
     <div className="w-full">
       <Header<T> table={table} search={search} filter={filter} />
-      <div className="rounded-md border min-h-[530px] flex flex-col">
+      <div className={cn("rounded-md border  flex flex-col", minHeightClass)}>
         {loading ? (
           <Loading className="my-auto" size="large" />
         ) : (

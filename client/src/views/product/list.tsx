@@ -204,6 +204,7 @@ const List = ({ queryString, searchParams }: Props) => {
 
   const {
     data: res,
+    error,
     isLoading,
     mutate,
   } = useSWR(queryString ? cacheKey + `?${queryString}` : null, () =>
@@ -211,10 +212,10 @@ const List = ({ queryString, searchParams }: Props) => {
   );
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !error) {
       mutate();
     }
-  }, [isLoading, mutate]);
+  }, [isLoading, mutate, error]);
 
   const { data: categoryOptions } = useSWR(
     categoryCacheKey + "/options/all",

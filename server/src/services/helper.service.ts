@@ -70,7 +70,7 @@ class HelperService {
     );
     const filePath = `${uploadPath}/${fileName}`;
     // Ghi dữ liệu vào file
-    const test = await Bun.write(filePath, imageData);
+    await Bun.write(filePath, imageData);
 
     return filePath;
   }
@@ -83,7 +83,14 @@ class HelperService {
       const file = Bun.file(url);
       const byteArray = await file.arrayBuffer();
       const starter = `data:${file.type};base64,`;
-      return starter + btoa(String.fromCharCode(...new Uint8Array(byteArray)));
+      return (
+        starter +
+        btoa(
+          new Uint8Array(byteArray).reduce(function (data, byte) {
+            return data + String.fromCharCode(byte);
+          }, ""),
+        )
+      );
     } catch (error) {
       console.error("Error during read image", error);
     }

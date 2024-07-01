@@ -20,7 +20,7 @@ const Index = ({ queryString, searchParams }: Props) => {
           <CardHeader className="pb-0">
             <CardTitle>Danh sách sản phẩm</CardTitle>
           </CardHeader>
-          <CardContent className="flex min-h-[79dvh]">
+          <CardContent className="flex min-h-[calc(100dvh-8rem)]">
             <Suspense>
               <List queryString={queryString} searchParams={searchParams} />
             </Suspense>
