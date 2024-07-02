@@ -56,7 +56,7 @@ Tình trạng:`}
               name="weight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cân nặng (kg)</FormLabel>
+                  <FormLabel>Cân nặng (g)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" />
                   </FormControl>

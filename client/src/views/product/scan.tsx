@@ -71,7 +71,7 @@ const Scan = ({ trigger }: Props) => {
         {isOpen && (
           <Html5QrcodePlugin
             fps={10}
-            disableFlip={false}
+            disableFlip={true}
             qrCodeSuccessCallback={onNewScanResult}
             className="max-h-[40dvh]"
           />

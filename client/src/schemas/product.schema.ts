@@ -46,6 +46,8 @@ export type ProductDetail = {
   id: number;
   byDateId: string;
   categoryName: string;
+  categoryNameByKg?: string;
+  soldOut: number;
 } & ProductCreate;
 
 export type ProductBarCode = {

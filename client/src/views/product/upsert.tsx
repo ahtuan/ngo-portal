@@ -27,7 +27,6 @@ import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
 import { mutate } from "swr";
-import { create } from "node:domain";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -81,6 +80,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           inventoryId: inventory ?? "",
           categoryUuid:
             values.categoryUuid === OtherOption.uuid ? "" : values.categoryUuid,
+          weight: values.weight / 1000,
         });
         if (createdData.data) {
           setCreatedProduct({
@@ -107,6 +107,9 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
               ? ""
               : values.categoryUuid;
         }
+        if (payload.weight) {
+          payload.weight = payload.weight / 1000;
+        }
         const updatedData = await productRequest.update(
           detailData?.byDateId,
           payload,
@@ -131,7 +134,7 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
     <>
       <Form {...form}>
         <form
-          className="mx-auto grid lg:max-w-[59rem] w-full flex-1 auto-rows-max gap-4"
+          className="mx-auto grid lg:max-w-[64rem] w-full flex-1 auto-rows-max gap-4"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
           <div className="flex items-center gap-4">
