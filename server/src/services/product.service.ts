@@ -1,4 +1,8 @@
-import { DEFAULT_PAGING, UNIT_ENUM } from "@/constants/common";
+import {
+  DEFAULT_PAGING,
+  PRODUCT_STATUS_ENUM,
+  UNIT_ENUM,
+} from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
@@ -326,7 +330,7 @@ class ProductService {
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }
 
-  private async getById(byDateId: string) {
+  async getById(byDateId: string) {
     const data = await db.query.products.findFirst({
       where: (products, { eq }) => eq(products.byDateId, byDateId),
     });
@@ -336,11 +340,38 @@ class ProductService {
     return data;
   }
 
+  async updateAfterInvoice(id: number, quantity: number, soldOut: number) {
+    const update: {
+      soldOut: number;
+      status?: string;
+    } = {
+      soldOut,
+    };
+    if (soldOut === quantity) {
+      update.status = PRODUCT_STATUS_ENUM.SOLD;
+    } else if (soldOut > quantity) {
+      throw new Error(
+        `Sản phẩm bán ra không được lớn hơn số lượng hiện có với id: ${id}, quantity: ${quantity}, soldOut: ${soldOut}`,
+      );
+    }
+
+    await db
+      .update(products)
+      .set({
+        ...update,
+        updatedAt: getCurrentDate(),
+      })
+      .where(eq(products.id, id));
+  }
+
   private async getIdSequence() {
+    const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
+
     const lasted = await db.query.products.findFirst({
+      where: (record, { like }) => like(record.byDateId, `${todayString}%`),
       orderBy: (record, { desc }) => [desc(record.createdAt)],
     });
-    const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
+
     let sequence = 1;
     if (lasted) {
       sequence = +lasted.byDateId.slice(8, 12) + 1;

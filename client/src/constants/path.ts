@@ -11,7 +11,12 @@ export const PATH = {
       order: {
         path: "/order",
         text: "Đơn hàng",
-        disabled: true,
+        routes: {
+          create: {
+            path: "/create",
+            text: "Tạo mới",
+          },
+        },
       },
       product: {
         path: "/product",
@@ -60,4 +65,10 @@ export const ProductPath = {
   Create: `${baseProduct}/create`,
   Update: (byDateId: string) =>
     `${baseProduct}/${byDateId}?time=${new Date().getTime()}`,
+};
+
+const baseOrder = "/order";
+export const OrderPath = {
+  Base: baseOrder,
+  Create: `${baseOrder}/create`,
 };

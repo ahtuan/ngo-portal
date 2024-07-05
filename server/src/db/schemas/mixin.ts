@@ -16,11 +16,14 @@ export const byUserMixin = {
   updatedBy: varchar("updated_by", { length: 255 }).default("admin"),
 };
 
+export const identityMixin = {
+  uuid: uuid("uuid").defaultRandom().notNull(),
+  id: serial("id").primaryKey(),
+};
+
 export const metaDataMixin = {
   ...timestampMixin,
   ...byUserMixin,
-  uuid: uuid("uuid").defaultRandom().notNull(),
-  id: serial("id").primaryKey(),
 };
 
 export const schema = pgSchema("raw");

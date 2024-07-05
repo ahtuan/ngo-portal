@@ -46,8 +46,8 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
       name: detailData?.name ?? "",
       description: detailData?.description ?? "",
       price: detailData?.price ?? 0,
-      weight: detailData?.weight ?? 0,
-      status: detailData?.status ?? ProductStatus.Kho,
+      weight: detailData?.weight ? detailData.weight * 1000 : 0,
+      status: detailData?.status ?? ProductStatus.IN_STOCK.value,
       categoryUuid:
         mode === "edit" ? detailData?.categoryUuid ?? OtherOption.uuid : "",
       categoryName: detailData?.categoryName ?? "",

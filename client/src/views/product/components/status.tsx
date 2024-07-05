@@ -42,9 +42,9 @@ const Status = ({ form }: CardItemProps) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(ProductStatus).map(([key, value]) => (
-                      <SelectItem key={key} value={value}>
-                        {key}
+                    {Object.values(ProductStatus).map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>

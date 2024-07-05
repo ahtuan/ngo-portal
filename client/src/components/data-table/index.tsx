@@ -32,6 +32,7 @@ type Props<T> = {
   filter?: React.ReactNode;
   loading?: boolean;
   minHeightClass?: string;
+  columnVisibility?: VisibilityState;
 };
 
 const DataTable = <T extends {}>({
@@ -43,13 +44,14 @@ const DataTable = <T extends {}>({
   filter,
   loading,
   minHeightClass = "min-h-[calc(100%-7rem)]",
+  columnVisibility: columnVisibilityDefault = {},
 }: Props<T>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>(columnVisibilityDefault);
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({

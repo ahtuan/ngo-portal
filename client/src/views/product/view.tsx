@@ -75,9 +75,9 @@ const View = ({ detailData, onClose, onEdit }: Props) => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="weight">Cân nặng (kg)</Label>
+                      <Label htmlFor="weight">Cân nặng (g)</Label>
                       <Input
-                        value={detailData.weight}
+                        value={detailData.weight * 1000}
                         readOnly
                         name="weight"
                         type="number"
@@ -151,11 +151,13 @@ const View = ({ detailData, onClose, onEdit }: Props) => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(ProductStatus).map(([key, value]) => (
-                          <SelectItem key={key} value={value}>
-                            {key}
-                          </SelectItem>
-                        ))}
+                        {Object.values(ProductStatus).map(
+                          ({ value, label }) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

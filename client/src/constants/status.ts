@@ -1,13 +1,15 @@
 export const InventoryStatus = {
-  "Cọc hàng": "CREATED", // Chốt đơn và cọc hàng
-  "Đang giao hàng": "DELIVERING", // Đã nhận được hàng
-  "Soạn hàng": "INSPECTION", // Đang soạn hàng
-  "Đã trong kho": "IN_STOCK", // Hàng đã được soạn và đưa vào kho
-  Huỷ: "CANCELLED",
+  CREATED: { value: "CREATED", label: "Cọc hàng" }, // Chốt đơn và cọc hàng
+  DELIVERING: { value: "DELIVERING", label: "Đang giao hàng" }, // Đã nhận được
+  // hàng
+  INSPECTION: { value: "INSPECTION", label: "Soạn hàng" }, // Đang soạn hàng
+  IN_STOCK: { value: "IN_STOCK", label: "Đang trong kho" }, // Hàng đã được soạn
+  // và đưa vào kho
+  CANCELLED: { value: "CANCELLED", label: "Huỷ" },
 };
 
 export const ProductStatus = {
-  Kho: "IN_STOCK",
-  "Trưng bày": "READY",
-  "Đã bán": "SOLD",
+  IN_STOCK: { value: "IN_STOCK", label: "Kho" },
+  READY: { value: "READY", label: "Trưng bày" },
+  SOLD: { value: "SOLD", label: "Đã hết" },
 };

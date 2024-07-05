@@ -1,29 +1,23 @@
 import {
   index,
   integer,
-  pgEnum,
   serial,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { metaDataMixin, schema } from "./mixin";
+import { identityMixin, metaDataMixin, schema } from "./mixin";
 import { relations } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { UNIT_ENUM } from "@/constants/common";
 
-export const unitEnum = pgEnum(
-  "unit_enum",
-  // @ts-ignore
-  Object.values(UNIT_ENUM),
-);
-
 export const categories = schema.table(
   "categories",
   {
+    ...identityMixin,
     name: varchar("name", { length: 256 }).notNull(),
     price: integer("cate_price"),
-    unit: unitEnum("unit").default(UNIT_ENUM.PCS),
+    unit: varchar("unit", { length: 10 }).default(UNIT_ENUM.PCS),
     ...metaDataMixin,
   },
   (t) => ({
@@ -38,15 +32,15 @@ export const categoryRelation = relations(categories, ({ many }) => ({
 export const byKgCategories = schema.table(
   "by_kg_categories",
   {
+    id: serial("by_kg_id").primaryKey(),
+    uuid: uuid("by_kg_uuid").defaultRandom().notNull(),
     name: varchar("by_kg_name", { length: 256 }).notNull(),
     price: integer("by_kg_price"),
-    uuid: uuid("by_kg_uuid").defaultRandom().notNull(),
-    id: serial("by_kg_id").primaryKey(),
+    unit: varchar("by_kg_unit", { length: 10 }).default(UNIT_ENUM.KG),
     createdAt: timestamp("by_kg_created_at").defaultNow(),
     updatedAt: timestamp("by_kg_updated_at").defaultNow(),
     createdBy: varchar("by_kg_created_by", { length: 255 }).default("admin"),
     updatedBy: varchar("by_kg_updated_by", { length: 255 }).default("admin"),
-    unit: unitEnum("by_kg_unit").default(UNIT_ENUM.KG),
   },
   (t) => ({
     uuidIdx: index("by_kg_categories_uuid_idx").on(t.uuid),
@@ -56,13 +50,3 @@ export const byKgCategories = schema.table(
 export const byKgCategoryRelation = relations(byKgCategories, ({ many }) => ({
   products: many(products),
 }));
-
-type SelectCategory = typeof categories.$inferSelect;
-type InsertCategory = typeof categories.$inferInsert;
-
-export type CategoryType = Omit<SelectCategory, "id">;
-export type CategoryCreateType = Omit<
-  InsertCategory,
-  "id" | "createdAt" | "updatedAt"
->;
-export type CategoryUpdateType = Partial<CategoryCreateType>;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Form,
   FormControl,
@@ -48,23 +48,14 @@ const UpsertForm = ({ data, onClose }: Props) => {
   const form = useForm<InventoryCreate>({
     resolver: zodResolver(InventoryBody),
     defaultValues: {
-      source: "",
+      source: data?.source ?? "",
       unit: "kg",
-      status: InventoryStatus["Cọc hàng"],
-      grossWeight: 1,
-      description: "",
+      status: data?.status ?? InventoryStatus.CREATED.value,
+      grossWeight: data?.grossWeight ?? 1,
+      description: data?.description ?? "",
+      price: data?.price,
     },
   });
-
-  useEffect(() => {
-    if (data) {
-      form.setValue("status", data.status);
-      form.setValue("price", data.price);
-      form.setValue("source", data.source);
-      form.setValue("grossWeight", data.grossWeight);
-      form.setValue("description", data.description ?? "");
-    }
-  }, [data, form]);
 
   const priceWatches = form.watch(["price", "grossWeight"]);
   const status = form.watch("status");
@@ -175,9 +166,9 @@ const UpsertForm = ({ data, onClose }: Props) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {Object.entries(InventoryStatus).map(([key, value]) => (
-                    <SelectItem key={key} value={value}>
-                      {key}
+                  {Object.values(InventoryStatus).map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -211,7 +202,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
           </span>
           <p className="sm:col-span-3">{getPricePerUnit()}</p>
         </div>
-        {status === InventoryStatus["Đã trong kho"] && (
+        {status === InventoryStatus.IN_STOCK.value && (
           <div className="sm:grid sm:grid-cols-4 sm:items-center sm:gap-4 pt-2 text-muted-foreground">
             <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 sm:text-right">
               Giá đề xuất

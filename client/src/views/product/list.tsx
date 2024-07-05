@@ -102,13 +102,12 @@ const columns = (
       header: "Trạng thái",
       cell: ({ row }) => {
         const status = row.getValue("status");
-        const statusObj = Object.entries(ProductStatus).find(
-          ([key, val]) => val === status,
+        const statusObj = Object.values(ProductStatus).find(
+          ({ value }) => value === status,
         );
         let statusVal = status;
         if (statusObj) {
-          const [key] = statusObj;
-          statusVal = key;
+          statusVal = statusObj.label;
         }
         return (
           <Badge variant="outline" className="ml-auto sm:ml-0">
@@ -122,12 +121,23 @@ const columns = (
       header: "Cân nặng",
       cell: ({ row }) => {
         const { weight } = row.original;
-        return formatCurrency(weight) + " kg";
+        const byGram = weight * 1000;
+        return byGram < 1000 ? byGram + "g" : formatCurrency(weight) + " kg";
       },
     },
     {
       accessorKey: "quantity",
       header: "Số lượng",
+      cell: ({ row }) => {
+        const { quantity, soldOut } = row.original;
+        const stock = quantity - soldOut;
+        return (
+          <span>
+            {stock}
+            <span className="ml-1 text-muted-foreground">{`| ${quantity}`}</span>{" "}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "price",
@@ -161,32 +171,36 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const { byDateId, price, quantity } = row.original;
+        const { byDateId, price, quantity, status } = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <Link href={`${ProductPath.Update(byDateId)}`}>
-                <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
-              </Link>
-              <DropdownMenuItem
-                onClick={() =>
-                  onPrint({
-                    id: byDateId,
-                    price: price,
-                    quantity,
-                  })
-                }
-              >
-                In mã vạch
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <>
+            {
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <Link href={`${ProductPath.Update(byDateId)}`}>
+                    <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      onPrint({
+                        id: byDateId,
+                        price: price,
+                        quantity,
+                      })
+                    }
+                  >
+                    In mã vạch
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            }
+          </>
         );
       },
     },
@@ -271,6 +285,10 @@ const List = ({ queryString, searchParams }: Props) => {
   return (
     <>
       <DataTable<ProductType>
+        columnVisibility={{
+          weight: false,
+          categoryName: false,
+        }}
         loading={isLoading}
         data={res?.data || []}
         columns={columns(onPrint)}
@@ -299,10 +317,7 @@ const List = ({ queryString, searchParams }: Props) => {
               onFilter={(value) => onFilter("category", value)}
             />
             <FacetedFilter
-              options={Object.entries(ProductStatus).map(([key, value]) => ({
-                label: key,
-                value,
-              }))}
+              options={Object.values(ProductStatus)}
               selectedValues={
                 searchParams.status?.split(";")?.filter(Boolean) || []
               }

@@ -2,13 +2,10 @@ import { UNIT_ENUM } from "@/constants/common";
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { desc, eq } from "drizzle-orm";
-import {
-  byKgCategories,
-  categories,
-  CategoryCreateType,
-} from "@/db/schemas/category.schema";
+import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
 import { unionAll } from "drizzle-orm/pg-core";
+import { Category } from "@/models/category.model";
 
 class CategoryService {
   async getAll(query: Common.PagingQuery) {
@@ -70,10 +67,14 @@ class CategoryService {
     return ApiResponse.success(data);
   }
 
-  async upsert(body: CategoryCreateType) {
+  async upsert(body: Category.Create) {
+    console.log("body", body);
     const result = await this.getById(body.uuid, body.unit === UNIT_ENUM.KG);
     const isKgTable = body.name.toUpperCase().includes("(KG)");
+    console.log("isKgTable", isKgTable);
+    console.log("result", result);
     if (!result) {
+      console.log("not exit");
       // Create if not exist in database
       const insertedData = await db
         .insert(isKgTable ? byKgCategories : categories)
@@ -89,7 +90,7 @@ class CategoryService {
         201,
       );
     }
-    const partialData: Partial<CategoryCreateType> = body;
+    const partialData: Partial<Category.Create> = body;
 
     delete partialData.uuid;
     const updatedData = await db
@@ -118,8 +119,8 @@ class CategoryService {
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }
 
-  private async getById(uuid?: string, isKGTable?: boolean) {
-    if (!uuid || !isKGTable) {
+  async getById(uuid?: string, isKGTable?: boolean) {
+    if (!uuid || isKGTable === undefined) {
       return undefined;
     }
     const data = await db

@@ -44,12 +44,11 @@ const columns = (
       header: "Trạng thái",
       cell: ({ row }) => {
         const status = row.getValue("status");
-        const statusObj = Object.entries(InventoryStatus).find(
-          ([key, val]) => val === status,
+        const statusObj = Object.values(InventoryStatus).find(
+          ({ value }) => value === status,
         );
         if (statusObj) {
-          const [key] = statusObj;
-          return key;
+          return statusObj.label;
         }
         return status;
       },
@@ -109,7 +108,7 @@ const columns = (
               <DropdownMenuItem onClick={() => setUpdatedData(row.original)}>
                 Chỉnh sửa
               </DropdownMenuItem>
-              {status === InventoryStatus["Soạn hàng"] && (
+              {status === InventoryStatus.INSPECTION.value && (
                 <DropdownMenuItem>
                   <Link href={`${ProductPath.Create}?inventory=${id}`}>
                     Nhập hàng

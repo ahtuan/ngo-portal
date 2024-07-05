@@ -83,8 +83,12 @@ export function getBreadcrumb(pathName: string) {
 
 export const formatCurrency = (
   input: string | number | readonly string[] | undefined,
+  currency?: string,
 ) => {
   if (!input) {
+    if (currency) {
+      return `0 ${currency}`;
+    }
     return "";
   }
   let formattedValue = input.toString().replace(/[^0-9.-]+/g, "");
@@ -93,7 +97,7 @@ export const formatCurrency = (
     const [dollars, cents] = formattedValue.split(".");
     formattedValue = `${dollars}.${cents.slice(0, 2)}`;
   }
-  return formattedValue;
+  return formattedValue + (currency ? `${currency}` : "");
 };
 
 /**
@@ -149,4 +153,9 @@ export const getDirtyValues = <T extends {}>(
   });
 
   return payload;
+};
+
+export const fixed = (value: number, decimals: number = 2) => {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
 };

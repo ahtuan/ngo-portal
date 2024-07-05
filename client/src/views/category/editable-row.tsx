@@ -18,11 +18,13 @@ import {
 } from "@@/ui/form";
 import { categoryRequest } from "@/api-requests/category.request";
 import { useToast } from "@@/ui/use-toast";
+import { UNIT_ENUM } from "@/constants/enums";
 
 type Props = {
   uuid: string;
   name: string;
   price: number;
+  unit: string;
   defaultMode?: boolean;
   handleCancelAddMore: () => void;
   upsertMutate: (upsert: CategoryType, isCreate: boolean) => Promise<void>;
@@ -33,6 +35,7 @@ const EditableRow = ({
   uuid,
   name,
   price,
+  unit,
   defaultMode = false,
   handleCancelAddMore,
   upsertMutate,
@@ -46,6 +49,7 @@ const EditableRow = ({
       uuid: "",
       name: "",
       price: 0,
+      unit: UNIT_ENUM.PCS,
     },
   });
 
@@ -54,6 +58,7 @@ const EditableRow = ({
     form.setValue("uuid", uuid);
     form.setValue("name", name);
     form.setValue("price", price);
+    form.setValue("unit", unit);
   }, [form, uuid, name, price]);
 
   useEffect(() => {
@@ -86,7 +91,13 @@ const EditableRow = ({
 
     if (idValidForm) {
       try {
-        const response = await categoryRequest.upsert(form.getValues());
+        const change = form.getValues();
+        const response = await categoryRequest.upsert({
+          ...change,
+          unit: change.name.toUpperCase().includes(`(${UNIT_ENUM.KG})`)
+            ? UNIT_ENUM.KG
+            : UNIT_ENUM.PCS,
+        });
         if (!response.data) {
           throw new Error("Có lỗi trong quá trình update dữ liệu");
         }

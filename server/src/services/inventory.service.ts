@@ -90,10 +90,12 @@ class InventoryService {
   }
 
   private async getIdSequence() {
+    const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
     const lasted = await db.query.inventories.findFirst({
+      where: (record, { like }) => like(record.id, `${todayString}%`),
       orderBy: (record, { desc }) => [desc(record.createdAt)],
     });
-    const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
+
     let sequence = 1;
     if (lasted) {
       sequence = +lasted.id.slice(8, 10) + 1;

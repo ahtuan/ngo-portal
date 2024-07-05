@@ -20,3 +20,13 @@ export const DEFAULT_PAGING = {
   page: 0,
   size: 10,
 };
+
+export const INVOICE_STATUS_ENUM = {
+  COMPLETE: "COMPLETE",
+  CANCELLED: "CANCELLED",
+};
+
+export enum PAYMENT_METHOD_ENUM {
+  CASH = "CASH",
+  BANK = "BANK",
+}

@@ -8,10 +8,11 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { metaDataMixin, schema, timestampMixin } from "./mixin";
+import { identityMixin, metaDataMixin, schema, timestampMixin } from "./mixin";
 import { relations } from "drizzle-orm";
 
 export const accounts = schema.table("accounts", {
+  ...identityMixin,
   fullName: varchar("full_name", { length: 256 }),
   username: varchar("username", { length: 256 }).notNull().unique(),
   password: varchar("password", { length: 256 }).notNull(),
@@ -27,6 +28,7 @@ export const accountsRelation = relations(accounts, ({ one, many }) => ({
 export const roles = schema.table(
   "roles",
   {
+    ...identityMixin,
     name: varchar("name", { length: 256 }),
     accountId: integer("account_id")
       .notNull()
