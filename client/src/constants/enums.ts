@@ -1,6 +1,6 @@
 export const PAYMENT_TYPE = {
-  CASH: "Tiền mặt",
-  BANK: "Chuyển khoản",
+  CASH: { value: "CASH", label: "Tiền mặt" },
+  BANK: { value: "BANK", label: "Chuyển khoản" },
 };
 
 export const UNIT_ENUM = {

@@ -15,7 +15,7 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Currency = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ type, value, onChange, maxLength = 13, ...props }, ref) => {
+  ({ type, value, onChange, onBlur, maxLength = 13, ...props }, ref) => {
     const [formattedValue, setFormattedValue] = React.useState(
       formatCurrency(value) || "",
     );
@@ -27,12 +27,27 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
         setFormattedValue("");
       }
     }, [value]);
+
     const handleChange = (e: any) => {
       const inputValue = e.target.value;
       const formattedValue = formatCurrency(inputValue);
       setFormattedValue(formattedValue);
       e.target.value = +inputValue.replace(/\D/g, "");
       onChange?.(e);
+    };
+
+    const handleBlur = (e: any) => {
+      if (onBlur) {
+        onBlur?.(e);
+      }
+      let amount = +formattedValue.replace(/\D/g, "");
+      amount = amount < 1000 ? amount * 1000 : amount;
+      const formattedAmount = formatCurrency(amount);
+      if (formattedAmount !== formattedValue) {
+        setFormattedValue(formatCurrency(amount));
+        e.target.value = amount;
+        onChange?.(e);
+      }
     };
 
     return (
@@ -42,6 +57,7 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
         value={formattedValue}
         onChange={handleChange}
         maxLength={maxLength}
+        onBlur={handleBlur}
       />
     );
   },

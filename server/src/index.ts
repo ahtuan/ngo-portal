@@ -8,6 +8,7 @@ import jwt from "@elysiajs/jwt";
 import { categoryController } from "@/controllers/category.controller";
 import { inventoryController } from "@/controllers/inventory.controller";
 import { productController } from "@/controllers/product.controller";
+import { invoiceController } from "@/controllers/invoice.controller";
 
 const corsConfig = {
   origin: "*",
@@ -43,6 +44,7 @@ const app = new Elysia({ prefix: "/api" })
   .use(categoryController)
   .use(inventoryController)
   .use(productController)
+  .use(invoiceController)
   .listen(process.env.API_PORT || 3001);
 
 // Expose methods

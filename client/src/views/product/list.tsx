@@ -174,7 +174,7 @@ const columns = (
         const { byDateId, price, quantity, status } = row.original;
         return (
           <>
-            {
+            {status !== ProductStatus.SOLD.value && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
@@ -199,7 +199,7 @@ const columns = (
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            }
+            )}
           </>
         );
       },

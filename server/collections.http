@@ -77,3 +77,70 @@ Content-Type: application/json
 {
   "byDateId": "121231333"
 }
+
+###
+
+# Invoice
+### Create new Invoice
+POST {{host}}/api/invoice
+Content-Type: application/json
+
+{
+  "paymentType": "CASH",
+  "items": [
+    {
+      "byDateId": "202407020006",
+      "name": "Tô ăn mì",
+      "quantity": 1,
+      "weight": 0.23,
+      "price": 40000,
+      "total": 40000,
+      "unit": "Chiếc",
+      "stock": 5,
+      "originalStock": 6
+    }
+  ],
+  "stacks": [
+    {
+      "name": "Lam (kg)",
+      "categoryUuidByKg": "869289e5-bb08-42d0-85b9-c2193ca6b2c7",
+      "weight": 0.18,
+      "price": 120000,
+      "total": 21600,
+      "items": [
+        {
+          "byDateId": "202407020007",
+          "name": "Dĩa nhật",
+          "quantity": 1,
+          "weight": 0.18,
+          "price": 120000,
+          "total": 21600,
+          "unit": "Kg",
+          "stock": 3,
+          "originalStock": 4
+        }
+      ]
+    },
+    {
+      "name": "Mộc (kg)",
+      "categoryUuidByKg": "70c5509e-fc6e-4730-920d-69de4c829e68",
+      "weight": 1.65,
+      "price": 100000,
+      "total": 165000,
+      "items": [
+        {
+          "byDateId": "202406270002",
+          "name": "Chén mộc",
+          "quantity": 3,
+          "weight": 0.3,
+          "price": 100000,
+          "total": 150000,
+          "unit": "Kg",
+          "stock": 0,
+          "originalStock": 3
+        }
+      ]
+    }
+  ],
+  "actualPrice": 226600
+}

@@ -1,0 +1,38 @@
+import { z } from "zod";
+
+const InvoiceItems = z.object({
+  byDateId: z.string(),
+  name: z.string(),
+  quantity: z.number(),
+  weight: z.number(),
+  price: z.number(),
+  total: z.number(),
+  category: z.string().optional(), // Name of category following price
+  categoryUuid: z.string().optional(), // Can be category by PCS or KG
+  unit: z.string(),
+  stock: z.number().optional(), // The number of items available
+  originalStock: z.number().optional(),
+});
+
+const Stack = z.object({
+  name: z.string(),
+  categoryUuidByKg: z.string(),
+  weight: z.number(),
+  price: z.number(),
+  total: z.number(),
+  items: z.array(InvoiceItems),
+});
+export const InvoiceBody = z.object({
+  paymentType: z.string().min(1, "Chưa có phương thức thanh toán"),
+  items: z.array(InvoiceItems),
+  stacks: z.array(Stack).optional(),
+  actualPrice: z.coerce.number().min(1, "Đơn hàng phải có giá trị"),
+});
+
+export type InvoiceCreate = z.TypeOf<typeof InvoiceBody> & {
+  receiveAmount: number;
+  totalQuantity: number;
+  totalPrice: number;
+};
+
+export type InvoiceItemType = z.TypeOf<typeof InvoiceItems>;
