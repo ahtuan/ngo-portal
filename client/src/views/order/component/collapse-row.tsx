@@ -6,15 +6,24 @@ import { formatCurrency } from "@/lib/utils";
 import { Button } from "@@/ui/button";
 import { SquareArrowDown, SquareArrowUp, Trash } from "lucide-react";
 import { FieldArrayWithId } from "react-hook-form";
-import { InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
 
 type Props = {
-  field: FieldArrayWithId<InvoiceCreate, "stacks", "id">;
+  field:
+    | FieldArrayWithId<InvoiceCreate, "stacks", "id">
+    | Invoice.StackItemType;
   children: React.ReactNode;
   onDelete?: () => void;
   onUpdate?: (value: number) => void;
+  readOnly?: boolean;
 };
-const CollapseRow = ({ field, children, onDelete, onUpdate }: Props) => {
+const CollapseRow = ({
+  field,
+  children,
+  onDelete,
+  onUpdate,
+  readOnly = false,
+}: Props) => {
   const [show, setShow] = React.useState(true);
   const [isEditing, setEditing] = React.useState(false);
   const [value, setValue] = React.useState<number>(field.weight);
@@ -62,7 +71,7 @@ const CollapseRow = ({ field, children, onDelete, onUpdate }: Props) => {
                 onKeyDown={onKeyDown}
               />
             ) : (
-              <span onClick={() => setEditing(true)}>
+              <span onClick={() => !readOnly && setEditing(true)}>
                 {field.weight + " kg"}
               </span>
             )}
@@ -70,11 +79,13 @@ const CollapseRow = ({ field, children, onDelete, onUpdate }: Props) => {
         </TableCell>
         <TableCell>{formatCurrency(field.price, "đ")}</TableCell>
         <TableCell>{formatCurrency(field.total, "đ")}</TableCell>
-        <TableCell>
-          <Button size="icon" variant="ghost" onClick={onDelete}>
-            <Trash className="h-4 w-4 text-muted-foreground hover:text-primary" />
-          </Button>
-        </TableCell>
+        {!readOnly && (
+          <TableCell>
+            <Button size="icon" variant="ghost" onClick={onDelete}>
+              <Trash className="h-4 w-4 text-muted-foreground hover:text-primary" />
+            </Button>
+          </TableCell>
+        )}
       </TableRow>
       {show ? children : null}
     </>

@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "@@/ui/table";
 import { Button } from "@@/ui/button";
 import { Trash } from "lucide-react";
 import { FieldArrayWithId } from "react-hook-form";
-import { InvoiceCreate, InvoiceItemType } from "@/schemas/invoice.schema";
+import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@@/ui/input";
 import {
@@ -14,12 +14,19 @@ import {
 } from "@@/ui/tooltip";
 
 type ItemRowProps = {
-  field: FieldArrayWithId<InvoiceCreate, "items", "id"> | InvoiceItemType;
+  field: FieldArrayWithId<InvoiceCreate, "items", "id"> | Invoice.ItemType;
   onDelete?: () => void;
   onUpdate?: (value: number) => void;
   byKg?: boolean;
+  readOnly?: boolean;
 };
-const ItemRow = ({ field, onDelete, onUpdate, byKg = false }: ItemRowProps) => {
+const ItemRow = ({
+  field,
+  onDelete,
+  onUpdate,
+  byKg = false,
+  readOnly = false,
+}: ItemRowProps) => {
   const [isEditing, setEditing] = React.useState(false);
   const [value, setValue] = React.useState<number>(field.quantity);
   const [total] = React.useState<string>(formatCurrency(field.total, "đ"));
@@ -40,7 +47,7 @@ const ItemRow = ({ field, onDelete, onUpdate, byKg = false }: ItemRowProps) => {
   };
 
   const toggleChange = () => {
-    if (field.originalStock !== 1) {
+    if (field.originalStock !== 1 && !readOnly) {
       setEditing(true);
     }
   };
@@ -71,9 +78,11 @@ const ItemRow = ({ field, onDelete, onUpdate, byKg = false }: ItemRowProps) => {
             </span>
           )}
         </span>
-        <span className="text-muted-foreground ml-2 text-sm">
-          | {field.stock}
-        </span>
+        {!readOnly && (
+          <span className="text-muted-foreground ml-2 text-sm">
+            | {field.stock}
+          </span>
+        )}
       </TableCell>
       <TableCell>{!byKg ? formatCurrency(field.price, "đ") : ""}</TableCell>
       <TableCell className={byKg ? "text-muted-foreground" : ""}>
@@ -90,11 +99,13 @@ const ItemRow = ({ field, onDelete, onUpdate, byKg = false }: ItemRowProps) => {
           total
         )}
       </TableCell>
-      <TableCell>
-        <Button size="icon" variant="ghost" onClick={onDelete}>
-          <Trash className="h-4 w-4 text-muted-foreground hover:text-primary" />
-        </Button>
-      </TableCell>
+      {!readOnly && (
+        <TableCell>
+          <Button size="icon" variant="ghost" onClick={onDelete}>
+            <Trash className="h-4 w-4 text-muted-foreground hover:text-primary" />
+          </Button>
+        </TableCell>
+      )}
     </TableRow>
   );
 };

@@ -9,13 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@@/ui/table";
-import { InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
 import ItemRow from "@views/order/component/item-row";
 import CollapseRow from "@views/order/component/collapse-row";
 
 type ItemsProps = {
-  fields: FieldArrayWithId<InvoiceCreate, "items", "id">[];
-  stackFields: FieldArrayWithId<InvoiceCreate, "stacks", "id">[];
+  fields: (FieldArrayWithId<InvoiceCreate, "items", "id"> | Invoice.ItemType)[];
+  stackFields: (
+    | FieldArrayWithId<InvoiceCreate, "stacks", "id">
+    | Invoice.StackItemType
+  )[];
   onUpdate?: (
     index: number,
     value: number,
@@ -23,9 +26,16 @@ type ItemsProps = {
     itemIndex?: number,
   ) => void;
   onDelete?: (index: number, byKg: boolean, itemIndex?: number) => void;
+  readOnly?: boolean;
 };
 
-const Items = ({ fields, stackFields, onUpdate, onDelete }: ItemsProps) => {
+const Items = ({
+  fields,
+  stackFields,
+  onUpdate,
+  onDelete,
+  readOnly = false,
+}: ItemsProps) => {
   return (
     <Card className="border-0">
       <CardContent className="h-[calc(100dvh-10rem-15rem)] overflow-y-scroll p-0">
@@ -37,24 +47,26 @@ const Items = ({ fields, stackFields, onUpdate, onDelete }: ItemsProps) => {
               <TableHead className="w-[8rem]">Số lượng</TableHead>
               <TableHead className="w-[6rem]">Đơn giá</TableHead>
               <TableHead className="w-[6rem]">Thành tiền</TableHead>
-              <TableHead className="w-[1rem]"></TableHead>
+              {!readOnly && <TableHead className="w-[1rem]"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {fields.map((item, index) => (
               <ItemRow
                 field={item}
-                key={item.id}
+                key={"id" in item ? item.id : index}
                 onUpdate={(value) => onUpdate?.(index, value, false)}
                 onDelete={() => onDelete?.(index, false)}
+                readOnly={readOnly}
               />
             ))}
             {stackFields.map((stack, index) => (
               <CollapseRow
                 field={stack}
-                key={stack.id}
+                key={"id" in stack ? stack.id : index}
                 onUpdate={(value) => onUpdate?.(index, value, true, -2)}
                 onDelete={() => onDelete?.(index, true)}
+                readOnly={readOnly}
               >
                 {stack.items.map((item, itemIndex) => (
                   <ItemRow
@@ -65,6 +77,7 @@ const Items = ({ fields, stackFields, onUpdate, onDelete }: ItemsProps) => {
                     }
                     onDelete={() => onDelete?.(index, true, itemIndex)}
                     byKg={true}
+                    readOnly={readOnly}
                   />
                 ))}
               </CollapseRow>

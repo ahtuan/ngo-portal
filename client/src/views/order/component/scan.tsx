@@ -15,6 +15,7 @@ import useSWRMutation from "swr/mutation";
 import { productRequest } from "@/api-requests/product.request";
 import { useToast } from "@@/ui/use-toast";
 import { ProductDetail } from "@/schemas/product.schema";
+import { ProductStatus } from "@/constants/status";
 
 type Props = {
   onAppend: (data: ProductDetail) => void;
@@ -33,7 +34,13 @@ const Scan = ({ onAppend }: Props) => {
       },
       onSuccess: (data) => {
         if (data) {
-          onAppend(data);
+          if (data.status !== ProductStatus.SOLD.value) {
+            onAppend(data);
+          } else {
+            toast({
+              description: "Sản phẩm đã bán hết. Vui lòng kiểm tra lại mã",
+            });
+          }
         }
         setId("");
       },

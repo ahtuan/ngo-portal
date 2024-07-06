@@ -1,16 +1,14 @@
 import http from "@/lib/http";
-import { InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
 
 export const invoiceEndpoint = "/api/invoice";
 export const invoiceRequest = {
-  getAll: async (queryString: string) => {
-    const response = await http.get<Common.Paging<any>>(
-      invoiceEndpoint + `?${queryString}`,
-    );
+  getAll: async (url: string) => {
+    const response = await http.get<Common.Paging<Invoice.Type>>(url);
     return response.data;
   },
-  getDetail: async (byDateId: string) => {
-    const response = await http.get<any>(invoiceEndpoint + "/" + byDateId);
+  getDetail: async (url: string) => {
+    const response = await http.get<Invoice.Detail>(url);
     return response.data;
   },
   create: async (data: InvoiceCreate) => http.post(invoiceEndpoint, data),

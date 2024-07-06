@@ -17,6 +17,11 @@ export const invoiceController = new Elysia({
       query: "invoice.filter",
     },
   )
+  .get(
+    "/:byDateId",
+    async ({ invoiceServer: service, params: { byDateId } }) =>
+      await service.getDetail(byDateId),
+  )
   .post(
     "/",
     async ({ body, invoiceServer: service }) => await service.create(body),

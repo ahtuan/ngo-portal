@@ -17,7 +17,7 @@ type RowProps = {
   text: string;
   children?: React.ReactNode;
 };
-const RowRender = ({ text, children }: RowProps) => {
+export const RowRender = ({ text, children }: RowProps) => {
   return (
     <div className="grid grid-cols-3 gap-2">
       <div className="col-span-2 text-sm">{text}</div>
@@ -27,11 +27,10 @@ const RowRender = ({ text, children }: RowProps) => {
 };
 
 const Total = ({ form }: CreateOrderProps) => {
-  const [paymentType, totalPrice, totalQuantity, receiveAmount] = form.watch([
+  const [paymentType, totalPrice, totalQuantity] = form.watch([
     "paymentType",
     "totalPrice",
     "totalQuantity",
-    "receiveAmount",
   ]);
   const [amount, setAmount] = useState<number>(0);
   const getAmount = (value: number) => {

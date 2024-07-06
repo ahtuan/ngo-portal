@@ -30,9 +30,22 @@ export const InvoiceBody = z.object({
 });
 
 export type InvoiceCreate = z.TypeOf<typeof InvoiceBody> & {
-  receiveAmount: number;
   totalQuantity: number;
   totalPrice: number;
 };
 
-export type InvoiceItemType = z.TypeOf<typeof InvoiceItems>;
+export namespace Invoice {
+  export type ItemType = z.TypeOf<typeof InvoiceItems>;
+  export type StackItemType = z.TypeOf<typeof Stack>;
+  export type Type = {
+    byDateId: string;
+    paymentMethod: string;
+    price: number;
+    createdAt: string;
+    createdBy: string;
+  };
+  export type Detail = {
+    byDateId: string;
+    createdAt: string;
+  } & InvoiceCreate;
+}

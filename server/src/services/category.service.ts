@@ -119,14 +119,19 @@ class CategoryService {
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }
 
-  async getById(uuid?: string, isKGTable?: boolean) {
+  async getById(uuid?: string | number, isKGTable?: boolean) {
     if (!uuid || isKGTable === undefined) {
       return undefined;
     }
+
+    !isKGTable && console.log("uuid", uuid);
+    !isKGTable && console.log("type", typeof uuid);
     const data = await db
       .select()
       .from(isKGTable ? byKgCategories : categories)
-      .where((category) => eq(category.uuid, uuid));
+      .where((category) =>
+        eq(typeof uuid === "string" ? category.uuid : category.id, uuid),
+      );
 
     if (!data) {
       return undefined;

@@ -54,3 +54,35 @@ export const salesRelation = relations(sales, ({ one, many }) => ({
 }));
 
 export type InvoiceItemSchema = typeof invoiceItems.$inferInsert;
+
+export namespace InvoiceResponse {
+  export type InvoiceItemSelect = typeof invoiceItems.$inferSelect;
+  export type InvoiceItem = {
+    name: string;
+    byDateId: string;
+    quantity: number;
+    price: number;
+    total: number;
+  };
+
+  export type StackItem = {
+    id: number;
+    name: string;
+    weight: number;
+    price: number;
+    total: number;
+    items: InvoiceItem[];
+  };
+
+  export type Invoice = typeof invoices.$inferSelect;
+  export type Detail = {
+    actualPrice: number;
+    totalQuantity: number;
+    totalPrice: number;
+    byDateId: string;
+    createdAt: Date | null;
+    paymentType: string;
+    items: InvoiceItem[];
+    stacks: StackItem[];
+  };
+}

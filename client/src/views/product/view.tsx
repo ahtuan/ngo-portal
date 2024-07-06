@@ -53,7 +53,7 @@ const View = ({ detailData, onClose, onEdit }: Props) => {
         </DialogHeader>
         <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
           <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-            {/*Detail*/}
+            {/*DetailModal*/}
             <Card>
               <CardHeader>
                 <CardTitle>Chi tiết đơn hàng</CardTitle>

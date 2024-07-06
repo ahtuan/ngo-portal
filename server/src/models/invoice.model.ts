@@ -4,6 +4,8 @@ import { PAYMENT_METHOD_ENUM } from "@/constants/common";
 const filter = t.Partial(
   t.Object({
     keyword: t.String(),
+    page: t.String(),
+    size: t.String(),
   }),
 );
 

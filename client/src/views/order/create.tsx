@@ -8,11 +8,7 @@ import Scan from "@views/order/component/scan";
 import Customer from "@views/order/component/customer";
 import Items from "@views/order/component/items";
 import Total from "@views/order/component/total";
-import {
-  InvoiceBody,
-  InvoiceCreate,
-  InvoiceItemType,
-} from "@/schemas/invoice.schema";
+import { Invoice, InvoiceBody, InvoiceCreate } from "@/schemas/invoice.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PAYMENT_TYPE } from "@/constants/enums";
 import { ProductDetail } from "@/schemas/product.schema";
@@ -55,7 +51,7 @@ const Create = () => {
   });
 
   const getItemsUpdated = (
-    item: InvoiceItemType,
+    item: Invoice.ItemType,
     value: number,
     replace: boolean = false,
   ) => {
@@ -136,7 +132,7 @@ const Create = () => {
     index: number,
     value: number,
     itemIndex: number = 0,
-    addedItem?: InvoiceItemType,
+    addedItem?: Invoice.ItemType,
     replace: boolean = false,
     isDeleted: boolean = false,
   ) => {
@@ -221,7 +217,7 @@ const Create = () => {
       // If stack (by category) never be in the list
       // and then add the new one for stack with first item got from data
       const total = data.weight * data.price;
-      const newItem: InvoiceItemType = {
+      const newItem: Invoice.ItemType = {
         ...general,
         quantity: 1,
         total: total,

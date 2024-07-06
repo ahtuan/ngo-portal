@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PATH } from "@/constants/path";
+import dayjs from "dayjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -158,4 +159,11 @@ export const getDirtyValues = <T extends {}>(
 export const fixed = (value: number, decimals: number = 2) => {
   const factor = Math.pow(10, decimals);
   return Math.round(value * factor) / factor;
+};
+
+export const formatDate = (
+  date: string,
+  format: string = "YYYY-MM-DD HH:mm",
+) => {
+  return dayjs(date).format(format);
 };

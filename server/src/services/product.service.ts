@@ -330,9 +330,13 @@ class ProductService {
     return ApiResponse.success(true, "Xoá dữ liệu thành công");
   }
 
-  async getById(byDateId: string) {
+  async getById(byDateId: string | number) {
     const data = await db.query.products.findFirst({
-      where: (products, { eq }) => eq(products.byDateId, byDateId),
+      where: (product, { eq }) =>
+        eq(
+          typeof byDateId === "string" ? product.byDateId : product.id,
+          byDateId,
+        ),
     });
     if (!data) {
       return undefined;

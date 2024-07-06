@@ -3,6 +3,8 @@ import { ApiResponse } from "@/libs/api-response";
 import { mkdir } from "node:fs/promises";
 import { unlinkSync } from "node:fs";
 import * as url from "node:url";
+import { PgSelect } from "drizzle-orm/pg-core";
+import { DEFAULT_PAGING } from "@/constants/common";
 
 class HelperService {
   /**
@@ -36,6 +38,14 @@ class HelperService {
       console.error("Can not delete images from the server with url: ", url);
     }
     return;
+  }
+
+  withPagination<T extends PgSelect>(
+    qb: T,
+    offset: number = DEFAULT_PAGING.page,
+    limit: number = DEFAULT_PAGING.size,
+  ) {
+    return qb.limit(limit).offset(offset * limit);
   }
 
   private getUploadPath = () => {
