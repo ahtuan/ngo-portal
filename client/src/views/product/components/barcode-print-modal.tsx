@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -54,7 +54,9 @@ const BarcodePrintModal = ({
     height: 10,
   });
   const [quantity, setQuantity] = useState<number>(product.quantity);
-  const [includePrice, setIncludePrice] = useState<boolean>(true);
+  const [includePrice, setIncludePrice] = useState<boolean | undefined>(
+    product.isUsedCategoryPrice,
+  );
   const { toast } = useToast();
   const onPrintBarcode = async () => {
     if (!product) {

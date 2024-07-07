@@ -87,6 +87,8 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
             id: createdData.data.byDateId,
             price: createdData.data.price,
             quantity: createdData.data.quantity,
+            isUsedCategoryPrice: !values.isUsedCategoryPrice, // If sell by
+            // kg => No price by default
           });
           form.reset();
           setIsOpen(true);

@@ -171,7 +171,8 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const { byDateId, price, quantity, status } = row.original;
+        const { byDateId, price, quantity, status, categoryUuidByKg } =
+          row.original;
         return (
           <>
             {status !== ProductStatus.SOLD.value && (
@@ -192,6 +193,7 @@ const columns = (
                         id: byDateId,
                         price: price,
                         quantity,
+                        isUsedCategoryPrice: !categoryUuidByKg,
                       })
                     }
                   >

@@ -65,6 +65,13 @@ const Category = ({ form }: CardItemProps) => {
     }
   }, [isUsedCategoryPrice, category, data, form, categoryByKg]);
 
+  useEffect(() => {
+    if (isUsedCategoryPrice && !categoryByKg && data && data.length > 0) {
+      const defaultValue = data[0].uuid;
+      form.setValue("categoryUuidByKg", defaultValue);
+    }
+  }, [isUsedCategoryPrice]);
+
   return (
     <Card>
       <CardHeader>

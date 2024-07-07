@@ -54,6 +54,7 @@ export type ProductBarCode = {
   id: string;
   price: number;
   quantity: number;
+  isUsedCategoryPrice?: boolean;
 };
 
 export type ProductUpdate = Partial<ProductCreate>;
