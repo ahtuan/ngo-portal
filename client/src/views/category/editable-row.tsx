@@ -24,7 +24,7 @@ type Props = {
   uuid: string;
   name: string;
   price: number;
-  unit: string;
+  unit?: string;
   defaultMode?: boolean;
   handleCancelAddMore: () => void;
   upsertMutate: (upsert: CategoryType, isCreate: boolean) => Promise<void>;

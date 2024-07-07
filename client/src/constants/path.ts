@@ -17,6 +17,7 @@ export const PATH = {
             text: "Tạo mới",
           },
         },
+        disabled: false,
       },
       product: {
         path: "/product",

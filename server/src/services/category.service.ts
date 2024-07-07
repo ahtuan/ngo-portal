@@ -101,7 +101,7 @@ class CategoryService {
         unit: isKgTable ? UNIT_ENUM.KG : UNIT_ENUM.PCS,
         updatedAt: getCurrentDate(),
       })
-      .where(eq(categories.id, result.id))
+      .where(eq(isKgTable ? byKgCategories.id : categories.id, result.id))
       .returning();
     return ApiResponse.success(updatedData[0], "Chỉnh sửa dữ liệu thành công");
   }
