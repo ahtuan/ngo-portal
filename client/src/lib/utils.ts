@@ -26,7 +26,15 @@ function findPath(parts: string[], obj: any = PATH): Common.Breadcrumb[] {
     ];
   }
 
-  const part = parts[0] || "dashboard";
+  let part = parts[0];
+  if (!part) {
+    if (parts?.[1] === "setting") {
+      part = "setting";
+      parts = parts.slice(1);
+    } else {
+      part = "dashboard";
+    }
+  }
   const currentObject = obj[part];
   const nextPart = parts[1];
 
@@ -61,6 +69,7 @@ function findPath(parts: string[], obj: any = PATH): Common.Breadcrumb[] {
 
 export function getBreadcrumb(pathName: string) {
   const paths = findPath(pathName.split("/"));
+  console.log("paths", paths);
   return paths.reduce((prev, value, index) => {
     if (index === paths.length - 1) {
       return [

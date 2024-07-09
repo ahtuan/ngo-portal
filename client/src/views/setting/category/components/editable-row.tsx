@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from "react";
 import { TableCell, TableRow } from "@@/ui/table";
-import ButtonAction from "@views/category/button-action";
+import ButtonAction from "@views/setting/category/components/button-action";
 import Currency from "@@/currency";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@@/ui/input";

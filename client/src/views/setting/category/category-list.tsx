@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import EditableRow from "@views/category/editable-row";
+import EditableRow from "@views/setting/category/components/editable-row";
 import {
   Table,
   TableBody,
@@ -10,8 +10,8 @@ import {
 } from "@@/ui/table";
 import { CategoryType } from "@/schemas/category.schema";
 import { CardContent } from "@@/ui/card";
-import AddMore from "@views/category/add-more";
-import useSWR from "swr";
+import AddMore from "@views/setting/category/components/add-more";
+import useSWR, { mutate as globalMutate } from "swr";
 import {
   categoryEndpoint as cacheKey,
   categoryMutateOptions,
@@ -19,7 +19,6 @@ import {
 } from "@/api-requests/category.request";
 import Loading from "@@/loading";
 import EmptyRow from "@@/empty-row";
-import { mutate as globalMutate } from "swr";
 
 type Props = {
   queryString: string;
@@ -66,6 +65,7 @@ const CategoryList = ({ queryString }: Props) => {
   return (
     <>
       <CardContent className="pb-2">
+        <AddMore handleAddMore={handleAddMore} disabled={!!addedData} />
         <Table>
           <TableHeader>
             <TableRow>
@@ -98,7 +98,6 @@ const CategoryList = ({ queryString }: Props) => {
           </TableBody>
         </Table>
       </CardContent>
-      <AddMore handleAddMore={handleAddMore} disabled={!!addedData} />
     </>
   );
 };

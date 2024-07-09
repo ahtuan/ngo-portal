@@ -50,7 +50,17 @@ export const PATH = {
   setting: {
     path: "/setting",
     text: "Cài đặt",
-    disabled: true,
+    disabled: false,
+    routes: {
+      sale: {
+        path: "/sale",
+        text: "Khuyến mãi",
+      },
+      category: {
+        path: "/category",
+        text: "Phân loại",
+      },
+    },
   },
 };
 
@@ -72,4 +82,11 @@ const baseOrder = "/order";
 export const OrderPath = {
   Base: baseOrder,
   Create: `${baseOrder}/create`,
+};
+
+const baseSetting = "/setting";
+export const SettingPath = {
+  Base: baseSetting,
+  Category: `${baseSetting}/category`,
+  Sale: `${baseSetting}/sale`,
 };
