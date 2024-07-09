@@ -49,11 +49,10 @@ const BarcodePrintModal = ({
   setProduct,
   mode = "alert",
 }: Props) => {
-  const [size, setSize] = useState<Size>({
-    width: 30,
-    height: 10,
-  });
+  const [size, setSize] = useState<Size>(LabelSize.small);
   const [quantity, setQuantity] = useState<number>(product.quantity);
+  const [printedLeft, setPrintedLeft] = useState<number>(product.quantity);
+
   const [includePrice, setIncludePrice] = useState<boolean | undefined>(
     product.isUsedCategoryPrice,
   );
@@ -63,14 +62,20 @@ const BarcodePrintModal = ({
       return;
     }
     try {
-      const response = await productRequest.print({
+      await productRequest.print({
         byDateId: product.id,
         price: includePrice ? formatPrice(product.price) : "",
         ...size,
         quantity: quantity,
       });
-      setQuantity(1);
-      setIncludePrice(true);
+      const left = printedLeft - quantity;
+      if (left > 0) {
+        setPrintedLeft(left);
+        setQuantity(left);
+        setIncludePrice(true);
+      } else {
+        setIsOpen(false);
+      }
     } catch (error) {
       // @ts-ignore
       let message = error.error ?? "Không thể in";
@@ -106,10 +111,7 @@ const BarcodePrintModal = ({
         {mode === "alert" && (
           <DialogHeader>
             <DialogTitle>Thành công</DialogTitle>
-            <DialogDescription>
-              Tạo sản phẩm thành công với mã:{" "}
-              <span className="font-semibold">{product.id}</span>
-            </DialogDescription>
+            <DialogDescription>Tạo sản phẩm thành công</DialogDescription>
           </DialogHeader>
         )}
         <div className="grid grid-cols-2">
@@ -135,10 +137,9 @@ const BarcodePrintModal = ({
                 <Label htmlFor="quantity">Số lượng</Label>
                 <Input
                   type="number"
-                  min={1}
                   name="quantity"
                   value={quantity}
-                  onChange={(event) => setQuantity(+event.target.value)}
+                  onChange={(event) => setQuantity(event.target.valueAsNumber)}
                 />
               </div>
               <div className="flex flex-col h-full space-y-2 pt-1.5">
@@ -152,7 +153,9 @@ const BarcodePrintModal = ({
             </div>
           </div>
         </div>
-        <Button onClick={onPrintBarcode}>In</Button>
+        <Button onClick={onPrintBarcode} disabled={!quantity}>
+          In
+        </Button>
       </DialogContent>
     </Dialog>
   );

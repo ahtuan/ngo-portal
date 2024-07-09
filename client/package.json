@@ -39,6 +39,7 @@
     "react-camera-pro": "^1.4.0",
     "react-dom": "^18",
     "react-hook-form": "^7.51.5",
+    "remove-accents": "^0.5.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

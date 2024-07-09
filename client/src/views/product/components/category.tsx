@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
 import {
   Select,
@@ -24,16 +24,10 @@ import {
 import { CardItemProps } from "@views/product/upsert";
 import { Switch } from "@@/ui/switch";
 import Currency from "@@/currency";
-import { Input } from "@@/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@@/ui/tooltip";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
+import { UNIT_ENUM } from "@/constants/enums";
+import removeAccents from "remove-accents";
 
 export const OtherOption = {
   uuid: "other",
@@ -41,37 +35,74 @@ export const OtherOption = {
 };
 
 const Category = ({ form }: CardItemProps) => {
+  const [byKgSelect, setByKgSelect] = useState<Common.Option[]>([]);
+  const [pcsSelect, setPCsSelect] = useState<Common.Option[]>([]);
+
   const { data } = useSWR(cacheKey, categoryRequest.getAll);
-  const category = form.watch("categoryUuid");
-  const categoryByKg = form.watch("categoryUuidByKg");
-  const isUsedCategoryPrice = form.watch("isUsedCategoryPrice");
+  const [category, categoryByKg, isUsedCategoryPrice, name] = form.watch([
+    "categoryUuid",
+    "categoryUuidByKg",
+    "isUsedCategoryPrice",
+    "name",
+  ]);
 
   useEffect(() => {
-    if (category && category !== OtherOption.uuid && isUsedCategoryPrice) {
-      const categoryPrice =
-        data?.find(
-          (item) => item.uuid === (categoryByKg ? categoryByKg : category),
-        )?.price ?? 0;
+    if (data?.length) {
+      const byKgArr = data?.filter((item) => item.unit === UNIT_ENUM.KG);
+      if (byKgArr?.length) {
+        setByKgSelect(
+          byKgArr.map((item) => ({
+            value: item.uuid,
+            label: item.name,
+          })),
+        );
+      }
+      setPCsSelect(
+        data?.reduce((prev, item) => {
+          if (item.unit === UNIT_ENUM.KG) {
+            return prev;
+          }
+          return [
+            ...prev,
+            {
+              value: item.uuid,
+              label: item.name,
+            },
+          ];
+        }, [] as Common.Option[]),
+      );
+    }
+  }, [data]);
 
-      form.setValue("price", categoryPrice);
-    }
-    if (category === OtherOption.uuid) {
-      form.setValue("isUsedCategoryPrice", false);
-    } else {
-      form.setValue("categoryName", undefined);
-    }
-    if (!isUsedCategoryPrice) {
+  useEffect(() => {
+    if (!isUsedCategoryPrice && categoryByKg) {
       form.setValue("categoryUuidByKg", "");
     }
-  }, [isUsedCategoryPrice, category, data, form, categoryByKg]);
+    if (isUsedCategoryPrice && categoryByKg) {
+      const price = data?.find((item) => item.uuid === categoryByKg)?.price;
+      if (price) {
+        form.setValue("price", price);
+      }
+    }
+  }, [isUsedCategoryPrice, data, form, categoryByKg]);
 
   useEffect(() => {
-    if (isUsedCategoryPrice && !categoryByKg && data && data.length > 0) {
-      const defaultValue = data[0].uuid;
+    if (isUsedCategoryPrice && !categoryByKg && byKgSelect.length > 0) {
+      const defaultValue = byKgSelect[0].value;
       form.setValue("categoryUuidByKg", defaultValue);
     }
   }, [isUsedCategoryPrice]);
 
+  useEffect(() => {
+    const type = removeAccents(name.trim().split(" ")[0]).toLowerCase();
+    const cateType = pcsSelect.find((item) =>
+      removeAccents(item.label).toLowerCase().includes(type),
+    );
+    if (type && cateType) {
+      form.setValue("categoryUuid", cateType.value);
+    }
+  }, [name]);
+  console.log("form state", form.formState.errors);
   return (
     <Card>
       <CardHeader>
@@ -97,12 +128,9 @@ const Category = ({ form }: CardItemProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {[
-                        ...(data?.filter((item) => item.unit !== "KG") ?? []),
-                        OtherOption,
-                      ].map((item) => (
-                        <SelectItem key={item.uuid} value={item.uuid}>
-                          {item.name}
+                      {pcsSelect.map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -114,35 +142,16 @@ const Category = ({ form }: CardItemProps) => {
             <div
               className={cn(
                 "flex sm:col-span-2 gap-4",
-                category === OtherOption.uuid || !category
-                  ? "hidden"
-                  : "visible",
+                category ? "visible" : "hidden",
               )}
             >
               <FormField
                 control={form.control}
                 name="isUsedCategoryPrice"
                 render={({ field }) => (
-                  <FormItem
-                    className={cn(
-                      "space-y-2 max-w-[90px]",
-                      category !== OtherOption.uuid ? "visible" : "hidden",
-                    )}
-                  >
-                    <FormLabel>
-                      Đồng giá
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <QuestionMarkCircledIcon className="ml-1" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Sử dụng giá của phân loại để làm giá sản phẩm</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </FormLabel>
-
+                  <FormItem className={cn("space-y-2 min-w-[5rem]")}>
+                    <FormLabel>Bán kg</FormLabel>
+                    <br />
                     <FormControl>
                       <Switch
                         checked={field.value}
@@ -174,11 +183,9 @@ const Category = ({ form }: CardItemProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {[
-                          ...(data?.filter((item) => item.unit === "KG") ?? []),
-                        ].map((item) => (
-                          <SelectItem key={item.uuid} value={item.uuid}>
-                            {item.name}
+                        {byKgSelect.map(({ value, label }) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
                           </SelectItem>
                         ))}
                         {categoryByKg && (
@@ -201,23 +208,6 @@ const Category = ({ form }: CardItemProps) => {
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="categoryName"
-              render={({ field }) => (
-                <FormItem
-                  className={
-                    category === OtherOption.uuid ? "visible" : "hidden"
-                  }
-                >
-                  <FormLabel>Tên phân loại</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
           <FormField
             control={form.control}
