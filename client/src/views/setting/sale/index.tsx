@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
 import React from "react";
-import { SaleParamsProps } from "@/app/(dashboard)/setting/page";
+import { SaleParamsProps } from "@/app/(dashboard)/setting/sale/page";
 
 export type SaleSettingProps = {
   queryString: string;
