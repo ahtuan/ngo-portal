@@ -16,6 +16,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.0",
     "elysia": "latest",
+    "expr-eval": "^2.0.2",
     "logestic": "^1.2.0",
     "pg": "^8.11.5"
   },

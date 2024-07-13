@@ -52,12 +52,21 @@ export type ProductType = Omit<ProductCreate, "imageUrls"> & {
   soldOut: number;
 };
 
+export type Sale = {
+  uuid: string;
+  name: string;
+  description?: string | null;
+  steps: string;
+  condition: string | null;
+  price: number | null;
+};
 export type ProductDetail = {
   id: number;
   byDateId: string;
   categoryName: string;
   categoryNameByKg?: string;
   soldOut: number;
+  sale?: Sale;
 } & ProductCreate;
 
 export type ProductBarCode = {

@@ -13,6 +13,9 @@ import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
 import * as process from "node:process";
 import { defaultValue } from "@/libs/helpers";
+import SaleService from "@/services/sale.service";
+import { SaleDB } from "@/db/schemas/sale.schema";
+import { Parser } from "expr-eval";
 
 const baseSelect = {
   id: products.id,
@@ -36,6 +39,12 @@ const baseSelect = {
 };
 
 class ProductService {
+  private saleService: SaleService;
+
+  constructor() {
+    this.saleService = new SaleService();
+  }
+
   async getAll(query: Product.Filter) {
     const limit = query.size ? +query.size : DEFAULT_PAGING.size;
     const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
@@ -131,7 +140,7 @@ class ProductService {
 
   async getDetail(byDateId: string) {
     const result = await db
-      .select(baseSelect)
+      .select({ ...baseSelect, categoryIdByKg: byKgCategories.id })
       .from(products)
       .where(eq(products.byDateId, byDateId))
       .leftJoin(categories, eq(products.categoryId, categories.id))
@@ -140,19 +149,22 @@ class ProductService {
     if (!rawData) {
       return new NotFoundError("Không tìm thấy mã sản phẩm: " + byDateId);
     }
+
+    const price = rawData.isUsedCategoryPrice
+      ? rawData.byKgCategoryPrice
+        ? rawData.byKgCategoryPrice
+        : rawData.categoryPrice
+      : rawData.price;
     const mappedData: Product.Detail = {
       ...rawData,
       categoryUuidByKg: defaultValue(rawData.categoryUuidByKg) as string,
       categoryNameByKg: defaultValue(rawData.categoryNameByKg) as string,
-      price: rawData.isUsedCategoryPrice
-        ? rawData.byKgCategoryPrice
-          ? rawData.byKgCategoryPrice
-          : rawData.categoryPrice
-        : rawData.price,
+      price,
       weight: +rawData.weight,
       imageUrls: (
         await helperService.readImages(rawData.imageUrls ?? "")
       ).filter(Boolean),
+      sale: await this.getSaleForProduct(rawData.categoryIdByKg, price),
     };
 
     return ApiResponse.success(mappedData);
@@ -381,6 +393,60 @@ class ProductService {
       sequence = +lasted.byDateId.slice(8, 12) + 1;
     }
     return `${todayString}${sequence.toString().padStart(4, "0")}`;
+  }
+
+  private async getSaleForProduct(
+    categoryIdByKg: number | null,
+    price: number | null,
+  ): Promise<Product.Sale | undefined> {
+    const validSales = await this.saleService.getValidSales();
+    if (validSales.length > 0) {
+      let sale: Product.Sale = {
+        name: "",
+        description: "",
+        condition: "",
+        steps: "",
+        uuid: "",
+        price: null,
+      };
+      let pickSale: SaleDB.RawSale | undefined;
+      if (!categoryIdByKg) {
+        const availableSales = validSales.filter((s) => !s.useForKgCateIds);
+        if (availableSales.length > 0) {
+          pickSale = availableSales[0];
+        }
+      } else {
+        const availableSales = validSales.filter((s) =>
+          s.useForKgCateIds?.split(";")?.includes(categoryIdByKg.toString()),
+        );
+        if (availableSales.length > 0) {
+          pickSale = availableSales[0];
+          if (
+            !(
+              pickSale.condition?.includes("quantity") ||
+              pickSale.steps?.includes("quantity")
+            ) &&
+            price
+          ) {
+            console.log("pickSale.steps", pickSale.steps);
+            console.log("price", price);
+            sale.price = Parser.evaluate(pickSale.steps, { price: price });
+          }
+        }
+      }
+      if (pickSale) {
+        sale.name = pickSale.name;
+        sale.uuid = pickSale.uuid;
+        sale.description = pickSale.description;
+        sale.steps = pickSale.steps;
+        sale.condition = pickSale.condition;
+      } else {
+        return;
+      }
+
+      return sale;
+    }
+    return;
   }
 }
 

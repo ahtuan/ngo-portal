@@ -37,6 +37,7 @@ class CategoryService {
 
   async getAllOptions(unit: string = UNIT_ENUM.PCS) {
     let data: Common.Option[] = [];
+    unit = unit.toUpperCase();
     if (unit === UNIT_ENUM.PCS || unit === UNIT_ENUM.KG) {
       const isKgTable = unit === UNIT_ENUM.KG;
       const table = isKgTable ? byKgCategories : categories;
@@ -124,8 +125,6 @@ class CategoryService {
       return undefined;
     }
 
-    !isKGTable && console.log("uuid", uuid);
-    !isKGTable && console.log("type", typeof uuid);
     const data = await db
       .select()
       .from(isKGTable ? byKgCategories : categories)
@@ -137,6 +136,16 @@ class CategoryService {
       return undefined;
     }
     return data[0];
+  }
+
+  async getKgWithId() {
+    return db
+      .select({
+        id: byKgCategories.id,
+        name: byKgCategories.name,
+        uuid: byKgCategories.uuid,
+      })
+      .from(byKgCategories);
   }
 }
 

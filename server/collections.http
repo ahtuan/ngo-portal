@@ -148,3 +148,18 @@ Content-Type: application/json
 
 ### Get Invoice list
 GET {{host}}/api/invoice
+
+### Create sale
+POST {{host}}/api/sale
+Content-Type: application/json
+
+{
+  "name": "Sale 001",
+  "startDate": "2024-01-01",
+  "steps": "1*p + (n-1)*p*80%",
+  "condition": "n >= 2",
+  "isActive": true
+}
+
+### Get all Sales
+GET {{host}}/api/sale

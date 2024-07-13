@@ -2,15 +2,16 @@
 import React from "react";
 import { TableCell, TableRow } from "@@/ui/table";
 import { Input } from "@@/ui/input";
-import { formatCurrency } from "@/lib/utils";
+import { fixed, formatCurrency } from "@/lib/utils";
 import { Button } from "@@/ui/button";
 import { SquareArrowDown, SquareArrowUp, Trash } from "lucide-react";
 import { FieldArrayWithId } from "react-hook-form";
-import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice } from "@/schemas/invoice.schema";
+import Sale from "@views/order/component/sale";
 
 type Props = {
   field:
-    | FieldArrayWithId<InvoiceCreate, "stacks", "id">
+    | FieldArrayWithId<Invoice.DedicatedCreated, "stacks", "id">
     | Invoice.StackItemType;
   children: React.ReactNode;
   onDelete?: () => void;
@@ -48,7 +49,14 @@ const CollapseRow = ({
     <>
       <TableRow>
         <TableCell>
-          <Button variant="ghost" size="icon" onClick={() => setShow(!show)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(event) => {
+              setShow(!show);
+              event.preventDefault();
+            }}
+          >
             {show ? (
               <SquareArrowUp className="h-4 w-4" />
             ) : (
@@ -56,7 +64,11 @@ const CollapseRow = ({
             )}
           </Button>
         </TableCell>
-        <TableCell>{field.name}</TableCell>
+        <TableCell>
+          <div className="flex items-center">
+            {field.name} {field.sale && <Sale {...field.sale} />}
+          </div>
+        </TableCell>
         <TableCell className="flex items-center leading-9">
           <span>
             {isEditing ? (
@@ -72,13 +84,24 @@ const CollapseRow = ({
               />
             ) : (
               <span onClick={() => !readOnly && setEditing(true)}>
-                {field.weight + " kg"}
+                {fixed(field.weight, 3) + " kg"}
               </span>
             )}
           </span>
         </TableCell>
         <TableCell>{formatCurrency(field.price, "đ")}</TableCell>
-        <TableCell>{formatCurrency(field.total, "đ")}</TableCell>
+        <TableCell>
+          <p
+            className={
+              field.sale?.isApplied ? "text-muted-foreground line-through" : ""
+            }
+          >
+            {formatCurrency(field.total, "đ")}
+          </p>
+          <p className={field.sale?.isApplied ? "visible" : "hidden"}>
+            {formatCurrency(field.afterSale, "đ")}
+          </p>
+        </TableCell>
         {!readOnly && (
           <TableCell>
             <Button size="icon" variant="ghost" onClick={onDelete}>

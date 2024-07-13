@@ -13,14 +13,17 @@ import CategoryService from "@/services/category.service";
 import { and, desc, like, or, sql } from "drizzle-orm";
 import { helperService } from "@/services/helper.service";
 import { NotFoundError } from "@/libs/error";
+import SaleService from "@/services/sale.service";
 
 class InvoiceService {
   private productService: ProductService;
   private categoryService: CategoryService;
+  private saleService: SaleService;
 
   constructor() {
     this.productService = new ProductService();
     this.categoryService = new CategoryService();
+    this.saleService = new SaleService();
   }
 
   async getAll(query: Invoice.Filter) {
@@ -199,6 +202,10 @@ class InvoiceService {
     try {
       await db.transaction(async (transaction) => {
         try {
+          const invoiceSaleId =
+            body.sale?.uuid && body.sale.isApplied
+              ? (await this.saleService.getById(body.sale.uuid))?.id
+              : null;
           const { invoiceId } = (
             await db
               .insert(invoices)
@@ -207,6 +214,7 @@ class InvoiceService {
                 price: body.actualPrice,
                 paymentMethod: body.paymentType,
                 status: INVOICE_STATUS_ENUM.COMPLETE,
+                saleId: invoiceSaleId,
               })
               .returning({
                 invoiceId: invoices.id,
@@ -221,6 +229,10 @@ class InvoiceService {
               const categoryId = (
                 await this.categoryService.getById(stack.categoryUuidByKg, true)
               )?.id;
+              const stackSaleId =
+                stack.sale?.uuid && stack.sale.isApplied
+                  ? (await this.saleService.getById(stack.sale.uuid))?.id
+                  : null;
               const { parentId } = (
                 await db
                   .insert(invoiceItems)
@@ -230,6 +242,7 @@ class InvoiceService {
                     price: stack.price,
                     categoryId,
                     productId: null,
+                    saleId: stackSaleId,
                   })
                   .returning({
                     parentId: invoiceItems.id,

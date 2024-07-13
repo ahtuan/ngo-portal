@@ -8,34 +8,42 @@ import Scan from "@views/order/component/scan";
 import Customer from "@views/order/component/customer";
 import Items from "@views/order/component/items";
 import Total from "@views/order/component/total";
-import { Invoice, InvoiceBody, InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice, InvoiceBody } from "@/schemas/invoice.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PAYMENT_TYPE } from "@/constants/enums";
 import { ProductDetail } from "@/schemas/product.schema";
 import { useToast } from "@@/ui/use-toast";
-import { fixed } from "@/lib/utils";
+import { evaluateExp, fixed } from "@/lib/utils";
 import { invoiceRequest } from "@/api-requests/invoice.request";
+import useSWR from "swr";
+import {
+  saleEndpoint as cacheKey,
+  saleRequest,
+} from "@/api-requests/sale.request";
+import { ClientSale } from "@/schemas/sale.schema";
 
 export type CreateOrderProps = {
-  form: UseFormReturn<InvoiceCreate>;
+  form: UseFormReturn<Invoice.DedicatedCreated>;
 };
 
 const Create = () => {
   const { toast } = useToast();
-  const form = useForm<InvoiceCreate>({
+  const { data: invoiceSales } = useSWR(
+    cacheKey,
+    saleRequest.getForInvoiceOnly,
+  );
+  const form = useForm<Invoice.DedicatedCreated>({
     resolver: zodResolver(InvoiceBody),
     defaultValues: {
       items: [],
       paymentType: PAYMENT_TYPE.CASH.value,
       actualPrice: 0,
       stacks: [],
+      sale: undefined,
     },
   });
-  const {
-    control,
-    formState: { errors },
-  } = form;
-  const { fields, insert, append, remove, update } = useFieldArray({
+  const { control } = form;
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: "items",
   });
@@ -94,7 +102,7 @@ const Create = () => {
         let [quantity, total] = previousValue;
 
         quantity += currentValue.quantity;
-        total += currentValue.total;
+        total += currentValue.afterSale;
         return [quantity, total];
       },
       [0, 0],
@@ -105,15 +113,48 @@ const Create = () => {
         quantity += currentValue.items.reduce((prev, current) => {
           return prev + current.quantity;
         }, 0);
-        total += currentValue.total;
+        total += currentValue.afterSale;
         return [quantity, total];
       },
       [0, 0],
     );
+    const totalPrice = pcsPrice + kgPrice;
+    const availableSale = invoiceSales
+      ?.filter((sale) =>
+        evaluateExp(sale.condition, {
+          price: totalPrice,
+        }),
+      )
+      .reduce((previousValue, currentValue) => {
+        const prevPrice =
+          evaluateExp(previousValue.steps, {
+            price: totalPrice,
+          }) || totalPrice;
+        const currentPrice =
+          evaluateExp(currentValue.steps, {
+            price: totalPrice,
+          }) || totalPrice;
+        if (currentPrice <= prevPrice) {
+          return {
+            ...currentValue,
+            price: fixed(currentPrice, 0),
+            isApplied: true,
+          };
+        }
+        return previousValue;
+      }, {} as ClientSale.Item);
 
     form.setValue("totalQuantity", pcsQuantity + kgQuantity);
-    form.setValue("totalPrice", pcsPrice + kgPrice);
-    form.setValue("actualPrice", pcsPrice + kgPrice);
+    form.setValue("totalPrice", totalPrice);
+    if (availableSale && availableSale.price) {
+      form.setValue("sale", availableSale);
+      availableSale.price && form.setValue("afterSale", availableSale.price);
+      form.setValue("actualPrice", availableSale.price);
+    } else {
+      form.setValue("afterSale", totalPrice);
+      form.setValue("sale", undefined);
+      form.setValue("actualPrice", totalPrice);
+    }
   };
 
   const handleUpdatePcs = (
@@ -143,12 +184,12 @@ const Create = () => {
     // -2 used for update stack with weight
     if (itemIndex === -2) {
       // Update weight and total price for category
-      newWeight = fixed(replace ? value : existing.weight + value);
+      newWeight = replace ? value : existing.weight + value;
     }
     // Item not be in stack list
     else if (itemIndex === -1) {
       if (addedItem) {
-        newWeight = fixed(existing.weight + addedItem.weight);
+        newWeight = existing.weight + addedItem.weight;
         existing.items = [...existing.items, addedItem];
       } else {
         console.error(
@@ -161,7 +202,7 @@ const Create = () => {
       // existed item (in stack)
       const item = existing.items[itemIndex];
       if (isDeleted) {
-        newWeight = fixed(existing.weight - item.weight * item.quantity);
+        newWeight = existing.weight - item.weight * item.quantity;
         existing.items = existing.items.filter(
           (filterItem) => filterItem.byDateId !== item.byDateId,
         );
@@ -174,10 +215,9 @@ const Create = () => {
       } else {
         const updatedItem = getItemsUpdated(item, value, replace);
         if (updatedItem) {
-          newWeight = fixed(
+          newWeight =
             existing.weight +
-              (replace ? value - item.quantity : value) * item.weight,
-          );
+            (replace ? value - item.quantity : value) * item.weight;
           item.quantity = updatedItem.quantity;
           item.total = updatedItem.total;
           item.stock = updatedItem.stock;
@@ -187,11 +227,25 @@ const Create = () => {
       }
     }
 
-    total = fixed(newWeight * existing.price);
+    total = fixed(newWeight * existing.price, 0);
+    const isSaleApplied = !!evaluateExp(existing?.sale?.condition, {
+      quantity: newWeight,
+    });
+
+    const totalAfterSale = isSaleApplied
+      ? evaluateExp(existing.sale?.steps, {
+          quantity: newWeight,
+          price: existing.price,
+        }) || total // set default with total if not calculated
+      : total;
     stackUpdate(index, {
       ...existing,
       weight: newWeight,
       total,
+      afterSale: fixed(totalAfterSale, 0),
+      sale: existing.sale
+        ? { ...existing.sale, isApplied: isSaleApplied }
+        : undefined,
     });
   };
 
@@ -221,8 +275,20 @@ const Create = () => {
         ...general,
         quantity: 1,
         total: total,
+        afterSale: total,
       };
       if (index === -1) {
+        const isSaleApplied = !!evaluateExp(data?.sale?.condition, {
+          quantity: data.weight,
+        });
+
+        const totalAfterSale = isSaleApplied
+          ? evaluateExp(data.sale?.steps, {
+              quantity: data.weight,
+              price: data.price,
+            }) || total // set default with total if not calculated
+          : total;
+
         stackAppend({
           categoryUuidByKg: data.categoryUuidByKg,
           name: data.categoryNameByKg || "Gốm kg",
@@ -230,6 +296,10 @@ const Create = () => {
           weight: data.weight,
           total: total,
           items: [newItem],
+          afterSale: totalAfterSale,
+          sale: data.sale
+            ? { ...data.sale, isApplied: isSaleApplied }
+            : undefined,
         });
       } else {
         // If stack (by category) already been in list
@@ -246,12 +316,32 @@ const Create = () => {
         );
       }
     } else {
+      // Handle for PCS items added
       const index = fields.findIndex((item) => item.byDateId === data.byDateId);
       if (index === -1) {
+        if (data.quantity == 1) {
+          // no sale anymore if they are unique
+          data.sale = undefined;
+        }
+        const isSaleApplied = !!evaluateExp(data?.sale?.condition, {
+          quantity: 1,
+          stock: general.stock,
+        });
+
+        const total = data.price;
         append({
           ...general,
           quantity: 1,
-          total: data.price,
+          total,
+          sale: data.sale
+            ? { ...data.sale, isApplied: isSaleApplied }
+            : undefined,
+          afterSale: isSaleApplied
+            ? evaluateExp(data.sale?.steps, {
+                quantity: data.weight,
+                price: data.price,
+              }) || total // set default with total if not calculated
+            : total,
         });
       } else {
         handleUpdatePcs(index, 1);
@@ -288,12 +378,16 @@ const Create = () => {
     onUpdateTotal();
   };
 
-  const handleSubmit = async (values: InvoiceCreate) => {
+  const handleSubmit = async (values: Invoice.RawCreate) => {
     let message = "";
     try {
-      const response = await invoiceRequest.create(values);
-      message = response?.message || "Tạo đơn hàng thành công";
-      form.reset();
+      if (values.stacks?.length || values.items.length) {
+        const response = await invoiceRequest.create(values);
+        message = response?.message || "Tạo đơn hàng thành công";
+        form.reset();
+      } else {
+        message = "Đơn phải có sản phẩm";
+      }
     } catch (error) {
       console.error(error);
       message = "Có lỗi xảy ra trong quá trình tạo đơn hàng.";
@@ -315,16 +409,16 @@ const Create = () => {
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-6">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-6">
+              <Scan onAppend={onAppend} />
               <Items
                 fields={fields}
                 stackFields={stackFields}
                 onDelete={onDelete}
                 onUpdate={onUpdate}
               />
-              <Total form={form} />
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-6">
-              <Scan onAppend={onAppend} />
+              <Total form={form} />
               <Customer />
             </div>
           </div>

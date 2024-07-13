@@ -6,13 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@@/ui/card";
-import Html5QrcodePlugin from "@@/Html5QrcodePlugin";
 import { Input } from "@@/ui/input";
 import { Button } from "@@/ui/button";
 import { ListPlus } from "lucide-react";
 import { Label } from "@@/ui/label";
 import useSWRMutation from "swr/mutation";
-import { productRequest } from "@/api-requests/product.request";
+import {
+  productEndpoint,
+  productRequest,
+} from "@/api-requests/product.request";
 import { useToast } from "@@/ui/use-toast";
 import { ProductDetail } from "@/schemas/product.schema";
 import { ProductStatus } from "@/constants/status";
@@ -24,7 +26,7 @@ const Scan = ({ onAppend }: Props) => {
   const [id, setId] = React.useState<string>("");
   const { toast } = useToast();
   const { trigger: fetcher } = useSWRMutation(
-    id ? id : undefined,
+    productEndpoint,
     productRequest.getDetail,
     {
       onError: (err, key, config) => {
@@ -54,11 +56,37 @@ const Scan = ({ onAppend }: Props) => {
 
   const handleAddToItemList = () => {
     if (id) {
-      // @ts-ignore
-      fetcher(id);
+      let byDateId = id;
+      if (id.includes("-")) {
+        let [time, index] = id.split("-");
+        const currentYear = new Date().getFullYear().toString();
+        switch (time.length) {
+          case 2:
+            time = currentYear + "0" + time[0] + 0 + time[1];
+            break;
+          case 3:
+            time = currentYear + "0" + time[0] + time.slice(1, 3);
+            break;
+          case 5:
+            time = currentYear.slice(0, 3) + time[0];
+            break;
+          default:
+            time = currentYear + time;
+        }
+        index = index.padStart(4, "0");
+        byDateId = time + index;
+      }
+
+      fetcher(byDateId);
     }
   };
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddToItemList();
+    }
+  };
   return (
     <Card>
       <CardHeader>
@@ -68,30 +96,33 @@ const Scan = ({ onAppend }: Props) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <Html5QrcodePlugin
-          fps={10}
-          disableFlip={true}
-          qrCodeSuccessCallback={onNewScanResult}
-          className="max-h-[40dvh]"
-        />
+        {/*<Html5QrcodePlugin*/}
+        {/*  fps={10}*/}
+        {/*  disableFlip={true}*/}
+        {/*  qrCodeSuccessCallback={onNewScanResult}*/}
+        {/*  className="max-h-[40dvh]"*/}
+        {/*/>*/}
         <div className="grid gap-2 mt-2">
           <Label htmlFor="itemId">Mã sản phẩm</Label>
-          <Input
-            value={id}
-            onChange={(e) => setId(e.currentTarget.value)}
-            placeholder="Nhập mã sản phẩm"
-            name="itemId"
-          />
-          <Button
-            variant="outline"
-            onClick={(event) => {
-              event.preventDefault();
-              handleAddToItemList();
-            }}
-          >
-            <ListPlus className="mr-1" />
-            Thêm vào danh sách
-          </Button>
+          <div className="flex gap-2">
+            <Input
+              value={id}
+              onChange={(e) => setId(e.currentTarget.value.trim())}
+              placeholder="Nhập mã sản phẩm"
+              name="itemId"
+              onKeyDown={onKeyDown}
+            />
+            <Button
+              variant="outline"
+              onClick={(event) => {
+                event.preventDefault();
+                handleAddToItemList();
+              }}
+            >
+              <ListPlus className="mr-1" />
+              Thêm vào danh sách
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

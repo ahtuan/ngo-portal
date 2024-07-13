@@ -9,6 +9,7 @@ import { categoryController } from "@/controllers/category.controller";
 import { inventoryController } from "@/controllers/inventory.controller";
 import { productController } from "@/controllers/product.controller";
 import { invoiceController } from "@/controllers/invoice.controller";
+import { saleController } from "@/controllers/sale.controller";
 
 const corsConfig = {
   origin: "*",
@@ -45,6 +46,7 @@ const app = new Elysia({ prefix: "/api" })
   .use(inventoryController)
   .use(productController)
   .use(invoiceController)
+  .use(saleController)
   .listen(process.env.API_PORT || 3001);
 
 // Expose methods

@@ -1,5 +1,5 @@
 import http from "@/lib/http";
-import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice } from "@/schemas/invoice.schema";
 
 export const invoiceEndpoint = "/api/invoice";
 export const invoiceRequest = {
@@ -11,5 +11,5 @@ export const invoiceRequest = {
     const response = await http.get<Invoice.Detail>(url);
     return response.data;
   },
-  create: async (data: InvoiceCreate) => http.post(invoiceEndpoint, data),
+  create: async (data: Invoice.RawCreate) => http.post(invoiceEndpoint, data),
 };

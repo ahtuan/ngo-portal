@@ -1,7 +1,7 @@
 declare namespace Common {
   type PagingQuery = {
-    page?: number;
-    size?: number;
+    page?: string;
+    size?: string;
   };
 
   type Paging<T> = {

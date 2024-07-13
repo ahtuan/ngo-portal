@@ -14,13 +14,18 @@ export const productRequest = {
     );
     return response.data;
   },
-  getDetail: async (byDateId: string) => {
-    const response = await http.get<ProductDetail>(
-      productEndpoint + "/" + byDateId,
-      {
-        cache: "no-cache",
-      },
-    );
+  getDetail: async (
+    url: string,
+    {
+      arg,
+    }: {
+      arg?: string;
+    },
+  ) => {
+    const urlStr = url + "/" + arg;
+    const response = await http.get<ProductDetail>(urlStr, {
+      cache: "no-cache",
+    });
     return response.data;
   },
   print: async (payload: ProductPrint) =>

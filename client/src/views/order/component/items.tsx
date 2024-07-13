@@ -9,14 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from "@@/ui/table";
-import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice } from "@/schemas/invoice.schema";
 import ItemRow from "@views/order/component/item-row";
 import CollapseRow from "@views/order/component/collapse-row";
 
 type ItemsProps = {
-  fields: (FieldArrayWithId<InvoiceCreate, "items", "id"> | Invoice.ItemType)[];
+  fields: (
+    | FieldArrayWithId<Invoice.DedicatedCreated, "items", "id">
+    | Invoice.ItemType
+  )[];
   stackFields: (
-    | FieldArrayWithId<InvoiceCreate, "stacks", "id">
+    | FieldArrayWithId<Invoice.DedicatedCreated, "stacks", "id">
     | Invoice.StackItemType
   )[];
   onUpdate?: (

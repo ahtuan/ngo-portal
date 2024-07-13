@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PATH } from "@/constants/path";
 import dayjs from "dayjs";
+import { Parser, Value } from "expr-eval";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,7 +70,6 @@ function findPath(parts: string[], obj: any = PATH): Common.Breadcrumb[] {
 
 export function getBreadcrumb(pathName: string) {
   const paths = findPath(pathName.split("/"));
-  console.log("paths", paths);
   return paths.reduce((prev, value, index) => {
     if (index === paths.length - 1) {
       return [
@@ -171,8 +171,22 @@ export const fixed = (value: number, decimals: number = 2) => {
 };
 
 export const formatDate = (
-  date: string,
+  date: string | Date,
   format: string = "YYYY-MM-DD HH:mm",
 ) => {
-  return dayjs(date).format(format);
+  if (date) {
+    return dayjs(date).format(format);
+  }
+  return;
+};
+
+export const evaluateExp = (
+  expression?: string | null,
+  values?: Value | undefined,
+) => {
+  if (!expression) {
+    return undefined;
+  }
+  const result = Parser.evaluate(expression, values);
+  return result;
 };

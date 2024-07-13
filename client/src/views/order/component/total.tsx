@@ -12,43 +12,70 @@ import { PAYMENT_TYPE } from "@/constants/enums";
 import { CreateOrderProps } from "@views/order/create";
 import { formatCurrency } from "@/lib/utils";
 import Currency from "@@/currency";
+import Sale from "@views/order/component/sale";
 
 type RowProps = {
-  text: string;
+  text: React.ReactNode;
   children?: React.ReactNode;
 };
 export const RowRender = ({ text, children }: RowProps) => {
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <div className="col-span-2 text-sm">{text}</div>
-      <div className="text-right">{children}</div>
+    <div className="grid gap-2 grid-cols-2">
+      <div className="text-sm flex items-center">{text}</div>
+      <div className="text-right text-sm">{children}</div>
     </div>
   );
 };
 
 const Total = ({ form }: CreateOrderProps) => {
-  const [paymentType, totalPrice, totalQuantity] = form.watch([
+  const [paymentType, totalPrice, totalQuantity, afterSale, sale] = form.watch([
     "paymentType",
     "totalPrice",
     "totalQuantity",
+    "afterSale",
+    "sale",
   ]);
   const [amount, setAmount] = useState<number>(0);
   const getAmount = (value: number) => {
     return `${formatCurrency(value) || 0} đ`;
   };
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  };
+
   return (
     <Card>
       <CardContent className="grid gap-2 mt-4">
         <RowRender text="Tổng số lượng">{totalQuantity}</RowRender>
-        <RowRender text="Thành tiền">{getAmount(totalPrice)}</RowRender>
+        <RowRender text="Thành tiền">
+          <span
+            className={sale ? "line-through" + " text-muted-foreground" : ""}
+          >
+            {getAmount(totalPrice)}
+          </span>
+        </RowRender>
+        {sale && afterSale !== totalPrice && (
+          <RowRender
+            text={
+              <div className="flex items-center">
+                <span>Sau chiết khấu</span>
+                <Sale {...sale} />
+              </div>
+            }
+          >
+            {getAmount(afterSale)}
+          </RowRender>
+        )}
         <RowRender text="Thực thu">
           <FormField
             control={form.control}
             name="actualPrice"
             render={({ field }) => (
               <FormItem>
-                <Currency {...field} />
+                <Currency {...field} onKeyDown={onKeyDown} />
                 <FormMessage />
               </FormItem>
             )}
@@ -92,6 +119,7 @@ const Total = ({ form }: CreateOrderProps) => {
                     +event.target.value - form.getValues("actualPrice");
                   setAmount(amount);
                 }}
+                onKeyDown={onKeyDown}
               />
             </RowRender>
             {amount > 0 && (

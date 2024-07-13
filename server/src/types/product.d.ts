@@ -19,8 +19,17 @@ declare namespace Product {
     soldOut: number;
   };
 
+  type Sale = {
+    uuid: string;
+    name: string | null;
+    description?: string | null;
+    steps: string | null;
+    condition: string | null;
+    price: number | null;
+  };
   type Detail = {
     imageUrls: string[];
+    sale?: Sale;
   } & Omit<Response, "mainImage" | "unit">;
 
   type ByIdBody = {

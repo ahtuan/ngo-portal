@@ -5,6 +5,8 @@ import { unlinkSync } from "node:fs";
 import * as url from "node:url";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { DEFAULT_PAGING } from "@/constants/common";
+import db from "@/db";
+import { sql, WithSubquery } from "drizzle-orm";
 
 class HelperService {
   /**
@@ -46,6 +48,35 @@ class HelperService {
     limit: number = DEFAULT_PAGING.size,
   ) {
     return qb.limit(limit).offset(offset * limit);
+  }
+
+  async getDataPagination<K>(
+    wt: WithSubquery,
+    offset: number = DEFAULT_PAGING.page,
+    limit: number = DEFAULT_PAGING.size,
+  ) {
+    const select = db.with(wt).select().from(wt);
+    const data = await this.withPagination(select.$dynamic(), offset, limit);
+
+    const totalRecord = (
+      await db
+        .with(wt)
+        .select({
+          count: sql`count('*')`.mapWith(Number),
+        })
+        .from(wt)
+    )[0].count;
+    const totalPage = Math.ceil(totalRecord / limit);
+
+    const response: Common.Paging<K> = {
+      page: offset + 1,
+      totalPage: totalPage,
+      totalRecord: totalRecord,
+      size: limit,
+      // @ts-ignore
+      data,
+    };
+    return response;
   }
 
   private getUploadPath = () => {

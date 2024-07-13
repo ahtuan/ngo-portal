@@ -3,13 +3,13 @@ import {
   decimal,
   integer,
   serial,
-  timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 import { identityMixin, metaDataMixin, schema } from "@/db/schemas/mixin";
 import { relations } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { categories } from "@/db/schemas/category.schema";
+import { sales } from "@/db/schemas/sale.schema";
 
 export const invoices = schema.table("invoices", {
   ...identityMixin,
@@ -18,6 +18,7 @@ export const invoices = schema.table("invoices", {
   price: integer("price").notNull(),
   paymentMethod: varchar("payment_method").notNull(), // Cash, Bank
   status: varchar("status", { length: 30 }).notNull(), // Creating,
+  saleId: integer("sale_id").references(() => sales.id),
   ...metaDataMixin,
   // Completed, Cancelled
 });
@@ -38,20 +39,6 @@ export const invoiceItems = schema.table("invoice_items", {
   productId: integer("product_id").references(() => products.id),
   categoryId: integer("category_id").references(() => categories.id),
 });
-
-export const sales = schema.table("sales", {
-  ...identityMixin,
-  name: varchar("name", { length: 256 }),
-  description: varchar("description"),
-  steps: varchar("steps"),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  ...metaDataMixin,
-});
-
-export const salesRelation = relations(sales, ({ one, many }) => ({
-  items: many(invoiceItems),
-}));
 
 export type InvoiceItemSchema = typeof invoiceItems.$inferInsert;
 

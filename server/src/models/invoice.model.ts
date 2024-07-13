@@ -8,6 +8,15 @@ const filter = t.Partial(
     size: t.String(),
   }),
 );
+const SaleCampaign = t.Object({
+  uuid: t.String(),
+  name: t.String(),
+  description: t.Optional(t.Union([t.String(), t.Null()])),
+  price: t.Union([t.Number(), t.Null()]),
+  condition: t.Union([t.String(), t.Null()]),
+  steps: t.String(),
+  isApplied: t.Optional(t.Boolean()),
+});
 
 const InvoiceItem = t.Object({
   byDateId: t.String(),
@@ -21,6 +30,7 @@ const InvoiceItem = t.Object({
   unit: t.String(),
   stock: t.Number(),
   originalStock: t.Number(),
+  sale: t.Optional(SaleCampaign),
 });
 
 const StackItem = t.Object({
@@ -30,6 +40,7 @@ const StackItem = t.Object({
   price: t.Number(),
   total: t.Number(),
   items: t.Array(InvoiceItem),
+  sale: t.Optional(SaleCampaign),
 });
 
 const create = t.Object({
@@ -40,6 +51,7 @@ const create = t.Object({
   }),
   items: t.Optional(t.Array(InvoiceItem)),
   stacks: t.Optional(t.Array(StackItem)),
+  sale: t.Optional(SaleCampaign),
 });
 
 export const invoiceModel = new Elysia({

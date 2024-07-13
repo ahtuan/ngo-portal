@@ -12,8 +12,8 @@ import { eq } from "drizzle-orm";
 
 class InventoryService {
   async getAll(query: Common.PagingQuery) {
-    const limit = query.size || DEFAULT_PAGING.size;
-    const offset = query.page || DEFAULT_PAGING.page;
+    const limit = query.size ? +query.size : DEFAULT_PAGING.size;
+    const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
     const data: InventoryType[] = await db.query.inventories.findMany({
       limit,
       offset,

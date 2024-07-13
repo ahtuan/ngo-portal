@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "@@/ui/table";
 import { Button } from "@@/ui/button";
 import { Trash } from "lucide-react";
 import { FieldArrayWithId } from "react-hook-form";
-import { Invoice, InvoiceCreate } from "@/schemas/invoice.schema";
+import { Invoice } from "@/schemas/invoice.schema";
 import { formatCurrency } from "@/lib/utils";
 import { Input } from "@@/ui/input";
 import {
@@ -12,9 +12,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@@/ui/tooltip";
+import Sale from "@views/order/component/sale";
 
 type ItemRowProps = {
-  field: FieldArrayWithId<InvoiceCreate, "items", "id"> | Invoice.ItemType;
+  field:
+    | FieldArrayWithId<Invoice.DedicatedCreated, "items", "id">
+    | Invoice.ItemType;
   onDelete?: () => void;
   onUpdate?: (value: number) => void;
   byKg?: boolean;
@@ -55,7 +58,9 @@ const ItemRow = ({
   return (
     <TableRow>
       <TableCell>{field.byDateId}</TableCell>
-      <TableCell>{field.name}</TableCell>
+      <TableCell>
+        {field.name} {field.sale && <Sale {...field.sale} />}
+      </TableCell>
       <TableCell className="flex items-center leading-9">
         <span>
           {isEditing ? (
@@ -85,7 +90,10 @@ const ItemRow = ({
         )}
       </TableCell>
       <TableCell>{!byKg ? formatCurrency(field.price, "đ") : ""}</TableCell>
-      <TableCell className={byKg ? "text-muted-foreground" : ""}>
+      <TableCell
+        className={byKg ? "text-muted-foreground" : ""}
+        onClick={(e) => e.preventDefault()}
+      >
         {byKg ? (
           <TooltipProvider>
             <Tooltip>
