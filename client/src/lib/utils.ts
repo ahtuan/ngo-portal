@@ -4,6 +4,12 @@ import { PATH } from "@/constants/path";
 import dayjs from "dayjs";
 import { Parser, Value } from "expr-eval";
 
+import utc from "dayjs/plugin/utc";
+// import utc from 'dayjs/plugin/utc' // ES 2015
+// import timezone from 'dayjs/plugin/timezone' // ES 2015
+
+dayjs.extend(utc);
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -175,7 +181,7 @@ export const formatDate = (
   format: string = "YYYY-MM-DD HH:mm",
 ) => {
   if (date) {
-    return dayjs(date).format(format);
+    return dayjs(date).utc(false).format(format);
   }
   return;
 };
@@ -189,4 +195,28 @@ export const evaluateExp = (
   }
   const result = Parser.evaluate(expression, values);
   return result;
+};
+
+export const getFastId = (id: string) => {
+  let byDateId = id;
+  if (id.includes("-")) {
+    let [time, index] = id.split("-");
+    const currentYear = new Date().getFullYear().toString();
+    switch (time.length) {
+      case 2:
+        time = currentYear + "0" + time[0] + 0 + time[1];
+        break;
+      case 3:
+        time = currentYear + "0" + time[0] + time.slice(1, 3);
+        break;
+      case 5:
+        time = currentYear.slice(0, 3) + time[0];
+        break;
+      default:
+        time = currentYear + time;
+    }
+    index = index.padStart(4, "0");
+    byDateId = time + index;
+  }
+  return byDateId;
 };

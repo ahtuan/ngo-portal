@@ -18,6 +18,7 @@ import {
 import { useToast } from "@@/ui/use-toast";
 import { ProductDetail } from "@/schemas/product.schema";
 import { ProductStatus } from "@/constants/status";
+import { getFastId } from "@/lib/utils";
 
 type Props = {
   onAppend: (data: ProductDetail) => void;
@@ -56,26 +57,7 @@ const Scan = ({ onAppend }: Props) => {
 
   const handleAddToItemList = () => {
     if (id) {
-      let byDateId = id;
-      if (id.includes("-")) {
-        let [time, index] = id.split("-");
-        const currentYear = new Date().getFullYear().toString();
-        switch (time.length) {
-          case 2:
-            time = currentYear + "0" + time[0] + 0 + time[1];
-            break;
-          case 3:
-            time = currentYear + "0" + time[0] + time.slice(1, 3);
-            break;
-          case 5:
-            time = currentYear.slice(0, 3) + time[0];
-            break;
-          default:
-            time = currentYear + time;
-        }
-        index = index.padStart(4, "0");
-        byDateId = time + index;
-      }
+      let byDateId = getFastId(id);
 
       fetcher(byDateId);
     }

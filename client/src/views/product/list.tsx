@@ -8,7 +8,12 @@ import {
 } from "@/api-requests/product.request";
 import { ProductBarCode, ProductType } from "@/schemas/product.schema";
 import { ColumnDef } from "@tanstack/react-table";
-import { formatCurrency, formatPrice, generateSearchParams } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatPrice,
+  generateSearchParams,
+  getFastId,
+} from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -254,10 +259,10 @@ const List = ({ queryString, searchParams }: Props) => {
 
   const onSearch = (keyword: string) => {
     let gencParams = generateSearchParams(queryString);
-    gencParams.keyword = keyword;
+    gencParams.keyword = getFastId(keyword);
     gencParams.page = "1";
     const keywordChangedString = Object.entries(gencParams)
-      .map(([key, value]) => `${key}=${key === "keyword" ? keyword : value}`)
+      .map(([key, value]) => `${key}=${value}`)
       .join("&");
     router.push(`${pathName}?${keywordChangedString}`);
   };

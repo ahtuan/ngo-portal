@@ -43,6 +43,13 @@ export const invoiceItems = schema.table("invoice_items", {
 export type InvoiceItemSchema = typeof invoiceItems.$inferInsert;
 
 export namespace InvoiceResponse {
+  export type Sale = {
+    condition: string | null;
+    description: string | null;
+    name: string;
+    steps: string;
+    isApplied: boolean;
+  };
   export type InvoiceItemSelect = typeof invoiceItems.$inferSelect;
   export type InvoiceItem = {
     name: string;
@@ -50,6 +57,7 @@ export namespace InvoiceResponse {
     quantity: number;
     price: number;
     total: number;
+    sale?: Sale;
   };
 
   export type StackItem = {
@@ -59,11 +67,14 @@ export namespace InvoiceResponse {
     price: number;
     total: number;
     items: InvoiceItem[];
+    sale?: Sale;
+    afterSale: number;
   };
 
   export type Invoice = typeof invoices.$inferSelect;
   export type Detail = {
     actualPrice: number;
+    afterSale: number;
     totalQuantity: number;
     totalPrice: number;
     byDateId: string;
@@ -71,5 +82,6 @@ export namespace InvoiceResponse {
     paymentType: string;
     items: InvoiceItem[];
     stacks: StackItem[];
+    sale?: Sale;
   };
 }

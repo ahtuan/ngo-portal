@@ -14,6 +14,7 @@ import { and, desc, like, or, sql } from "drizzle-orm";
 import { helperService } from "@/services/helper.service";
 import { NotFoundError } from "@/libs/error";
 import SaleService from "@/services/sale.service";
+import { evaluateExp, fixed } from "@/libs/helpers";
 
 class InvoiceService {
   private productService: ProductService;
@@ -91,7 +92,6 @@ class InvoiceService {
         if (product) {
           let price = product.price;
           // Product use category price
-          product.id === 5 && console.log(product);
           if (!price && !categoryPrice && product.categoryId) {
             // Because of this case just happen if product not selling by kg
             // due to categoryPrice have value
@@ -99,11 +99,11 @@ class InvoiceService {
               product.categoryId,
               false,
             );
-            console.log("here", category);
             if (category) {
               price = category.price;
             }
           }
+
           return {
             name: product.name,
             byDateId: product.byDateId,
@@ -141,9 +141,18 @@ class InvoiceService {
                 true,
               );
               if (category) {
-                const total = +current.quantity * current.price;
-                result.totalPrice += total; // Quantity place as weight
-
+                const total = fixed(+current.quantity * current.price);
+                // Quantity place as weight
+                const sale = current.saleId
+                  ? await this.saleService.getById(current.saleId)
+                  : undefined;
+                const afterSale = sale?.steps
+                  ? evaluateExp(sale.steps, {
+                      price: current.price,
+                      quantity: +current.quantity,
+                    }) || total
+                  : total;
+                result.totalPrice += afterSale;
                 result.stacks.push({
                   id: current.id,
                   name: category.name,
@@ -151,6 +160,16 @@ class InvoiceService {
                   price: current.price,
                   total,
                   items: [],
+                  sale: sale
+                    ? {
+                        name: sale.name,
+                        description: sale.description,
+                        condition: sale.condition,
+                        steps: sale.steps,
+                        isApplied: true,
+                      }
+                    : undefined,
+                  afterSale: fixed(afterSale),
                 });
               }
             }
@@ -174,13 +193,24 @@ class InvoiceService {
             totalQuantity: 0,
             items: [],
             stacks: [],
+            sale: undefined,
           } as {
             totalPrice: number;
             totalQuantity: number;
             items: InvoiceResponse.InvoiceItem[];
             stacks: InvoiceResponse.StackItem[];
+            sale?: InvoiceResponse.Sale;
           }),
         );
+      const sale = invoice.saleId
+        ? await this.saleService.getById(invoice.saleId)
+        : undefined;
+
+      const afterSale = sale?.steps
+        ? evaluateExp(sale.steps, {
+            price: totalPrice,
+          }) || totalPrice
+        : totalPrice;
       const mapping: InvoiceResponse.Detail = {
         byDateId: invoice.byDateId,
         createdAt: invoice.createdAt,
@@ -190,6 +220,16 @@ class InvoiceService {
         totalQuantity,
         items,
         stacks,
+        sale: sale
+          ? {
+              name: sale.name,
+              description: sale.description,
+              condition: sale.condition,
+              steps: sale.steps,
+              isApplied: true,
+            }
+          : undefined,
+        afterSale: fixed(afterSale),
       };
       return ApiResponse.success(mapping);
     }
