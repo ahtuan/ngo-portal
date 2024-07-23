@@ -28,4 +28,9 @@ export const invoiceController = new Elysia({
     {
       body: "invoice.create",
     },
+  )
+  .post(
+    "/:byDateId/complete",
+    async ({ params: { byDateId }, invoiceServer: service }) =>
+      await service.complete(byDateId),
   );

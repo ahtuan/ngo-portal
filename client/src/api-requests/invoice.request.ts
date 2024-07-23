@@ -12,4 +12,6 @@ export const invoiceRequest = {
     return response.data;
   },
   create: async (data: Invoice.RawCreate) => http.post(invoiceEndpoint, data),
+  complete: async (byDateId: string) =>
+    http.post(`${invoiceEndpoint}/${byDateId}/complete`, undefined),
 };

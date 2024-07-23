@@ -7,12 +7,14 @@ import { Badge } from "@@/ui/badge";
 import Link from "next/link";
 import { ProductPath } from "@/constants/path";
 import { useRouter } from "next/navigation";
+import { CardDescription } from "@@/ui/card";
 
 type CreateHeaderProps = {
   title?: string;
+  description?: string;
 };
 
-const CreateHeader = ({ title }: CreateHeaderProps) => {
+const CreateHeader = ({ title, description }: CreateHeaderProps) => {
   const router = useRouter();
   return (
     <>
@@ -22,12 +24,18 @@ const CreateHeader = ({ title }: CreateHeaderProps) => {
           <span className="sr-only">Trở về</span>
         </Button>
       </Link>
-      <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-        Lô hàng - {title}
-      </h1>
-      <Badge variant="outline" className="ml-auto sm:ml-0">
-        Đang soạn hàng
-      </Badge>
+      <div>
+        <div className="flex items-center gap-4">
+          <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+            Lô hàng - {title}
+          </h1>
+          <Badge variant="outline" className="ml-auto sm:ml-0">
+            Đang soạn hàng
+          </Badge>
+        </div>
+        {description && <CardDescription>{description}</CardDescription>}
+      </div>
+
       <div className="hidden items-center gap-2 md:ml-auto md:flex">
         <Link
           href={`${ProductPath.Base}?page=1`}

@@ -51,6 +51,14 @@ Content-Type: application/json
 GET {{host}}/api/inventory
 Content-Type: application/json
 
+### Get inventory report
+GET {{host}}/api/inventory/2024062801/report
+Content-Type: application/json
+
+### Get inventory report
+GET {{host}}/api/inventory/2024071201/report
+Content-Type: application/json
+
 ### Create new Inventory
 POST {{host}}/api/inventory
 Content-Type: application/json

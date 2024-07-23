@@ -25,8 +25,11 @@ import { ClientSale } from "@/schemas/sale.schema";
 export type CreateOrderProps = {
   form: UseFormReturn<Invoice.DedicatedCreated>;
 };
+type CreateProps = {
+  isOnline?: boolean;
+};
 
-const Create = () => {
+const Create = ({ isOnline }: CreateProps) => {
   const { toast } = useToast();
   const { data: invoiceSales } = useSWR(
     cacheKey,
@@ -36,10 +39,12 @@ const Create = () => {
     resolver: zodResolver(InvoiceBody),
     defaultValues: {
       items: [],
-      paymentType: PAYMENT_TYPE.CASH.value,
+      paymentType: isOnline ? PAYMENT_TYPE.BANK.value : PAYMENT_TYPE.CASH.value,
       actualPrice: 0,
       stacks: [],
       sale: undefined,
+      isOnline: isOnline,
+      deposit: isOnline ? 50000 : undefined,
     },
   });
   const { control } = form;
@@ -88,6 +93,7 @@ const Create = () => {
         quantity: newQuantity,
         total,
         stock,
+        afterSale: total,
       };
     }
     console.error("Must have stock for PSC change");
@@ -396,7 +402,7 @@ const Create = () => {
       description: message,
     });
   };
-
+  console.log("form", form.formState.errors);
   return (
     <>
       <Form {...form}>
@@ -405,7 +411,7 @@ const Create = () => {
           onSubmit={form.handleSubmit(handleSubmit)}
         >
           <div className="flex items-center gap-4">
-            <Header />
+            <Header isOnline={isOnline} />
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-6">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-6">
@@ -418,7 +424,7 @@ const Create = () => {
               />
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-6">
-              <Total form={form} />
+              <Total form={form} isOnline={isOnline} />
               <Customer />
             </div>
           </div>

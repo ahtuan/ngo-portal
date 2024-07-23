@@ -42,6 +42,8 @@ export const InvoiceBody = z.object({
   stacks: z.array(Stack).optional(),
   actualPrice: z.coerce.number().min(1, "Đơn hàng phải có giá trị"),
   sale: z.optional(SaleBody),
+  isOnline: z.optional(z.boolean()),
+  deposit: z.optional(z.coerce.number()),
 });
 
 export namespace Invoice {
@@ -53,16 +55,28 @@ export namespace Invoice {
   } & RawCreate;
   export type ItemType = z.TypeOf<typeof InvoiceItems>;
   export type StackItemType = z.TypeOf<typeof Stack>;
+  type Payment = {
+    invoiceId: number;
+    paymentMethod: string;
+    status: string;
+    amount: number;
+    paymentType: string;
+    paymentDate: string;
+  };
   export type Type = {
     byDateId: string;
-    paymentMethod: string;
+    payments: Payment[];
     price: number;
     createdAt: string;
     createdBy: string;
+    status: string;
+    isOnline: boolean;
   };
   export type Detail = {
     byDateId: string;
     createdAt: string;
+    status: string;
+    payments: Payment[];
   } & DedicatedCreated;
 
   export type Sale = z.TypeOf<typeof SaleBody>;

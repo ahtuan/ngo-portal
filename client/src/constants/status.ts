@@ -13,3 +13,13 @@ export const ProductStatus = {
   READY: { value: "READY", label: "Trưng bày" },
   SOLD: { value: "SOLD", label: "Đã hết" },
 };
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+}
+
+export enum PaymentStatus {
+  COMPLETE = "COMPLETE",
+  PENDING = "PENDING",
+}

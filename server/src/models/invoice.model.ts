@@ -52,6 +52,8 @@ const create = t.Object({
   items: t.Optional(t.Array(InvoiceItem)),
   stacks: t.Optional(t.Array(StackItem)),
   sale: t.Optional(SaleCampaign),
+  isOnline: t.Optional(t.Boolean()),
+  deposit: t.Optional(t.Number()),
 });
 
 export const invoiceModel = new Elysia({

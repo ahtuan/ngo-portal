@@ -16,6 +16,10 @@ export const PATH = {
             path: "/create",
             text: "Tạo mới",
           },
+          online: {
+            path: "/online",
+            text: "Trực tuyến",
+          },
         },
         disabled: false,
       },
@@ -82,6 +86,7 @@ const baseOrder = "/order";
 export const OrderPath = {
   Base: baseOrder,
   Create: `${baseOrder}/create`,
+  Online: `${baseOrder}/online`,
 };
 
 const baseSetting = "/setting";

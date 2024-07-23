@@ -6,15 +6,23 @@ import {
   InvoiceItemSchema,
   InvoiceResponse,
   invoices,
+  payments,
 } from "@/db/schemas/invoice.schema";
-import { DEFAULT_PAGING, INVOICE_STATUS_ENUM } from "@/constants/common";
+import {
+  DEFAULT_PAGING,
+  INVOICE_STATUS_ENUM,
+  PAYMENT_METHOD_ENUM,
+  PAYMENT_STATUS,
+  PAYMENT_TYPE,
+} from "@/constants/common";
 import ProductService from "@/services/product.service";
 import CategoryService from "@/services/category.service";
-import { and, desc, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { helperService } from "@/services/helper.service";
 import { NotFoundError } from "@/libs/error";
 import SaleService from "@/services/sale.service";
 import { evaluateExp, fixed } from "@/libs/helpers";
+import { getCurrentDate } from "@/libs/date";
 
 class InvoiceService {
   private productService: ProductService;
@@ -50,7 +58,16 @@ class InvoiceService {
       offset,
       limit,
     );
+    const mappedData: InvoiceResponse.Invoice[] = await Promise.all(
+      data.map(async (item) => {
+        const payments = await this.getPayments(item.id);
 
+        return {
+          ...item,
+          payments,
+        };
+      }),
+    );
     const totalRecord = (
       await db
         .with(sq)
@@ -66,7 +83,7 @@ class InvoiceService {
       totalPage: totalPage,
       totalRecord: totalRecord,
       size: limit,
-      data,
+      data: mappedData,
     };
     return ApiResponse.success(response);
   }
@@ -211,11 +228,11 @@ class InvoiceService {
             price: totalPrice,
           }) || totalPrice
         : totalPrice;
+      const payments = await this.getPayments(invoice.id);
       const mapping: InvoiceResponse.Detail = {
         byDateId: invoice.byDateId,
         createdAt: invoice.createdAt,
         actualPrice: invoice.price,
-        paymentType: invoice.paymentMethod,
         totalPrice,
         totalQuantity,
         items,
@@ -230,6 +247,9 @@ class InvoiceService {
             }
           : undefined,
         afterSale: fixed(afterSale),
+        status: invoice.status,
+        payments,
+        isOnline: invoice.isOnline,
       };
       return ApiResponse.success(mapping);
     }
@@ -237,7 +257,7 @@ class InvoiceService {
   }
 
   async create(body: Invoice.Create) {
-    const { items, stacks } = body;
+    const { items, stacks, isOnline } = body;
     const byDateId = await this.getIdSequence();
     try {
       await db.transaction(async (transaction) => {
@@ -246,24 +266,31 @@ class InvoiceService {
             body.sale?.uuid && body.sale.isApplied
               ? (await this.saleService.getById(body.sale.uuid))?.id
               : null;
+
+          // Add invoice and get Id
           const { invoiceId } = (
             await db
               .insert(invoices)
               .values({
                 byDateId,
                 price: body.actualPrice,
-                paymentMethod: body.paymentType,
-                status: INVOICE_STATUS_ENUM.COMPLETE,
+                isOnline,
+                status: isOnline
+                  ? INVOICE_STATUS_ENUM.PENDING
+                  : INVOICE_STATUS_ENUM.COMPLETE,
                 saleId: invoiceSaleId,
               })
               .returning({
                 invoiceId: invoices.id,
               })
           )[0];
+
+          // Add invoice item with PCS
           if (items?.length) {
             await this.insertItems(items, invoiceId);
           }
 
+          // Add invoice item with KG
           if (stacks?.length) {
             for (const stack of stacks) {
               const categoryId = (
@@ -273,6 +300,7 @@ class InvoiceService {
                 stack.sale?.uuid && stack.sale.isApplied
                   ? (await this.saleService.getById(stack.sale.uuid))?.id
                   : null;
+
               const { parentId } = (
                 await db
                   .insert(invoiceItems)
@@ -291,6 +319,34 @@ class InvoiceService {
               await this.insertItems(stack.items, invoiceId, parentId);
             }
           }
+
+          // Add payment method
+
+          let paymentsData: Array<InvoiceResponse.InsertPayment> = [
+            {
+              invoiceId,
+              amount:
+                isOnline && body.deposit ? body.deposit : body.actualPrice,
+              status: PAYMENT_STATUS.COMPLETE,
+              paymentType: isOnline ? PAYMENT_TYPE.DEPOSIT : PAYMENT_TYPE.FULL,
+              paymentDate: getCurrentDate(),
+              paymentMethod: body.paymentType,
+            },
+          ];
+          if (isOnline && body.deposit) {
+            const remaining = body.actualPrice - body.deposit;
+            if (remaining > 0) {
+              paymentsData.push({
+                invoiceId,
+                amount: remaining,
+                status: PAYMENT_STATUS.PENDING,
+                paymentType: PAYMENT_TYPE.REMAINING,
+                paymentMethod: PAYMENT_METHOD_ENUM.CASH,
+              });
+            }
+          }
+
+          await db.insert(payments).values(paymentsData);
         } catch (error) {
           console.error(error);
           transaction.rollback();
@@ -301,6 +357,34 @@ class InvoiceService {
       return ApiResponse.error("Có lỗi xảy ra trong quá trình tạo đơn hàng");
     }
     return ApiResponse.success(byDateId);
+  }
+
+  async complete(byDateId: string) {
+    const invoice = await this.getById(byDateId);
+    if (!invoice) {
+      return new NotFoundError("Không tìm thấy mã đơn hàng");
+    }
+
+    await db
+      .update(payments)
+      .set({
+        paymentMethod: PAYMENT_METHOD_ENUM.BANK,
+        paymentDate: getCurrentDate(),
+        status: PAYMENT_STATUS.COMPLETE,
+      })
+      .where(
+        and(
+          eq(payments.invoiceId, invoice.id),
+          eq(payments.status, PAYMENT_STATUS.PENDING),
+        ),
+      );
+    await db
+      .update(invoices)
+      .set({
+        status: INVOICE_STATUS_ENUM.COMPLETE,
+      })
+      .where(eq(invoices.id, invoice.id));
+    return ApiResponse.success(undefined);
   }
 
   private async getIdSequence() {
@@ -347,6 +431,27 @@ class InvoiceService {
       Promise.resolve([] as InvoiceItemSchema[]),
     );
     await db.insert(invoiceItems).values(mapping);
+  }
+
+  private async getPayments(invoiceId: number) {
+    const payments = await db.query.payments.findMany({
+      where: (payment, { eq }) => eq(payment.invoiceId, invoiceId),
+    });
+    return payments;
+  }
+
+  private async getById(byDateId: string | number) {
+    const data = await db.query.invoices.findFirst({
+      where: (invoice, { eq }) =>
+        eq(
+          typeof byDateId === "string" ? invoice.byDateId : invoice.id,
+          byDateId,
+        ),
+    });
+    if (!data) {
+      return undefined;
+    }
+    return data;
   }
 }
 

@@ -27,7 +27,12 @@ export const RowRender = ({ text, children }: RowProps) => {
   );
 };
 
-const Total = ({ form }: CreateOrderProps) => {
+const Total = ({
+  form,
+  isOnline,
+}: CreateOrderProps & {
+  isOnline?: boolean;
+}) => {
   const [paymentType, totalPrice, totalQuantity, afterSale, sale] = form.watch([
     "paymentType",
     "totalPrice",
@@ -81,6 +86,20 @@ const Total = ({ form }: CreateOrderProps) => {
             )}
           />
         </RowRender>
+        {isOnline && (
+          <RowRender text="Tiền cọc">
+            <FormField
+              control={form.control}
+              name="deposit"
+              render={({ field }) => (
+                <FormItem>
+                  <Currency {...field} onKeyDown={onKeyDown} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </RowRender>
+        )}
         <RowRender text="Phương thức thanh toán">
           <FormField
             control={form.control}
@@ -98,11 +117,15 @@ const Total = ({ form }: CreateOrderProps) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.values(PAYMENT_TYPE).map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
+                    {Object.values(PAYMENT_TYPE)
+                      .filter(({ value, label }) =>
+                        isOnline ? value === PAYMENT_TYPE.BANK.value : true,
+                      )
+                      .map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

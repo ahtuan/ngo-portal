@@ -4,7 +4,10 @@ import { OrderPath } from "@/constants/path";
 import { Button } from "@@/ui/button";
 import { ChevronLeft } from "lucide-react";
 
-const Header = () => {
+type HeaderProps = {
+  isOnline?: boolean;
+};
+const Header = ({ isOnline }: HeaderProps) => {
   const getBackLink = useCallback(() => {
     return `${OrderPath.Base}?page=1`;
   }, []);
@@ -17,7 +20,7 @@ const Header = () => {
         </Button>
       </Link>
       <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-        Tạo đơn hàng
+        {isOnline ? "Tạo đơn trực tuyến" : `Tạo đơn hàng`}
       </h1>
 
       <div className="hidden items-center gap-2 md:ml-auto md:flex">

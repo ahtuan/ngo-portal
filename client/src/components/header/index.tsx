@@ -1,5 +1,5 @@
 import React from "react";
-import { ScanBarcode, Search, ShoppingCartIcon } from "lucide-react";
+import { ScanBarcode, Search, ShoppingCartIcon, Truck } from "lucide-react";
 import { Input } from "@@/ui/input";
 import DynamicBreadcrumb from "@@/header/dynamic-breadcrumb";
 import Scan from "@views/product/scan";
@@ -15,6 +15,11 @@ function Header() {
         <Link href={OrderPath.Create}>
           <Button variant="ghost" size={"icon"}>
             <ShoppingCartIcon className="text-muted-foreground hover:text-primary" />
+          </Button>
+        </Link>
+        <Link href={OrderPath.Online}>
+          <Button variant="ghost" size={"icon"}>
+            <Truck className="text-muted-foreground hover:text-primary" />
           </Button>
         </Link>
         <Scan

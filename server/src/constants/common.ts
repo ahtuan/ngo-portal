@@ -23,10 +23,22 @@ export const DEFAULT_PAGING = {
 
 export const INVOICE_STATUS_ENUM = {
   COMPLETE: "COMPLETE",
+  PENDING: "PENDING",
   CANCELLED: "CANCELLED",
 };
 
 export enum PAYMENT_METHOD_ENUM {
   CASH = "CASH",
   BANK = "BANK",
+}
+
+export enum PAYMENT_STATUS {
+  COMPLETE = "COMPLETE",
+  PENDING = "PENDING",
+}
+
+export enum PAYMENT_TYPE {
+  DEPOSIT = "DEPOSIT",
+  REMAINING = "REMAINING",
+  FULL = "FULL",
 }

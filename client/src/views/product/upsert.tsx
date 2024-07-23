@@ -26,7 +26,8 @@ import BarcodePrintModal from "@views/product/components/barcode-print-modal";
 import { useToast } from "@@/ui/use-toast";
 import { getDirtyValues } from "@/lib/utils";
 import { ProductPath } from "@/constants/path";
-import { mutate } from "swr";
+import useSWR, { mutate } from "swr";
+import { inventoryRequest } from "@/api-requests/inventory.request";
 
 export type CardItemProps = {
   form: UseFormReturn<ProductCreate>;
@@ -64,7 +65,10 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [createdProduct, setCreatedProduct] = React.useState<ProductBarCode>();
-
+  const { data: inventoryData } = useSWR(
+    inventory ? inventory : undefined,
+    inventoryRequest.getById,
+  );
   if (
     (!inventory && mode === "create") ||
     (mode === "edit" && !detailData?.inventoryId)
@@ -139,9 +143,10 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           className="mx-auto grid lg:max-w-[64rem] w-full flex-1 auto-rows-max gap-4"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             <CreateHeader
               title={mode === "create" ? inventory : detailData?.inventoryId}
+              description={inventoryData?.description}
             />
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
