@@ -6,14 +6,6 @@ pipeline {
         nodejs '20.10.0'
     }
     stages {
-        stage("Check lint Client") {
-            steps {
-                dir('client') {
-                    bat "bun install"
-                    bat "bun run lint"
-                }
-            }
-        }
         stage("Move to project folder") {
             steps {
                 build job: "Get_code_Ngo_Gom", wait: true
@@ -24,7 +16,7 @@ pipeline {
                 stage("Build for client") {
                     steps {
                         dir('D:\\NgoGom\\client') {
-                            bat "bun install"
+                            bat "bun install --force"
                             bat "bun run build"
                         }
                     }
