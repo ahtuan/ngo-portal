@@ -6,7 +6,7 @@ import { SearchIcon } from "lucide-react";
 
 type Props = {
   value?: string;
-  onSearch?: (value?: string) => void;
+  onSearch?: (value: string) => void;
   className?: string;
   placeholder?: string;
 };
