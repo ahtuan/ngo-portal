@@ -7,6 +7,11 @@ export const inventoryRequest = {
     const response = await http.get<InventoryType[]>(inventoryEndpoint);
     return response.data;
   },
+  getById: async (url: string) => {
+    url = url.includes(inventoryEndpoint) ? url : `${inventoryEndpoint}/${url}`;
+    const response = await http.get<InventoryType>(url);
+    return response.data;
+  },
   create: (data: InventorySubmit) =>
     http.post<InventoryType>(inventoryEndpoint, data),
   update: (id: string, data: Partial<InventorySubmit>) =>

@@ -38,3 +38,14 @@ export type InventoryCreateType = Omit<
   "createdAt" | "updatedAt" | "id" | "uuid"
 >;
 export type InventoryUpdateType = Partial<InventoryCreateType>;
+
+export namespace InventoryResponse {
+  export type Report = {
+    quantity: number;
+    weight: number;
+    actualWeight: number;
+    price: number;
+    estimatedPrice: number;
+  };
+  export type RawSelect = SelectInventory;
+}

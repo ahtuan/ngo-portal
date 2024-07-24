@@ -5,12 +5,22 @@ import { NotFoundError } from "@/libs/error";
 import {
   inventories,
   InventoryCreateType,
+  InventoryResponse,
   InventoryType,
   InventoryUpdateType,
 } from "@/db/schemas/inventory.schema";
-import { eq } from "drizzle-orm";
+import { eq, sql, sum } from "drizzle-orm";
+import ProductService from "@/services/product.service";
+import { products } from "@/db/schemas/product.schema";
+import { byKgCategories } from "@/db/schemas/category.schema";
 
 class InventoryService {
+  private productService: ProductService;
+
+  constructor() {
+    this.productService = new ProductService();
+  }
+
   async getAll(query: Common.PagingQuery) {
     const limit = query.size ? +query.size : DEFAULT_PAGING.size;
     const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
@@ -35,12 +45,13 @@ class InventoryService {
 
   async getById(uuid: string) {
     const data = await db.query.inventories.findFirst({
-      where: (inventories, { eq }) => eq(inventories.uuid, uuid),
+      where: (inventories, { eq }) =>
+        eq(uuid.length > 10 ? inventories.uuid : inventories.id, uuid),
     });
     if (!data) {
       return new NotFoundError("Không tìm thấy dữ liệu");
     }
-    return ApiResponse.success(data);
+    return ApiResponse.success<InventoryResponse.RawSelect>(data);
   }
 
   async detectInspection() {
@@ -53,6 +64,56 @@ class InventoryService {
       return ApiResponse.success(null);
     }
     return ApiResponse.success(data.id);
+  }
+
+  async report(id: string) {
+    const inventory = await this.getById(id);
+    if (inventory.data) {
+      const sq = db.$with("sq").as(
+        db
+          .select({
+            id: products.id,
+            byDateId: products.byDateId,
+            weight: products.weight,
+            quantity: products.quantity,
+            categoryId: products.categoryId,
+            categoryName: products.categoryName,
+            categoryByKgName: byKgCategories.name,
+            categoryIdByKg: products.categoryIdByKg,
+          })
+          .from(products)
+          .leftJoin(
+            byKgCategories,
+            eq(products.categoryIdByKg, byKgCategories.id),
+          )
+          .where(eq(products.inventoryId, inventory.data.id)),
+      );
+
+      const calculatedSelect = {
+        quantity: sum(products.quantity).mapWith(Number),
+        weight: sum(products.weight).mapWith(Number),
+      };
+      const data = await db.with(sq).select(calculatedSelect).from(sq);
+
+      const groupByCategory = await db
+        .with(sq)
+        .select({
+          ...calculatedSelect,
+          categoryName: sq.categoryName,
+          categoryId: sq.categoryId,
+          productIds: sql`STRING_AGG(CAST(${sq.id} AS text), ',')`,
+        })
+        .from(sq)
+        .groupBy(sq.categoryName, sq.categoryId);
+
+      const response = {
+        ...data[0],
+        groupByCategory,
+      };
+
+      return ApiResponse.success(response);
+    }
+    return ApiResponse.error("Không có thông tin lô hàng trùng khớp");
   }
 
   async create(body: InventoryCreateType) {
