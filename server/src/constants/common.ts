@@ -42,3 +42,9 @@ export enum PAYMENT_TYPE {
   REMAINING = "REMAINING",
   FULL = "FULL",
 }
+
+export const MATERIAL_TYPE = {
+  CERAMIC: { label: "Gốm", value: "CERAMIC" },
+  GLASS: { label: "Thuỷ tinh", value: "GLASS" },
+  WOOD: { label: "Gỗ", value: "WOOD" },
+};

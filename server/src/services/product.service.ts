@@ -1,5 +1,6 @@
 import {
   DEFAULT_PAGING,
+  MATERIAL_TYPE,
   PRODUCT_STATUS_ENUM,
   UNIT_ENUM,
 } from "@/constants/common";
@@ -254,6 +255,7 @@ class ProductService {
       ...body,
       ...categoryRef,
       byDateId,
+      material: this.getMaterial(body.name),
       weight: body.weight.toString(),
       imageUrls: imgUrls.join(";"),
     };
@@ -428,8 +430,6 @@ class ProductService {
             ) &&
             price
           ) {
-            console.log("pickSale.steps", pickSale.steps);
-            console.log("price", price);
             sale.price = Parser.evaluate(pickSale.steps, { price: price });
           }
         }
@@ -447,6 +447,15 @@ class ProductService {
       return sale;
     }
     return;
+  }
+
+  private getMaterial(name: string): string {
+    for (const [, { value, label }] of Object.entries(MATERIAL_TYPE)) {
+      if (name.toLowerCase().includes(label.toLowerCase())) {
+        return value;
+      }
+    }
+    return MATERIAL_TYPE.CERAMIC.value;
   }
 }
 

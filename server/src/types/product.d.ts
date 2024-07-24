@@ -58,6 +58,7 @@ declare namespace Product {
     categoryName?: string;
     weight: string;
     imageUrls: string;
+    material: string;
   } & Omit<CreateBody, "categoryUuid" | "weight" | "imageUrls">;
 
   type UpdateBody = {

@@ -12,6 +12,7 @@ import { inventories } from "@/db/schemas/inventory.schema";
 import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { invoiceItems } from "@/db/schemas/invoice.schema";
 import { relations } from "drizzle-orm";
+import { MATERIAL_TYPE } from "@/constants/common";
 
 export const products = schema.table(
   "products",
@@ -34,6 +35,9 @@ export const products = schema.table(
     ),
     isUsedCategoryPrice: boolean("is_used_category_price").default(false),
     status: varchar("status", { length: 20 }).notNull(), // READY, IN_STOCK, SOLD
+    material: varchar("material", { length: 25 }).default(
+      MATERIAL_TYPE.CERAMIC.value,
+    ),
     isArchived: boolean("is_archived").default(false), // Use for tracking
     imageUrls: varchar("image_url"),
     // whether it was in stock or not able to sell and put in stock
