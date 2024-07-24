@@ -41,10 +41,11 @@ const Items = ({
 }: ItemsProps) => {
   return (
     <Card className="border-0">
-      <CardContent className="h-[calc(100dvh-10rem-15rem)] overflow-y-scroll p-0">
+      <CardContent className="h-[calc(100dvh-23.5rem)] overflow-y-scroll p-0">
         <Table className="border border-1">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[2rem]">Hình</TableHead>
               <TableHead className="w-[7.5rem]">Mã</TableHead>
               <TableHead>Tên</TableHead>
               <TableHead className="w-[8rem]">Số lượng</TableHead>

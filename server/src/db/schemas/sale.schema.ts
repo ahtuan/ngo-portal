@@ -44,5 +44,9 @@ export namespace SaleDB {
   >;
 
   type RawInsert = typeof sales.$inferInsert;
-  export type Update = Partial<Pick<RawInsert, "isActive" | "useForKgCateIds">>;
+  export type Update = Partial<
+    {
+      useForKgCateIds: string[];
+    } & Pick<RawInsert, "isActive">
+  >;
 }

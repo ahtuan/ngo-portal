@@ -6,7 +6,7 @@ import {
 import db from "@/db";
 import { ApiResponse } from "@/libs/api-response";
 import { NotFoundError } from "@/libs/error";
-import { and, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
 import { products } from "@/db/schemas/product.schema";
 import { helperService } from "@/services/helper.service";
 import { byKgCategories, categories } from "@/db/schemas/category.schema";
@@ -81,7 +81,7 @@ class ProductService {
               : undefined,
           ),
         )
-        .orderBy(desc(products.updatedAt)),
+        .orderBy(asc(products.status), desc(products.updatedAt)),
     );
 
     const data = await db

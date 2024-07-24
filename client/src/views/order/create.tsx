@@ -32,7 +32,7 @@ type CreateProps = {
 const Create = ({ isOnline }: CreateProps) => {
   const { toast } = useToast();
   const { data: invoiceSales } = useSWR(
-    cacheKey,
+    cacheKey + "/valid-sale",
     saleRequest.getForInvoiceOnly,
   );
   const form = useForm<Invoice.DedicatedCreated>({
@@ -269,6 +269,7 @@ const Create = ({ isOnline }: CreateProps) => {
       unit: byKg ? "Kg" : "Chiếc",
       originalStock: stock,
       stock: stock - 1,
+      image: data.imageUrls?.[0] || "/images/placeholder.svg",
     };
     if (data.categoryUuidByKg) {
       const index = stackFields.findIndex(
@@ -402,7 +403,7 @@ const Create = ({ isOnline }: CreateProps) => {
       description: message,
     });
   };
-  console.log("form", form.formState.errors);
+
   return (
     <>
       <Form {...form}>
@@ -414,20 +415,16 @@ const Create = ({ isOnline }: CreateProps) => {
             <Header isOnline={isOnline} />
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-6">
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-6">
-              <Scan onAppend={onAppend} />
-              <Items
-                fields={fields}
-                stackFields={stackFields}
-                onDelete={onDelete}
-                onUpdate={onUpdate}
-              />
-            </div>
-            <div className="grid auto-rows-max items-start gap-4 lg:gap-6">
-              <Total form={form} isOnline={isOnline} />
-              <Customer />
-            </div>
+            <Scan onAppend={onAppend} />
+            <Customer />
+            <Total form={form} isOnline={isOnline} />
           </div>
+          <Items
+            fields={fields}
+            stackFields={stackFields}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
+          />
         </form>
       </Form>
     </>

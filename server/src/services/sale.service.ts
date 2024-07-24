@@ -59,19 +59,9 @@ class SaleService {
 
   async create(body: Sale.Create) {
     try {
-      let useForKgCateIds = (
-        await body.useForKgCateIds?.reduce(
-          async (prevPromise, uuid) => {
-            const prev = await prevPromise;
-            const category = await this.categoryService.getById(uuid, true);
-            if (category) {
-              prev.push(category.id);
-            }
-            return prev;
-          },
-          Promise.resolve([] as Array<number>),
-        )
-      )?.join(";");
+      let useForKgCateIds = await this.getApplyCateIdString(
+        body.useForKgCateIds,
+      );
 
       const response = (
         await db
@@ -88,9 +78,18 @@ class SaleService {
 
   async update(uuid: string, body: SaleDB.Update) {
     try {
+      let useForKgCateIds = await this.getApplyCateIdString(
+        body.useForKgCateIds,
+      );
+
       const response = await db
         .update(sales)
-        .set({ ...body, updatedAt: getCurrentDate(), updatedBy: "admin" })
+        .set({
+          ...body,
+          useForKgCateIds,
+          updatedAt: getCurrentDate(),
+          updatedBy: "admin",
+        })
         .where(eq(sales.uuid, uuid))
         .returning();
       return ApiResponse.success(response);
@@ -104,9 +103,11 @@ class SaleService {
 
   async getValidSales() {
     return db.query.sales.findMany({
-      where: (sale, { eq, lte, isNull }) =>
-        eq(sale.isActive, true) &&
-        (isNull(sale.endDate) || lte(sale.endDate, new Date())),
+      where: (sale, { eq, and, lte, isNull }) =>
+        and(
+          eq(sale.isActive, true),
+          isNull(sale.endDate) || lte(sale.endDate, new Date()),
+        ),
     });
   }
 
@@ -115,6 +116,22 @@ class SaleService {
       where: (sale, { eq }) =>
         eq(typeof id !== "string" ? sale.id : sale.uuid, id),
     });
+  }
+
+  private async getApplyCateIdString(useForKgCateIds?: string[]) {
+    return (
+      await useForKgCateIds?.reduce(
+        async (prevPromise, uuid) => {
+          const prev = await prevPromise;
+          const category = await this.categoryService.getById(uuid, true);
+          if (category) {
+            prev.push(category.id);
+          }
+          return prev;
+        },
+        Promise.resolve([] as Array<number>),
+      )
+    )?.join(";");
   }
 }
 

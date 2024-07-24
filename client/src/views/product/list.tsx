@@ -25,13 +25,7 @@ import { MoreHorizontal } from "lucide-react";
 import { ProductStatus } from "@/constants/status";
 import DataTable from "@@/data-table";
 import { Badge } from "@@/ui/badge";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import Search from "@@/data-table/search";
 import { SearchParamsProps } from "@/app/(dashboard)/product/page";
 import {
@@ -43,6 +37,7 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import BarcodePrintModal from "@views/product/components/barcode-print-modal";
 import Link from "next/link";
 import { ProductPath } from "@/constants/path";
+import DisplayImage from "@@/display-image";
 
 const columns = (
   onPrint: (data: ProductBarCode) => void,
@@ -54,42 +49,16 @@ const columns = (
       enableHiding: false,
       cell: ({ row }) => {
         const { mainImage, byDateId, price } = row.original;
-        if (!mainImage) {
-          return (
-            <Image
-              src="/images/placeholder.svg"
-              width={32}
-              height={32}
-              alt="Product image"
-              className="rounded"
-            />
-          );
-        }
         return (
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <Image
-                src={mainImage}
-                width={32}
-                height={32}
-                alt="Product image"
-                className="rounded"
-              />
-            </HoverCardTrigger>
-            <HoverCardContent side="right">
-              <Image
-                src={mainImage}
-                width={32}
-                height={32}
-                alt="Product image"
-                className="w-64 rounded"
-              />
+          <DisplayImage
+            src={mainImage}
+            hoverContent={
               <div className="flex justify-between mt-2">
                 <p>{byDateId}</p>
                 <p>{formatPrice(price)}</p>
               </div>
-            </HoverCardContent>
-          </HoverCard>
+            }
+          />
         );
       },
     },

@@ -102,7 +102,6 @@ const Scan = ({ onAppend }: Props) => {
               }}
             >
               <ListPlus className="mr-1" />
-              Thêm vào danh sách
             </Button>
           </div>
         </div>

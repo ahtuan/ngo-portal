@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@@/ui/tooltip";
 import Sale from "@views/order/component/sale";
+import DisplayImage from "@@/display-image";
 
 type ItemRowProps = {
   field:
@@ -57,6 +58,14 @@ const ItemRow = ({
 
   return (
     <TableRow>
+      <TableCell className="">
+        <div className="h-8 overflow-hidden rounded">
+          <DisplayImage
+            src={field.image}
+            className="h-8 scale-150 object-cover"
+          />
+        </div>
+      </TableCell>
       <TableCell>{field.byDateId}</TableCell>
       <TableCell>
         {field.name} {field.sale && <Sale {...field.sale} />}

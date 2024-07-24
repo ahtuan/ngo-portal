@@ -17,6 +17,10 @@ export const saleController = new Elysia({
       query: "pagination",
     },
   )
+  .get(
+    "/valid-sale",
+    async ({ saleService: service }) => await service.getValidSales(),
+  )
   .post(
     "/",
     async ({ body, saleService: service }) => await service.create(body),
