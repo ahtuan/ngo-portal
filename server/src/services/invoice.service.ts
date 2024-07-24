@@ -321,14 +321,17 @@ class InvoiceService {
           }
 
           // Add payment method
-
+          const amountLeft = body.actualPrice - (body.deposit || 0);
           let paymentsData: Array<InvoiceResponse.InsertPayment> = [
             {
               invoiceId,
               amount:
                 isOnline && body.deposit ? body.deposit : body.actualPrice,
               status: PAYMENT_STATUS.COMPLETE,
-              paymentType: isOnline ? PAYMENT_TYPE.DEPOSIT : PAYMENT_TYPE.FULL,
+              paymentType:
+                isOnline && amountLeft > 0
+                  ? PAYMENT_TYPE.DEPOSIT
+                  : PAYMENT_TYPE.FULL,
               paymentDate: getCurrentDate(),
               paymentMethod: body.paymentType,
             },
@@ -343,6 +346,13 @@ class InvoiceService {
                 paymentType: PAYMENT_TYPE.REMAINING,
                 paymentMethod: PAYMENT_METHOD_ENUM.CASH,
               });
+            } else {
+              await db
+                .update(invoices)
+                .set({
+                  status: PAYMENT_STATUS.COMPLETE,
+                })
+                .where(eq(invoices.id, invoiceId));
             }
           }
 

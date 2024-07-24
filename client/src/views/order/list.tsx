@@ -96,7 +96,7 @@ const columns = (
           if (!isOnline) {
             return getBadge(payments[0].paymentMethod);
           }
-          if (payments[1].status === PaymentStatus.PENDING) {
+          if (payments[1]?.status === PaymentStatus.PENDING) {
             return "Còn lại - " + formatCurrency(payments[1].amount, "đ");
           }
           return "Đơn trực tuyến";
