@@ -21,6 +21,7 @@ export const invoices = schema.table("invoices", {
   status: varchar("status", { length: 30 }).notNull(), // Creating,
   saleId: integer("sale_id").references(() => sales.id),
   isOnline: boolean("is_online").notNull().default(false),
+  note: varchar("note"),
   ...metaDataMixin,
   // Completed, Cancelled
 });

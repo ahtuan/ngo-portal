@@ -7,30 +7,38 @@ export const invoiceController = new Elysia({
   prefix: "invoice",
 })
   .decorate({
-    invoiceServer: new InvoiceService(),
+    invoiceService: new InvoiceService(),
   })
   .use(invoiceModel)
   .get(
     "/",
-    async ({ invoiceServer: service, query }) => await service.getAll(query),
+    async ({ invoiceService: service, query }) => await service.getAll(query),
     {
       query: "invoice.filter",
     },
   )
   .get(
     "/:byDateId",
-    async ({ invoiceServer: service, params: { byDateId } }) =>
+    async ({ invoiceService: service, params: { byDateId } }) =>
       await service.getDetail(byDateId),
   )
   .post(
     "/",
-    async ({ body, invoiceServer: service }) => await service.create(body),
+    async ({ body, invoiceService: service }) => await service.create(body),
     {
       body: "invoice.create",
     },
   )
   .post(
     "/:byDateId/complete",
-    async ({ params: { byDateId }, invoiceServer: service }) =>
+    async ({ params: { byDateId }, invoiceService: service }) =>
       await service.complete(byDateId),
+  )
+  .post(
+    "/:byDateId/refund",
+    async ({ body, params: { byDateId }, invoiceService: service }) =>
+      await service.refund(byDateId, body),
+    {
+      body: "invoice.refund",
+    },
   );

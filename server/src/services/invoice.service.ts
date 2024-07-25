@@ -397,6 +397,37 @@ class InvoiceService {
     return ApiResponse.success(undefined);
   }
 
+  async refund(byDateId: string, body: Invoice.Refund) {
+    try {
+      const invoice = await this.getById(byDateId);
+      if (!invoice) {
+        return new NotFoundError();
+      }
+      if (!invoice.isOnline) {
+        return ApiResponse.error("Hoàn tiền chỉ áp dụng cho đơn hàng online");
+      }
+      await db.insert(payments).values({
+        invoiceId: invoice.id,
+        amount: body.amount * -1,
+        paymentDate: getCurrentDate(),
+        paymentMethod: PAYMENT_METHOD_ENUM.BANK,
+        paymentType: PAYMENT_TYPE.REFUNDED,
+        status: PAYMENT_STATUS.REFUNDED,
+      });
+      await db
+        .update(invoices)
+        .set({
+          status: INVOICE_STATUS_ENUM.REFUNDED,
+          note: body.note,
+          updatedAt: getCurrentDate(),
+        })
+        .where(eq(invoices.id, invoice.id));
+      return ApiResponse.success();
+    } catch (e) {
+      return ApiResponse.error(e);
+    }
+  }
+
   private async getIdSequence() {
     const todayString = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD format
 

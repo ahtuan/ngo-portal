@@ -20,13 +20,20 @@ import {
   DropdownMenuTrigger,
 } from "@@/ui/dropdown-menu";
 import { Button } from "@@/ui/button";
-import { CircleDashed, MoreHorizontal } from "lucide-react";
+import { CircleDashed, MoreHorizontal, RotateCcw } from "lucide-react";
 import DetailModal from "@views/order/detail-modal";
 import { OrderStatus, PaymentStatus } from "@/constants/status";
+import RefundModal from "@views/order/component/refund-modal";
 
+type RefundType = {
+  byDateId: string;
+  note?: string;
+  amount: number;
+};
 const columns = (
   setByDateId: (byDateId: string) => void,
   refresh: () => void,
+  setRefundData: (value?: RefundType) => void,
 ): ColumnDef<Invoice.Type>[] => {
   const getBadge = (method: string) => {
     const methodObj = Object.values(PAYMENT_TYPE).find(
@@ -50,6 +57,12 @@ const columns = (
     } catch {}
   };
 
+  const iconShow = {
+    PENDING: <CircleDashed className={`h-4 w-4 pr-1`} />,
+    REFUNDED: <RotateCcw className={`h-4 w-4 pr-1`} />,
+    COMPLETE: <div className={`h-4 w-4`} />,
+  };
+
   return [
     {
       accessorKey: "byDateId",
@@ -59,11 +72,7 @@ const columns = (
         const { status, byDateId } = row.original;
         return (
           <div className="flex items-center">
-            <CircleDashed
-              className={`h-4 w-4 pr-1 ${
-                status === OrderStatus.PENDING ? "visible" : "invisible"
-              }`}
-            />
+            {iconShow[status as "PENDING" | "REFUNDED" | "COMPLETE"]}
             {byDateId}
           </div>
         );
@@ -90,7 +99,7 @@ const columns = (
       id: "payment",
       enableHiding: false,
       cell: ({ row }) => {
-        const { payments, isOnline, status } = row.original;
+        const { payments, isOnline, status, note } = row.original;
 
         if (payments && payments.length > 0) {
           if (!isOnline) {
@@ -99,7 +108,10 @@ const columns = (
           if (payments[1]?.status === PaymentStatus.PENDING) {
             return "Còn lại - " + formatCurrency(payments[1].amount, "đ");
           }
-          return "Đơn trực tuyến";
+          if (status === PaymentStatus.REFUNDED) {
+            return "Đơn trực tuyến - hoàn tiền";
+          }
+          return "Đơn trực tuyến - " + note;
         }
 
         return;
@@ -109,7 +121,7 @@ const columns = (
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const { byDateId, status } = row.original;
+        const { byDateId, status, isOnline, price, note } = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -129,6 +141,15 @@ const columns = (
                   Hoàn tất
                 </DropdownMenuItem>
               )}
+              {isOnline && status !== OrderStatus.REFUNDED && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    setRefundData({ byDateId, note, amount: price })
+                  }
+                >
+                  Hoàn tiền
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -144,6 +165,7 @@ const List = ({ queryString }: Props) => {
   const router = useRouter();
   const pathName = usePathname();
   const [byDateId, setByDateId] = React.useState<string>();
+  const [refundData, setRefundData] = React.useState<RefundType>();
 
   const {
     data: res,
@@ -180,7 +202,7 @@ const List = ({ queryString }: Props) => {
         }}
         loading={isLoading}
         data={res?.data || []}
-        columns={columns(setByDateId, refresh)}
+        columns={columns(setByDateId, refresh, setRefundData)}
         pagination={{
           page: res?.page,
           total: res?.totalRecord,
@@ -190,6 +212,13 @@ const List = ({ queryString }: Props) => {
       />
       {detailData && (
         <DetailModal data={detailData} onClose={() => setByDateId(undefined)} />
+      )}
+      {refundData && (
+        <RefundModal
+          {...refundData}
+          onClose={() => setRefundData(undefined)}
+          refresh={refresh}
+        />
       )}
     </>
   );

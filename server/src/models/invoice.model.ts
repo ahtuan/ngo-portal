@@ -56,15 +56,25 @@ const create = t.Object({
   deposit: t.Optional(t.Number()),
 });
 
+const refund = t.Object({
+  amount: t.Number({
+    minimum: 1000,
+    message: "Hoàn tiền cần phải lớn hơn 1000",
+  }),
+  note: t.Optional(t.String()),
+});
+
 export const invoiceModel = new Elysia({
   name: "Model.Invoice",
 }).model({
   "invoice.filter": filter,
   "invoice.create": create,
+  "invoice.refund": refund,
 });
 
 export namespace Invoice {
   export type Filter = Static<typeof filter>;
   export type Create = Static<typeof create>;
   export type Item = Static<typeof InvoiceItem>;
+  export type Refund = Static<typeof refund>;
 }

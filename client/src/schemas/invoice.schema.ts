@@ -47,6 +47,11 @@ export const InvoiceBody = z.object({
   deposit: z.optional(z.coerce.number()),
 });
 
+export const InvoiceRefundSchema = z.object({
+  amount: z.coerce.number().min(1, "Nhập số tiền cần phải hoàn"),
+  note: z.string().optional(),
+});
+
 export namespace Invoice {
   export type RawCreate = z.TypeOf<typeof InvoiceBody>;
   export type DedicatedCreated = {
@@ -74,6 +79,7 @@ export namespace Invoice {
     createdBy: string;
     status: string;
     isOnline: boolean;
+    note?: string;
   };
   export type Detail = {
     byDateId: string;
@@ -83,4 +89,5 @@ export namespace Invoice {
   } & DedicatedCreated;
 
   export type Sale = z.TypeOf<typeof SaleBody>;
+  export type Refund = z.TypeOf<typeof InvoiceRefundSchema>;
 }

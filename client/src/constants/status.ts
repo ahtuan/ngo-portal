@@ -17,9 +17,11 @@ export const ProductStatus = {
 export enum OrderStatus {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED",
+  REFUNDED = "REFUNDED",
 }
 
 export enum PaymentStatus {
   COMPLETE = "COMPLETE",
   PENDING = "PENDING",
+  REFUNDED = "REFUNDED",
 }
