@@ -129,6 +129,8 @@ const columns = (
             statement += "Đang giao hàng ";
           } else if (status === OrderStatus.PREPARED) {
             statement += "Đang đóng gói ";
+          } else if (status === OrderStatus.PENDING) {
+            statement += "Đang giữ hàng";
           } else {
             statement += "Giao thành công";
           }
