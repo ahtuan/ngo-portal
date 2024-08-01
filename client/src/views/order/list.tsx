@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Invoice } from "@/schemas/invoice.schema";
 import { Badge } from "@@/ui/badge";
 import { PAYMENT_TYPE } from "@/constants/enums";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, formatPrice } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import useSWR from "swr";
 import {
@@ -20,10 +20,17 @@ import {
   DropdownMenuTrigger,
 } from "@@/ui/dropdown-menu";
 import { Button } from "@@/ui/button";
-import { CircleDashed, MoreHorizontal, RotateCcw } from "lucide-react";
+import {
+  CircleDashed,
+  MoreHorizontal,
+  PackageOpen,
+  RotateCcw,
+  Truck,
+} from "lucide-react";
 import DetailModal from "@views/order/detail-modal";
-import { OrderStatus, PaymentStatus } from "@/constants/status";
+import { OrderStatus, PaymentStatus, PaymentType } from "@/constants/status";
 import RefundModal from "@views/order/component/refund-modal";
+import DeliveryModal from "@views/order/component/delivery-modal";
 
 type RefundType = {
   byDateId: string;
@@ -34,6 +41,7 @@ const columns = (
   setByDateId: (byDateId: string) => void,
   refresh: () => void,
   setRefundData: (value?: RefundType) => void,
+  setDelivery: (byDateId: string) => void,
 ): ColumnDef<Invoice.Type>[] => {
   const getBadge = (method: string) => {
     const methodObj = Object.values(PAYMENT_TYPE).find(
@@ -58,9 +66,10 @@ const columns = (
   };
 
   const iconShow = {
-    PENDING: <CircleDashed className={`h-4 w-4 pr-1`} />,
-    REFUNDED: <RotateCcw className={`h-4 w-4 pr-1`} />,
-    COMPLETE: <div className={`h-4 w-4`} />,
+    PENDING: <CircleDashed className={`h-4 w-4 ml-1`} />,
+    DELIVERING: <CircleDashed className={`h-4 w-4 ml-1`} />,
+    REFUNDED: <RotateCcw className={`h-4 w-4 ml-1`} />,
+    PREPARED: <PackageOpen className={`h-4 w-4 ml-1`} />,
   };
 
   return [
@@ -69,11 +78,22 @@ const columns = (
       header: "Đơn hàng",
       enableHiding: false,
       cell: ({ row }) => {
-        const { status, byDateId } = row.original;
+        const { status, byDateId, isOnline } = row.original;
         return (
           <div className="flex items-center">
-            {iconShow[status as "PENDING" | "REFUNDED" | "COMPLETE"]}
+            {isOnline ? (
+              <Truck className={`h-4 w-4 mr-1`} />
+            ) : (
+              <div className={`h-4 w-4 mr-1`} />
+            )}
             {byDateId}
+            <span className="text-muted-foreground">
+              {
+                iconShow[
+                  status as "PENDING" | "DELIVERING" | "REFUNDED" | "PREPARED"
+                ]
+              }
+            </span>
           </div>
         );
       },
@@ -100,28 +120,52 @@ const columns = (
       enableHiding: false,
       cell: ({ row }) => {
         const { payments, isOnline, status, note } = row.original;
-
+        let statement = "";
         if (payments && payments.length > 0) {
           if (!isOnline) {
             return getBadge(payments[0].paymentMethod);
           }
-          if (payments[1]?.status === PaymentStatus.PENDING) {
-            return "Còn lại - " + formatCurrency(payments[1].amount, "đ");
+          if (status === OrderStatus.DELIVERING) {
+            statement += "Đang giao hàng ";
+          } else if (status === OrderStatus.PREPARED) {
+            statement += "Đang đóng gói ";
+          } else {
+            statement += "Giao thành công";
           }
-          if (status === PaymentStatus.REFUNDED) {
-            return "Đơn trực tuyến - hoàn tiền";
+
+          const [sumPending, sumRefund] = payments.reduce(
+            (prev, curr) => {
+              let [pending, refund] = prev;
+              if (
+                curr.paymentType === PaymentType.REMAINING &&
+                curr.status === PaymentStatus.PENDING
+              ) {
+                pending += curr.amount;
+              } else if (curr.paymentType === PaymentType.REFUNDED) {
+                refund += curr.amount;
+              }
+              return [pending, refund];
+            },
+            [0, 0],
+          );
+
+          if (sumPending) {
+            statement += ` - Cần thanh toán: ${formatPrice(sumPending)}`;
           }
-          return "Đơn trực tuyến - " + note;
+          if (sumRefund) {
+            statement += ` - Hoàn tiền: ${formatPrice(sumRefund * -1)}`;
+          }
         }
 
-        return;
+        return statement;
       },
     },
     {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const { byDateId, status, isOnline, price, note } = row.original;
+        const { byDateId, status, isOnline, price, note, payments } =
+          row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -134,20 +178,32 @@ const columns = (
               <DropdownMenuItem onClick={() => setByDateId(byDateId)}>
                 Chi tiết
               </DropdownMenuItem>
-              {status === OrderStatus.PENDING && (
-                <DropdownMenuItem
-                  onClick={() => completeOnlineInvoice(byDateId)}
-                >
-                  Hoàn tất
-                </DropdownMenuItem>
-              )}
-              {isOnline && status !== OrderStatus.REFUNDED && (
-                <DropdownMenuItem
-                  onClick={() =>
-                    setRefundData({ byDateId, note, amount: price })
-                  }
-                >
-                  Hoàn tiền
+              {payments.some(
+                (payment) => payment.status === PaymentStatus.PENDING,
+              ) &&
+                status !== OrderStatus.PREPARED && (
+                  <DropdownMenuItem
+                    onClick={() => completeOnlineInvoice(byDateId)}
+                  >
+                    Hoàn tất
+                  </DropdownMenuItem>
+                )}
+              {isOnline &&
+                ![
+                  OrderStatus.REFUNDED.toString(),
+                  OrderStatus.PREPARED,
+                ].includes(status) && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      setRefundData({ byDateId, note, amount: price })
+                    }
+                  >
+                    Hoàn tiền
+                  </DropdownMenuItem>
+                )}
+              {isOnline && status === OrderStatus.PREPARED && (
+                <DropdownMenuItem onClick={() => setDelivery(byDateId)}>
+                  Giao hàng
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -166,7 +222,7 @@ const List = ({ queryString }: Props) => {
   const pathName = usePathname();
   const [byDateId, setByDateId] = React.useState<string>();
   const [refundData, setRefundData] = React.useState<RefundType>();
-
+  const [delivery, setDelivery] = React.useState<string>();
   const {
     data: res,
     isLoading,
@@ -202,7 +258,7 @@ const List = ({ queryString }: Props) => {
         }}
         loading={isLoading}
         data={res?.data || []}
-        columns={columns(setByDateId, refresh, setRefundData)}
+        columns={columns(setByDateId, refresh, setRefundData, setDelivery)}
         pagination={{
           page: res?.page,
           total: res?.totalRecord,
@@ -217,6 +273,13 @@ const List = ({ queryString }: Props) => {
         <RefundModal
           {...refundData}
           onClose={() => setRefundData(undefined)}
+          refresh={refresh}
+        />
+      )}
+      {delivery && (
+        <DeliveryModal
+          byDateId={delivery}
+          onClose={() => setDelivery(undefined)}
           refresh={refresh}
         />
       )}

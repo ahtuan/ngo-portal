@@ -64,12 +64,19 @@ const refund = t.Object({
   note: t.Optional(t.String()),
 });
 
+const delivery = t.Object({
+  orderCode: t.String(),
+  shippingFee: t.Optional(t.Union([t.Number(), t.Null()])),
+  paymentMethod: t.Optional(t.Enum(PAYMENT_METHOD_ENUM)),
+});
+
 export const invoiceModel = new Elysia({
   name: "Model.Invoice",
 }).model({
   "invoice.filter": filter,
   "invoice.create": create,
   "invoice.refund": refund,
+  "invoice.delivery": delivery,
 });
 
 export namespace Invoice {
@@ -77,4 +84,5 @@ export namespace Invoice {
   export type Create = Static<typeof create>;
   export type Item = Static<typeof InvoiceItem>;
   export type Refund = Static<typeof refund>;
+  export type Delivery = Static<typeof delivery>;
 }

@@ -309,7 +309,7 @@ class ProductService {
         modifiedData.categoryIdByKg = categoryByKg.id;
       }
     } else {
-      delete modifiedData.categoryIdByKg;
+      modifiedData.categoryIdByKg = null;
     }
 
     if (body.imageUrls) {

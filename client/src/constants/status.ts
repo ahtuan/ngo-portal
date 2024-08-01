@@ -18,10 +18,20 @@ export enum OrderStatus {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED",
   REFUNDED = "REFUNDED",
+  DELIVERING = "DELIVERING",
+  PREPARED = "PREPARED",
 }
 
 export enum PaymentStatus {
   COMPLETE = "COMPLETE",
   PENDING = "PENDING",
   REFUNDED = "REFUNDED",
+}
+
+export enum PaymentType {
+  DEPOSIT = "DEPOSIT",
+  REMAINING = "REMAINING",
+  FULL = "FULL",
+  REFUNDED = "REFUNDED",
+  SHIPPING_FEE = "SHIPPING_FEE",
 }

@@ -17,11 +17,16 @@ import Sale from "@views/order/component/sale";
 type RowProps = {
   text: React.ReactNode;
   children?: React.ReactNode;
+  align?: string;
 };
-export const RowRender = ({ text, children }: RowProps) => {
+export const RowRender = ({
+  text,
+  children,
+  align = "items-center",
+}: RowProps) => {
   return (
     <div className="grid gap-2 grid-cols-2">
-      <div className="text-sm flex items-center">{text}</div>
+      <div className={`text-sm flex ${align}`}>{text}</div>
       <div className="text-right text-sm">{children}</div>
     </div>
   );

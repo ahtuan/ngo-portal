@@ -41,7 +41,11 @@ const Items = ({
 }: ItemsProps) => {
   return (
     <Card className="border-0">
-      <CardContent className="h-[calc(100dvh-23.5rem)] overflow-y-scroll p-0">
+      <CardContent
+        className={`${
+          readOnly ? "" : "h-[calc(100dvh-23.5rem)] overflow-y-scroll"
+        } p-0`}
+      >
         <Table className="border border-1">
           <TableHeader>
             <TableRow>

@@ -22,6 +22,7 @@ export const invoices = schema.table("invoices", {
   saleId: integer("sale_id").references(() => sales.id),
   isOnline: boolean("is_online").notNull().default(false),
   note: varchar("note"),
+  orderCode: varchar("order_code", { length: 20 }),
   ...metaDataMixin,
   // Completed, Cancelled
 });
@@ -91,6 +92,19 @@ export namespace InvoiceResponse {
   export type Invoice = {
     payments: Payment[];
   } & typeof invoices.$inferSelect;
+  type Pod = {
+    type: string;
+    time: string;
+  };
+  export type Delivery = {
+    toName: string;
+    toAddress: string;
+    toPhone: string;
+    status: string;
+    expectedPickup: string;
+    expectedDelivery: string;
+    pods?: Pod[];
+  };
   export type Detail = {
     actualPrice: number;
     afterSale: number;
@@ -104,6 +118,8 @@ export namespace InvoiceResponse {
     status: string;
     payments: Payment[];
     isOnline: boolean;
+    orderCode: string | null;
+    deliveryInfo?: Delivery;
   };
 
   export type InsertPayment = typeof payments.$inferInsert;

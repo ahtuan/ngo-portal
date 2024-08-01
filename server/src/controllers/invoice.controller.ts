@@ -41,4 +41,12 @@ export const invoiceController = new Elysia({
     {
       body: "invoice.refund",
     },
+  )
+  .post(
+    "/:byDateId/delivery",
+    async ({ body, params: { byDateId }, invoiceService: service }) =>
+      await service.delivery(byDateId, body),
+    {
+      body: "invoice.delivery",
+    },
   );

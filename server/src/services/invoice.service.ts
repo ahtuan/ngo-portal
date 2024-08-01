@@ -23,16 +23,19 @@ import { NotFoundError } from "@/libs/error";
 import SaleService from "@/services/sale.service";
 import { evaluateExp, fixed } from "@/libs/helpers";
 import { getCurrentDate } from "@/libs/date";
+import DeliveryService from "@/services/delivery.service";
 
 class InvoiceService {
   private productService: ProductService;
   private categoryService: CategoryService;
   private saleService: SaleService;
+  private deliveryService: DeliveryService;
 
   constructor() {
     this.productService = new ProductService();
     this.categoryService = new CategoryService();
     this.saleService = new SaleService();
+    this.deliveryService = new DeliveryService();
   }
 
   async getAll(query: Invoice.Filter) {
@@ -128,6 +131,9 @@ class InvoiceService {
             total: current.price,
             quantity: +current.quantity,
             weight: +product.weight,
+            image: (
+              await helperService.readImages(product.imageUrls ?? "", true)
+            )[0],
           };
         }
       };
@@ -229,6 +235,12 @@ class InvoiceService {
           }) || totalPrice
         : totalPrice;
       const payments = await this.getPayments(invoice.id);
+      let deliveryInfo: InvoiceResponse.Delivery | undefined = undefined;
+      if (invoice.isOnline && invoice.orderCode) {
+        deliveryInfo = await this.deliveryService.getDeliveryInfo(
+          invoice.orderCode,
+        );
+      }
       const mapping: InvoiceResponse.Detail = {
         byDateId: invoice.byDateId,
         createdAt: invoice.createdAt,
@@ -250,6 +262,8 @@ class InvoiceService {
         status: invoice.status,
         payments,
         isOnline: invoice.isOnline,
+        orderCode: invoice.orderCode,
+        deliveryInfo,
       };
       return ApiResponse.success(mapping);
     }
@@ -276,7 +290,7 @@ class InvoiceService {
                 price: body.actualPrice,
                 isOnline,
                 status: isOnline
-                  ? INVOICE_STATUS_ENUM.PENDING
+                  ? INVOICE_STATUS_ENUM.PREPARED
                   : INVOICE_STATUS_ENUM.COMPLETE,
                 saleId: invoiceSaleId,
               })
@@ -325,8 +339,7 @@ class InvoiceService {
           let paymentsData: Array<InvoiceResponse.InsertPayment> = [
             {
               invoiceId,
-              amount:
-                isOnline && body.deposit ? body.deposit : body.actualPrice,
+              amount: isOnline ? body.deposit || 0 : body.actualPrice,
               status: PAYMENT_STATUS.COMPLETE,
               paymentType:
                 isOnline && amountLeft > 0
@@ -336,15 +349,15 @@ class InvoiceService {
               paymentMethod: body.paymentType,
             },
           ];
-          if (isOnline && body.deposit) {
-            const remaining = body.actualPrice - body.deposit;
+          if (isOnline) {
+            const remaining = body.actualPrice - (body.deposit || 0);
             if (remaining > 0) {
               paymentsData.push({
                 invoiceId,
                 amount: remaining,
                 status: PAYMENT_STATUS.PENDING,
                 paymentType: PAYMENT_TYPE.REMAINING,
-                paymentMethod: PAYMENT_METHOD_ENUM.CASH,
+                paymentMethod: PAYMENT_METHOD_ENUM.BANK,
               });
             } else {
               await db
@@ -392,6 +405,7 @@ class InvoiceService {
       .update(invoices)
       .set({
         status: INVOICE_STATUS_ENUM.COMPLETE,
+        updatedAt: getCurrentDate(),
       })
       .where(eq(invoices.id, invoice.id));
     return ApiResponse.success(undefined);
@@ -422,6 +436,41 @@ class InvoiceService {
           updatedAt: getCurrentDate(),
         })
         .where(eq(invoices.id, invoice.id));
+      return ApiResponse.success();
+    } catch (e) {
+      return ApiResponse.error(e);
+    }
+  }
+
+  async delivery(byDateId: string, body: Invoice.Delivery) {
+    const invoice = await this.getById(byDateId);
+    if (!invoice) {
+      return new NotFoundError();
+    }
+    if (!invoice.isOnline) {
+      return ApiResponse.error("Đơn giao hàng chỉ áp dụng cho đơn trực tuyến");
+    }
+    try {
+      await db.transaction(async (transaction) => {
+        if (body.shippingFee) {
+          await db.insert(payments).values({
+            paymentMethod: body.paymentMethod || PAYMENT_METHOD_ENUM.BANK,
+            paymentDate: getCurrentDate(),
+            status: PAYMENT_STATUS.COMPLETE,
+            amount: body.shippingFee * -1,
+            invoiceId: invoice.id,
+            paymentType: PAYMENT_TYPE.SHIPPING_FEE,
+          });
+        }
+        await db
+          .update(invoices)
+          .set({
+            status: INVOICE_STATUS_ENUM.DELIVERING,
+            orderCode: body.orderCode,
+            updatedAt: getCurrentDate(),
+          })
+          .where(eq(invoices.id, invoice.id));
+      });
       return ApiResponse.success();
     } catch (e) {
       return ApiResponse.error(e);
@@ -477,6 +526,7 @@ class InvoiceService {
   private async getPayments(invoiceId: number) {
     const payments = await db.query.payments.findMany({
       where: (payment, { eq }) => eq(payment.invoiceId, invoiceId),
+      orderBy: (payment, { asc }) => asc(payment.paymentDate),
     });
     return payments;
   }

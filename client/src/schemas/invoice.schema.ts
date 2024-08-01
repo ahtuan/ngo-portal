@@ -52,6 +52,11 @@ export const InvoiceRefundSchema = z.object({
   note: z.string().optional(),
 });
 
+export const InvoiceDeliverySchema = z.object({
+  shippingFee: z.optional(z.coerce.number()),
+  paymentMethod: z.optional(z.string()),
+  orderCode: z.string().min(1, "Chưa có thông tin mã vận đơn"),
+});
 export namespace Invoice {
   export type RawCreate = z.TypeOf<typeof InvoiceBody>;
   export type DedicatedCreated = {
@@ -81,13 +86,30 @@ export namespace Invoice {
     isOnline: boolean;
     note?: string;
   };
+  type Pod = {
+    type: string;
+    time: string;
+  };
+  export type DeliveryInfo = {
+    toName: string;
+    toAddress: string;
+    toPhone: string;
+    status: string;
+    expectedPickup: string;
+    expectedDelivery: string;
+    pods?: Pod[];
+  };
+
   export type Detail = {
     byDateId: string;
     createdAt: string;
     status: string;
     payments: Payment[];
+    orderCode: string;
+    deliveryInfo?: DeliveryInfo;
   } & DedicatedCreated;
 
   export type Sale = z.TypeOf<typeof SaleBody>;
   export type Refund = z.TypeOf<typeof InvoiceRefundSchema>;
+  export type Delivery = z.TypeOf<typeof InvoiceDeliverySchema>;
 }

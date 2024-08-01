@@ -186,6 +186,31 @@ export const formatDate = (
   return;
 };
 
+const weekdayVietnamese = {
+  Mon: "Thứ 2",
+  Tue: "Thứ 3",
+  Wed: "Thứ 4",
+  Thu: "Thứ 5",
+  Fri: "Thứ 6",
+  Sat: "Thứ 7",
+  Sun: "Chủ Nhật",
+};
+export const formatDateFromUTC = (
+  date: string | Date,
+  format: string = "YYYY-MM-DD HH:mm",
+) => {
+  if (date) {
+    let formated = dayjs(date).format(format);
+    if (format === "ddd, YYYY-MM-DD HH:mm") {
+      let [weekdays, time] = formated.split(",");
+      // @ts-ignore
+      formated = weekdayVietnamese[weekdays] + ", " + time;
+    }
+    return formated;
+  }
+  return;
+};
+
 export const evaluateExp = (
   expression?: string | null,
   values?: Value | undefined,
