@@ -151,7 +151,25 @@ export const generateSearchParams = (query: string) => {
   const searchParams = new URLSearchParams(query);
   return Object.fromEntries(searchParams.entries());
 };
+export const getQueryChanged = (
+  name: string,
+  value: string[],
+  queryString: string,
+) => {
+  const joinedValue = value.join(";");
 
+  let gencParams = generateSearchParams(queryString);
+  gencParams[name] = joinedValue;
+  gencParams.page = "1";
+  console.log("Object.entries(gencParams)", Object.entries(gencParams));
+  const queryChangedString = Object.entries(gencParams)
+    .map(([key, value]) =>
+      value ? `${key}=${key === name ? joinedValue : value}` : "",
+    )
+    .filter(Boolean)
+    .join("&");
+  return queryChangedString;
+};
 export const getDirtyValues = <T extends {}>(
   allValue: T,
   originalValue: any,
@@ -177,11 +195,12 @@ export const fixed = (value: number, decimals: number = 2) => {
 };
 
 export const formatDate = (
-  date: string | Date,
+  date?: string | Date,
   format: string = "YYYY-MM-DD HH:mm",
+  utc: boolean = false,
 ) => {
   if (date) {
-    return dayjs(date).utc(false).format(format);
+    return dayjs(date).utc(utc).format(format);
   }
   return;
 };

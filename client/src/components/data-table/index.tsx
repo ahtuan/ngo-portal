@@ -33,6 +33,7 @@ type Props<T> = {
   loading?: boolean;
   minHeightClass?: string;
   columnVisibility?: VisibilityState;
+  allowManualHide?: boolean;
 };
 
 const DataTable = <T extends {}>({
@@ -45,6 +46,7 @@ const DataTable = <T extends {}>({
   loading,
   minHeightClass = "min-h-[calc(100%-7rem)]",
   columnVisibility: columnVisibilityDefault = {},
+  allowManualHide = true,
 }: Props<T>) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -76,7 +78,12 @@ const DataTable = <T extends {}>({
 
   return (
     <div className="w-full">
-      <Header<T> table={table} search={search} filter={filter} />
+      <Header<T>
+        table={table}
+        search={search}
+        filter={filter}
+        allowManualHide={allowManualHide}
+      />
       <div className={cn("rounded-md border  flex flex-col", minHeightClass)}>
         {loading ? (
           <Loading className="my-auto" size="large" />

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import React from "react";
 import Product from "@views/product";
 import { getQueryString } from "@/lib/utils";
@@ -27,4 +28,3 @@ const Page = ({ searchParams }: { searchParams: SearchParamsProps }) => {
 };
 
 export default Page;
-export const dynamic = "force-dynamic";

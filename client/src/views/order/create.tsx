@@ -15,12 +15,13 @@ import { ProductDetail } from "@/schemas/product.schema";
 import { useToast } from "@@/ui/use-toast";
 import { evaluateExp, fixed } from "@/lib/utils";
 import { invoiceRequest } from "@/api-requests/invoice.request";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import {
   saleEndpoint as cacheKey,
   saleRequest,
 } from "@/api-requests/sale.request";
 import { ClientSale } from "@/schemas/sale.schema";
+import { OrderPath } from "@/constants/path";
 
 export type CreateOrderProps = {
   form: UseFormReturn<Invoice.DedicatedCreated>;
@@ -392,6 +393,7 @@ const Create = ({ isOnline }: CreateProps) => {
         const response = await invoiceRequest.create(values);
         message = response?.message || "Tạo đơn hàng thành công";
         form.reset();
+        await mutate(`${OrderPath.Base}?page=1`);
       } else {
         message = "Đơn phải có sản phẩm";
       }

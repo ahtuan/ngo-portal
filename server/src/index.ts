@@ -10,6 +10,8 @@ import { inventoryController } from "@/controllers/inventory.controller";
 import { productController } from "@/controllers/product.controller";
 import { invoiceController } from "@/controllers/invoice.controller";
 import { saleController } from "@/controllers/sale.controller";
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
 
 const corsConfig = {
   origin: "*",
@@ -30,6 +32,8 @@ const swaggerConfig = {
   },
 };
 process.env.TZ = "Asia/Jakarta";
+dayjs.extend(utc);
+
 const app = new Elysia({ prefix: "/api" })
   .mapResponse(mapResponseMiddleware)
   .use(Logestic.preset("common"))

@@ -55,7 +55,7 @@ export const InvoiceRefundSchema = z.object({
 export const InvoiceDeliverySchema = z.object({
   shippingFee: z.optional(z.coerce.number()),
   paymentMethod: z.optional(z.string()),
-  orderCode: z.string().min(1, "Chưa có thông tin mã vận đơn"),
+  orderCode: z.optional(z.string()),
 });
 export namespace Invoice {
   export type RawCreate = z.TypeOf<typeof InvoiceBody>;

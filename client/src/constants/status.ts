@@ -14,13 +14,14 @@ export const ProductStatus = {
   SOLD: { value: "SOLD", label: "Đã hết" },
 };
 
-export enum OrderStatus {
-  PENDING = "PENDING",
-  COMPLETED = "COMPLETED",
-  REFUNDED = "REFUNDED",
-  DELIVERING = "DELIVERING",
-  PREPARED = "PREPARED",
-}
+export const OrderStatus = {
+  PENDING: { value: "PENDING", label: "Đang chờ" },
+  PREPARED: { value: "PREPARED", label: "Soạn hàng" },
+  DELIVERING: { value: "DELIVERING", label: "Đang vận chuyển" },
+  COMPLETED: { value: "COMPLETE", label: "Thành công" },
+  REFUNDED: { value: "REFUNDED", label: "Hoàn tiền" },
+  CANCELLED: { value: "CANCELLED", label: "Huỷ" },
+};
 
 export enum PaymentStatus {
   COMPLETE = "COMPLETE",

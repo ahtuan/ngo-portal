@@ -21,6 +21,7 @@ type FacetedFilterProps = {
   options: Common.Option[];
   selectedValues: string[];
   onFilter?: (value: string[]) => void;
+  mode?: "multiple" | "single";
 };
 
 export const FacetedFilter = ({
@@ -28,6 +29,7 @@ export const FacetedFilter = ({
   options,
   selectedValues,
   onFilter,
+  mode = "multiple",
 }: FacetedFilterProps) => {
   const [selectedOptions, setSelectedOptions] =
     React.useState<string[]>(selectedValues);
@@ -96,13 +98,19 @@ export const FacetedFilter = ({
                     key={option.value}
                     onSelect={() => {
                       let newOptions = [];
-                      if (isSelected) {
-                        newOptions = selectedOptions.filter(
-                          (value) => value !== option.value,
-                        );
+                      if (mode === "multiple") {
+                        if (isSelected) {
+                          newOptions = selectedOptions.filter(
+                            (value) => value !== option.value,
+                          );
+                        } else {
+                          newOptions = [...selectedOptions, option.value];
+                        }
                       } else {
-                        newOptions = [...selectedOptions, option.value];
+                        newOptions = [option.value];
+                        onFilter?.(newOptions);
                       }
+
                       setSelectedOptions(newOptions);
                     }}
                   >

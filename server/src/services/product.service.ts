@@ -307,6 +307,7 @@ class ProductService {
       });
       if (categoryByKg) {
         modifiedData.categoryIdByKg = categoryByKg.id;
+        body.price = null;
       }
     } else {
       modifiedData.categoryIdByKg = null;

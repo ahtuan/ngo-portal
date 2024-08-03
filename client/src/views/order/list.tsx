@@ -5,7 +5,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Invoice } from "@/schemas/invoice.schema";
 import { Badge } from "@@/ui/badge";
 import { PAYMENT_TYPE } from "@/constants/enums";
-import { formatCurrency, formatDate, formatPrice } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDate,
+  formatPrice,
+  getQueryChanged,
+} from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import useSWR from "swr";
 import {
@@ -31,6 +36,12 @@ import DetailModal from "@views/order/detail-modal";
 import { OrderStatus, PaymentStatus, PaymentType } from "@/constants/status";
 import RefundModal from "@views/order/component/refund-modal";
 import DeliveryModal from "@views/order/component/delivery-modal";
+import { FacetedFilter } from "@@/data-table/faceted-filter";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { SearchParamsProps } from "@/app/(dashboard)/order/page";
+import Search from "@@/data-table/search";
+import DatePicker from "@@/date-picker";
+import { DateRange } from "react-day-picker";
 
 type RefundType = {
   byDateId: string;
@@ -125,11 +136,11 @@ const columns = (
           if (!isOnline) {
             return getBadge(payments[0].paymentMethod);
           }
-          if (status === OrderStatus.DELIVERING) {
+          if (status === OrderStatus.DELIVERING.value) {
             statement += "Đang giao hàng ";
-          } else if (status === OrderStatus.PREPARED) {
+          } else if (status === OrderStatus.PREPARED.value) {
             statement += "Đang đóng gói ";
-          } else if (status === OrderStatus.PENDING) {
+          } else if (status === OrderStatus.PENDING.value) {
             statement += "Đang giữ hàng";
           } else {
             statement += "Giao thành công";
@@ -180,20 +191,21 @@ const columns = (
               <DropdownMenuItem onClick={() => setByDateId(byDateId)}>
                 Chi tiết
               </DropdownMenuItem>
-              {payments.some(
+              {((payments.some(
                 (payment) => payment.status === PaymentStatus.PENDING,
               ) &&
-                status !== OrderStatus.PREPARED && (
-                  <DropdownMenuItem
-                    onClick={() => completeOnlineInvoice(byDateId)}
-                  >
-                    Hoàn tất
-                  </DropdownMenuItem>
-                )}
+                status !== OrderStatus.PREPARED.value) ||
+                status === OrderStatus.DELIVERING.value) && (
+                <DropdownMenuItem
+                  onClick={() => completeOnlineInvoice(byDateId)}
+                >
+                  Hoàn tất
+                </DropdownMenuItem>
+              )}
               {isOnline &&
                 ![
-                  OrderStatus.REFUNDED.toString(),
-                  OrderStatus.PREPARED,
+                  OrderStatus.REFUNDED.value.toString(),
+                  OrderStatus.PREPARED.value,
                 ].includes(status) && (
                   <DropdownMenuItem
                     onClick={() =>
@@ -203,7 +215,7 @@ const columns = (
                     Hoàn tiền
                   </DropdownMenuItem>
                 )}
-              {isOnline && status === OrderStatus.PREPARED && (
+              {isOnline && status === OrderStatus.PREPARED.value && (
                 <DropdownMenuItem onClick={() => setDelivery(byDateId)}>
                   Giao hàng
                 </DropdownMenuItem>
@@ -218,13 +230,18 @@ const columns = (
 
 type Props = {
   queryString: string;
+  searchParams: SearchParamsProps;
 };
-const List = ({ queryString }: Props) => {
+const List = ({ queryString, searchParams }: Props) => {
   const router = useRouter();
   const pathName = usePathname();
   const [byDateId, setByDateId] = React.useState<string>();
   const [refundData, setRefundData] = React.useState<RefundType>();
   const [delivery, setDelivery] = React.useState<string>();
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: searchParams.from ? new Date(searchParams.from) : undefined,
+    to: searchParams.to ? new Date(searchParams.to) : undefined,
+  });
   const {
     data: res,
     isLoading,
@@ -244,6 +261,10 @@ const List = ({ queryString }: Props) => {
     mutate();
   };
 
+  const handleReset = () => {
+    router.push(`${pathName}`);
+  };
+
   const onPageChange = (page: number) => {
     const pageChangeString = queryString
       .split("&")
@@ -251,13 +272,61 @@ const List = ({ queryString }: Props) => {
       .join("&");
     router.push(`${pathName}?${pageChangeString}`);
   };
+
+  const onFilter = (name: string, value: string[]) => {
+    const queryChangedString = getQueryChanged(name, value, queryString);
+    router.push(`${pathName}?${queryChangedString}`);
+  };
+
+  const onDateChange = (range: DateRange | undefined) => {
+    if (range) {
+      if (range.from && !range.to) {
+        range.to = range.from;
+      } else if (range.to && (!range.from || isNaN(range.from.getTime()))) {
+        // invalid date
+        range.from = range.to;
+      }
+    }
+
+    setDateRange(range);
+    const formatRange = {
+      from: formatDate(range?.from, "YYYY-MM-DD", true),
+      to: formatDate(range?.to, "YYYY-MM-DD", true),
+    };
+    let pageChangeString = queryString
+      .split("&")
+      .map((query) => {
+        if (!/^from|to=/.test(query)) {
+          return query;
+        }
+        if (range?.from && /^from=/.test(query)) {
+          return `from=${formatRange?.from}`;
+        } else if (range?.to && /^to=/.test(query)) {
+          return `to=${formatRange?.to}`;
+        }
+        return "";
+      })
+      .filter(Boolean);
+
+    if (
+      formatRange.from &&
+      !pageChangeString.some((query) => /^from=/.test(query))
+    ) {
+      pageChangeString.push("from=" + formatRange.from);
+    }
+    if (
+      formatRange.to &&
+      !pageChangeString.some((query) => /^to=/.test(query))
+    ) {
+      pageChangeString.push("to=" + formatRange.to);
+    }
+
+    router.push(`${pathName}?${pageChangeString.join("&")}`);
+  };
   return (
     <>
       <DataTable<Invoice.Type>
-        columnVisibility={{
-          weight: false,
-          categoryName: false,
-        }}
+        allowManualHide={false}
         loading={isLoading}
         data={res?.data || []}
         columns={columns(setByDateId, refresh, setRefundData, setDelivery)}
@@ -267,6 +336,66 @@ const List = ({ queryString }: Props) => {
           totalPages: res?.totalPage,
         }}
         onPageChange={onPageChange}
+        search={
+          <Search
+            value={searchParams.keyword}
+            placeholder="Nhập mã hoặc mã vận"
+            className="w-52"
+            onSearch={(value) => onFilter("keyword", [value])}
+          />
+        }
+        filter={
+          <div className="flex gap-2">
+            <DatePicker
+              mode="range"
+              value={
+                dateRange?.from && dateRange?.to
+                  ? `Từ: ${formatDate(
+                      dateRange?.from,
+                      "YYYY-MM-DD",
+                      true,
+                    )} - Đến: ${formatDate(dateRange?.to, "YYYY-MM-DD", true)}`
+                  : ""
+              }
+              relative={true}
+              selected={dateRange}
+              onSelect={onDateChange}
+              disabled={(date) => date > new Date()}
+            />
+            <FacetedFilter
+              options={[
+                { label: "Tất cả", value: "all" },
+                { label: "Đơn trực tuyến", value: "true" },
+                { label: "Đơn trực tiếp", value: "false" },
+              ]}
+              selectedValues={[searchParams.isOnline]}
+              title="Phân loại"
+              onFilter={(value) => onFilter("isOnline", value)}
+              mode="single"
+            />
+            <FacetedFilter
+              options={Object.values(OrderStatus)}
+              selectedValues={
+                searchParams.status?.split(";")?.filter(Boolean) || []
+              }
+              title="Trạng thái"
+              onFilter={(value) => onFilter("status", value)}
+            />
+
+            {(searchParams.status ||
+              searchParams.keyword ||
+              searchParams.isOnline) && (
+              <Button
+                variant="ghost"
+                onClick={handleReset}
+                className="h-8 px-2 lg:px-3"
+              >
+                Bỏ lọc
+                <Cross2Icon className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        }
       />
       {detailData && (
         <DetailModal data={detailData} onClose={() => setByDateId(undefined)} />

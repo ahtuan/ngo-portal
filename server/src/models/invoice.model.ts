@@ -6,6 +6,10 @@ const filter = t.Partial(
     keyword: t.String(),
     page: t.String(),
     size: t.String(),
+    isOnline: t.String(),
+    status: t.String(),
+    from: t.String(),
+    to: t.String(),
   }),
 );
 const SaleCampaign = t.Object({
@@ -65,7 +69,7 @@ const refund = t.Object({
 });
 
 const delivery = t.Object({
-  orderCode: t.String(),
+  orderCode: t.Optional(t.String()),
   shippingFee: t.Optional(t.Union([t.Number(), t.Null()])),
   paymentMethod: t.Optional(t.Enum(PAYMENT_METHOD_ENUM)),
 });

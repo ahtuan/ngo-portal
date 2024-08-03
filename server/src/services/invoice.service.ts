@@ -17,13 +17,14 @@ import {
 } from "@/constants/common";
 import ProductService from "@/services/product.service";
 import CategoryService from "@/services/category.service";
-import { and, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
 import { helperService } from "@/services/helper.service";
 import { NotFoundError } from "@/libs/error";
 import SaleService from "@/services/sale.service";
 import { evaluateExp, fixed } from "@/libs/helpers";
 import { getCurrentDate } from "@/libs/date";
 import DeliveryService from "@/services/delivery.service";
+import dayjs from "dayjs";
 
 class InvoiceService {
   private productService: ProductService;
@@ -41,7 +42,15 @@ class InvoiceService {
   async getAll(query: Invoice.Filter) {
     const limit = query.size ? +query.size : DEFAULT_PAGING.size;
     const offset = query.page ? +query.page - 1 : DEFAULT_PAGING.page;
+    const { from, to } = query;
 
+    const statusCollection = (query.status?.split(";") || [])
+      .map((category) => `'${category.toUpperCase()}'`)
+      .join(",");
+    const isOnline =
+      query.isOnline === "all" || query.isOnline === undefined
+        ? undefined
+        : query.isOnline === "true";
     const sq = db.$with("sq").as(
       db
         .select()
@@ -49,7 +58,39 @@ class InvoiceService {
         .where(
           and(
             query.keyword
-              ? or(like(invoices.byDateId, `%${query.keyword}%`))
+              ? or(
+                  like(invoices.byDateId, `%${query.keyword}%`),
+                  like(invoices.orderCode, `%${query.keyword.toUpperCase()}%`),
+                )
+              : undefined,
+            isOnline !== undefined
+              ? eq(invoices.isOnline, isOnline)
+              : undefined,
+            query.status
+              ? sql`${invoices.status} in ${sql.raw(`(${statusCollection})`)}`
+              : undefined,
+            from
+              ? to
+                ? gte(
+                    invoices.createdAt,
+                    dayjs(from).utc(true).startOf("day").toDate(),
+                  )
+                : and(
+                    gte(
+                      invoices.createdAt,
+                      dayjs(from).utc(true).startOf("day").toDate(),
+                    ),
+                    lte(
+                      invoices.createdAt,
+                      dayjs(from).utc(true).endOf("day").toDate(),
+                    ),
+                  )
+              : undefined,
+            to
+              ? lte(
+                  invoices.createdAt,
+                  dayjs(to).utc(true).endOf("day").toDate(),
+                )
               : undefined,
           ),
         )
@@ -359,13 +400,6 @@ class InvoiceService {
                 paymentType: PAYMENT_TYPE.REMAINING,
                 paymentMethod: PAYMENT_METHOD_ENUM.BANK,
               });
-            } else {
-              await db
-                .update(invoices)
-                .set({
-                  status: PAYMENT_STATUS.COMPLETE,
-                })
-                .where(eq(invoices.id, invoiceId));
             }
           }
 
@@ -466,7 +500,7 @@ class InvoiceService {
           .update(invoices)
           .set({
             status: INVOICE_STATUS_ENUM.DELIVERING,
-            orderCode: body.orderCode,
+            orderCode: body.orderCode?.trim() ? body.orderCode?.trim() : null,
             updatedAt: getCurrentDate(),
           })
           .where(eq(invoices.id, invoice.id));

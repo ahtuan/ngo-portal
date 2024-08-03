@@ -37,9 +37,6 @@ type Props = {
 const RefundModal = ({ onClose, byDateId, refresh }: Props) => {
   const form = useForm<Invoice.Delivery>({
     resolver: zodResolver(InvoiceDeliverySchema),
-    defaultValues: {
-      orderCode: "",
-    },
   });
 
   const handleSubmit = async (values: Invoice.Delivery) => {

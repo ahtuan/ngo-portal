@@ -46,7 +46,7 @@ const DetailModal = ({ data, onClose }: Props) => {
     }
     return label;
   };
-  const getPaymentType = (value?: string) => {
+  const getPaymentType = (value?: string, complete?: boolean) => {
     let type = "";
     switch (value) {
       case "DEPOSIT":
@@ -56,7 +56,7 @@ const DetailModal = ({ data, onClose }: Props) => {
         type = "Hoàn tiền";
         break;
       case "REMAINING":
-        type = "Cần thanh toán";
+        type = !complete ? "Cần thanh toán" : "Đã thanh toán";
         break;
       case "SHIPPING_FEE":
         type = "Vận chuyển";
@@ -85,6 +85,9 @@ const DetailModal = ({ data, onClose }: Props) => {
       case "storing":
         status = "Đang chuyển kho";
         break;
+      case "transporting":
+        status = "Đang vận chuyển";
+        break;
       case "returned":
         status = "Trả hàng";
         break;
@@ -109,9 +112,9 @@ const DetailModal = ({ data, onClose }: Props) => {
           <DialogTitle>
             Thông tin đơn hàng
             {[
-              OrderStatus.PENDING.toString(),
-              OrderStatus.DELIVERING,
-              OrderStatus.PREPARED,
+              OrderStatus.PENDING.value.toString(),
+              OrderStatus.DELIVERING.value,
+              OrderStatus.PREPARED.value,
             ].includes(data.status) && (
               <Badge variant="outline" className="ml-1">
                 Đang giao hàng
@@ -233,7 +236,7 @@ const DetailModal = ({ data, onClose }: Props) => {
                           {formatDate(item.paymentDate) || "-"}
                         </TableCell>
                         <TableCell>
-                          {getPaymentType(item.paymentType)}
+                          {getPaymentType(item.paymentType, !!item.paymentDate)}
                         </TableCell>
 
                         <TableCell>
