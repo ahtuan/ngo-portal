@@ -363,13 +363,32 @@ const Create = ({ isOnline }: CreateProps) => {
     value: number,
     byKg: boolean,
     itemIndex: number = -1,
+    isChangeTotal?: boolean,
   ) => {
-    if (byKg) {
-      handleUpdateKg(index, value, itemIndex, undefined, true);
+    if (isChangeTotal) {
+      onChangeTotal(index, value);
     } else {
-      handleUpdatePcs(index, value, true);
+      if (byKg) {
+        handleUpdateKg(index, value, itemIndex, undefined, true);
+      } else {
+        handleUpdatePcs(index, value, true);
+      }
     }
     onUpdateTotal();
+  };
+
+  const onChangeTotal = (index: number, total: number) => {
+    const item = fields[index];
+    if (item) {
+      const price = fixed(total / item.quantity, 0);
+      const newItem = {
+        ...item,
+        total,
+        price,
+        afterSale: total,
+      };
+      update(index, newItem);
+    }
   };
 
   const onDelete = (index: number, byKg: boolean, itemIndex: number = -1) => {

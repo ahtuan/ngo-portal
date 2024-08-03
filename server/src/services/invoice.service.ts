@@ -193,8 +193,9 @@ class InvoiceService {
             ) {
               result.totalQuantity += +current.quantity;
               result.totalPrice += current.price;
-              const item = await getItems(current);
+              let item = await getItems(current);
               if (item) {
+                item.price = fixed(current.price / (item?.quantity || 1), 0); // if have change on the price => must be cal again
                 result.items.push(item);
               }
             }

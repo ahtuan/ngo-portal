@@ -64,7 +64,8 @@ const CollapseRow = ({
             )}
           </Button>
         </TableCell>
-        <TableCell>
+
+        <TableCell colSpan={2}>
           <div className="flex items-center">
             {field.name} {field.sale && <Sale {...field.sale} />}
           </div>

@@ -37,9 +37,6 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const handleBlur = (e: any) => {
-      if (onBlur) {
-        onBlur?.(e);
-      }
       let amount = +formattedValue.replace(/\D/g, "");
       amount = amount < 1000 ? amount * 1000 : amount;
       const formattedAmount = formatCurrency(amount);
@@ -47,6 +44,9 @@ const Currency = React.forwardRef<HTMLInputElement, InputProps>(
         setFormattedValue(formatCurrency(amount));
         e.target.value = amount;
         onChange?.(e);
+      }
+      if (onBlur) {
+        onBlur?.(e);
       }
     };
 

@@ -14,13 +14,14 @@ import {
 } from "@@/ui/tooltip";
 import Sale from "@views/order/component/sale";
 import DisplayImage from "@@/display-image";
+import Currency from "@@/currency";
 
 type ItemRowProps = {
   field:
     | FieldArrayWithId<Invoice.DedicatedCreated, "items", "id">
     | Invoice.ItemType;
   onDelete?: () => void;
-  onUpdate?: (value: number) => void;
+  onUpdate?: (value: number, isChangeTotal?: boolean) => void;
   byKg?: boolean;
   readOnly?: boolean;
 };
@@ -34,13 +35,30 @@ const ItemRow = ({
   const [isEditing, setEditing] = React.useState(false);
   const [value, setValue] = React.useState<number>(field.quantity);
   const [total] = React.useState<string>(formatCurrency(field.total, "đ"));
+
+  const [isEditingTotal, setEditingTotal] = React.useState(false);
+  const [valueTotal, setValueTotal] = React.useState<number>(field.total);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.valueAsNumber);
+    if (isEditing) {
+      setValue(e.target.valueAsNumber);
+    }
+    if (isEditingTotal) {
+      setValueTotal(+e.target.value);
+    }
   };
 
   const triggerChange = () => {
-    setEditing(false);
-    onUpdate?.(value);
+    if (isEditing) {
+      setEditing(false);
+      onUpdate?.(value);
+    }
+    if (isEditingTotal) {
+      let tempTotal = valueTotal < 1000 ? valueTotal * 1000 : valueTotal;
+      setEditingTotal(false);
+      setValueTotal(tempTotal);
+      onUpdate?.(tempTotal, true);
+    }
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -50,12 +68,15 @@ const ItemRow = ({
     }
   };
 
-  const toggleChange = () => {
-    if (field.originalStock !== 1 && !readOnly) {
-      setEditing(true);
+  const toggleChange = (isChangeTotal: boolean = false) => {
+    if (!isChangeTotal) {
+      if (field.originalStock !== 1 && !readOnly) {
+        setEditing(true);
+      }
+    } else if (!readOnly) {
+      setEditingTotal(true);
     }
   };
-
   return (
     <TableRow>
       <TableCell className="">
@@ -86,7 +107,7 @@ const ItemRow = ({
           ) : (
             <span
               className={field.originalStock !== 1 ? "cursor-pointer" : ""}
-              onClick={toggleChange}
+              onClick={() => toggleChange()}
             >
               {field.quantity}
             </span>
@@ -113,7 +134,25 @@ const ItemRow = ({
             </Tooltip>
           </TooltipProvider>
         ) : (
-          total
+          <span>
+            {isEditingTotal ? (
+              <Currency
+                className="max-w-20"
+                autoFocus
+                value={valueTotal}
+                onChange={handleChange}
+                onBlur={triggerChange}
+                onKeyDown={onKeyDown}
+              />
+            ) : (
+              <span
+                className={!byKg ? "cursor-pointer" : ""}
+                onClick={() => toggleChange(true)}
+              >
+                {total}
+              </span>
+            )}
+          </span>
         )}
       </TableCell>
       {!readOnly && (

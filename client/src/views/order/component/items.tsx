@@ -27,6 +27,7 @@ type ItemsProps = {
     value: number,
     byKg: boolean,
     itemIndex?: number,
+    isChangeTotal?: boolean,
   ) => void;
   onDelete?: (index: number, byKg: boolean, itemIndex?: number) => void;
   readOnly?: boolean;
@@ -63,7 +64,9 @@ const Items = ({
               <ItemRow
                 field={item}
                 key={"id" in item ? item.id : index}
-                onUpdate={(value) => onUpdate?.(index, value, false)}
+                onUpdate={(value, isChangeTotal) =>
+                  onUpdate?.(index, value, false, -1, isChangeTotal)
+                }
                 onDelete={() => onDelete?.(index, false)}
                 readOnly={readOnly}
               />
