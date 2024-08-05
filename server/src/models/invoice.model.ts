@@ -68,6 +68,10 @@ const refund = t.Object({
   note: t.Optional(t.String()),
 });
 
+const keep = t.Object({
+  note: t.Optional(t.String()),
+});
+
 const delivery = t.Object({
   orderCode: t.Optional(t.String()),
   shippingFee: t.Optional(t.Union([t.Number(), t.Null()])),
@@ -81,6 +85,7 @@ export const invoiceModel = new Elysia({
   "invoice.create": create,
   "invoice.refund": refund,
   "invoice.delivery": delivery,
+  "invoice.keep": keep,
 });
 
 export namespace Invoice {

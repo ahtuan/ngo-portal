@@ -42,17 +42,25 @@ import { SearchParamsProps } from "@/app/(dashboard)/order/page";
 import Search from "@@/data-table/search";
 import DatePicker from "@@/date-picker";
 import { DateRange } from "react-day-picker";
+import KeepModal from "@views/order/component/keep-modal";
 
 type RefundType = {
   byDateId: string;
   note?: string;
   amount: number;
 };
+
+type KeepType = {
+  byDateId: string;
+  note?: string;
+};
+
 const columns = (
   setByDateId: (byDateId: string) => void,
   refresh: () => void,
   setRefundData: (value?: RefundType) => void,
   setDelivery: (byDateId: string) => void,
+  setKeepData: (value?: KeepType) => void,
 ): ColumnDef<Invoice.Type>[] => {
   const getBadge = (method: string) => {
     const methodObj = Object.values(PAYMENT_TYPE).find(
@@ -69,9 +77,16 @@ const columns = (
     );
   };
 
-  const completeOnlineInvoice = async (byDateId: string) => {
+  const completeOnlineInvoice = async (
+    byDateId: string,
+    justPayment?: boolean,
+  ) => {
     try {
-      await invoiceRequest.complete(byDateId);
+      if (justPayment) {
+        await invoiceRequest.completePayment(byDateId);
+      } else {
+        await invoiceRequest.complete(byDateId);
+      }
       await refresh();
     } catch {}
   };
@@ -141,7 +156,7 @@ const columns = (
           } else if (status === OrderStatus.PREPARED.value) {
             statement += "Đang đóng gói ";
           } else if (status === OrderStatus.PENDING.value) {
-            statement += "Đang giữ hàng";
+            statement += "Đang giữ hàng " + " - " + note;
           } else {
             statement += "Giao thành công";
           }
@@ -194,18 +209,43 @@ const columns = (
               {((payments.some(
                 (payment) => payment.status === PaymentStatus.PENDING,
               ) &&
-                status !== OrderStatus.PREPARED.value) ||
+                ![
+                  OrderStatus.PREPARED.value,
+                  OrderStatus.REFUNDED.value,
+                  OrderStatus.CANCELLED.value,
+                ].includes(status)) ||
                 status === OrderStatus.DELIVERING.value) && (
                 <DropdownMenuItem
                   onClick={() => completeOnlineInvoice(byDateId)}
                 >
-                  Hoàn tất
+                  Hoàn tất đơn hàng
+                </DropdownMenuItem>
+              )}
+              {payments.some(
+                (payment) => payment.status === PaymentStatus.PENDING,
+              ) &&
+                ![
+                  OrderStatus.CANCELLED.value,
+                  OrderStatus.COMPLETED.value,
+                ].includes(status) && (
+                  <DropdownMenuItem
+                    onClick={() => completeOnlineInvoice(byDateId, true)}
+                  >
+                    Hoàn tất thanh toán
+                  </DropdownMenuItem>
+                )}
+              {status === OrderStatus.PREPARED.value && (
+                <DropdownMenuItem
+                  onClick={() => setKeepData({ byDateId, note })}
+                >
+                  Giữ hàng
                 </DropdownMenuItem>
               )}
               {isOnline &&
                 ![
                   OrderStatus.REFUNDED.value.toString(),
                   OrderStatus.PREPARED.value,
+                  OrderStatus.PENDING.value,
                 ].includes(status) && (
                   <DropdownMenuItem
                     onClick={() =>
@@ -215,11 +255,15 @@ const columns = (
                     Hoàn tiền
                   </DropdownMenuItem>
                 )}
-              {isOnline && status === OrderStatus.PREPARED.value && (
-                <DropdownMenuItem onClick={() => setDelivery(byDateId)}>
-                  Giao hàng
-                </DropdownMenuItem>
-              )}
+              {isOnline &&
+                [
+                  OrderStatus.PREPARED.value,
+                  OrderStatus.PENDING.value,
+                ].includes(status) && (
+                  <DropdownMenuItem onClick={() => setDelivery(byDateId)}>
+                    Giao hàng
+                  </DropdownMenuItem>
+                )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -242,6 +286,8 @@ const List = ({ queryString, searchParams }: Props) => {
     from: searchParams.from ? new Date(searchParams.from) : undefined,
     to: searchParams.to ? new Date(searchParams.to) : undefined,
   });
+  const [keepData, setKeepData] = React.useState<KeepType>();
+
   const {
     data: res,
     isLoading,
@@ -257,8 +303,8 @@ const List = ({ queryString, searchParams }: Props) => {
     {},
   );
 
-  const refresh = () => {
-    mutate();
+  const refresh = async () => {
+    await mutate();
   };
 
   const handleReset = () => {
@@ -329,7 +375,13 @@ const List = ({ queryString, searchParams }: Props) => {
         allowManualHide={false}
         loading={isLoading}
         data={res?.data || []}
-        columns={columns(setByDateId, refresh, setRefundData, setDelivery)}
+        columns={columns(
+          setByDateId,
+          refresh,
+          setRefundData,
+          setDelivery,
+          setKeepData,
+        )}
         pagination={{
           page: res?.page,
           total: res?.totalRecord,
@@ -411,6 +463,13 @@ const List = ({ queryString, searchParams }: Props) => {
         <DeliveryModal
           byDateId={delivery}
           onClose={() => setDelivery(undefined)}
+          refresh={refresh}
+        />
+      )}
+      {keepData && (
+        <KeepModal
+          {...keepData}
+          onClose={() => setKeepData(undefined)}
           refresh={refresh}
         />
       )}

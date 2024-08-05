@@ -52,6 +52,10 @@ export const InvoiceRefundSchema = z.object({
   note: z.string().optional(),
 });
 
+export const InvoiceKeepSchema = z.object({
+  note: z.string().optional(),
+});
+
 export const InvoiceDeliverySchema = z.object({
   shippingFee: z.optional(z.coerce.number()),
   paymentMethod: z.optional(z.string()),
@@ -112,4 +116,5 @@ export namespace Invoice {
   export type Sale = z.TypeOf<typeof SaleBody>;
   export type Refund = z.TypeOf<typeof InvoiceRefundSchema>;
   export type Delivery = z.TypeOf<typeof InvoiceDeliverySchema>;
+  export type Keep = z.TypeOf<typeof InvoiceKeepSchema>;
 }

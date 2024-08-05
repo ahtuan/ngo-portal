@@ -35,11 +35,24 @@ export const invoiceController = new Elysia({
       await service.complete(byDateId),
   )
   .post(
+    "/:byDateId/complete-payment",
+    async ({ params: { byDateId }, invoiceService: service }) =>
+      await service.complete(byDateId, true),
+  )
+  .post(
     "/:byDateId/refund",
     async ({ body, params: { byDateId }, invoiceService: service }) =>
       await service.refund(byDateId, body),
     {
       body: "invoice.refund",
+    },
+  )
+  .post(
+    "/:byDateId/keep",
+    async ({ body, params: { byDateId }, invoiceService: service }) =>
+      await service.keep(byDateId, body.note),
+    {
+      body: "invoice.keep",
     },
   )
   .post(

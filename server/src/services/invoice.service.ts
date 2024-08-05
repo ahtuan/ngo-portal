@@ -417,7 +417,7 @@ class InvoiceService {
     return ApiResponse.success(byDateId);
   }
 
-  async complete(byDateId: string) {
+  async complete(byDateId: string, justPayment: boolean = false) {
     const invoice = await this.getById(byDateId);
     if (!invoice) {
       return new NotFoundError("Không tìm thấy mã đơn hàng");
@@ -436,13 +436,16 @@ class InvoiceService {
           eq(payments.status, PAYMENT_STATUS.PENDING),
         ),
       );
-    await db
-      .update(invoices)
-      .set({
-        status: INVOICE_STATUS_ENUM.COMPLETE,
-        updatedAt: getCurrentDate(),
-      })
-      .where(eq(invoices.id, invoice.id));
+    if (!justPayment) {
+      await db
+        .update(invoices)
+        .set({
+          status: INVOICE_STATUS_ENUM.COMPLETE,
+          updatedAt: getCurrentDate(),
+        })
+        .where(eq(invoices.id, invoice.id));
+    }
+
     return ApiResponse.success(undefined);
   }
 
@@ -506,6 +509,30 @@ class InvoiceService {
           })
           .where(eq(invoices.id, invoice.id));
       });
+      return ApiResponse.success();
+    } catch (e) {
+      return ApiResponse.error(e);
+    }
+  }
+
+  async keep(byDateId: string, note?: string) {
+    const invoice = await this.getById(byDateId);
+    if (!invoice) {
+      return new NotFoundError("Không tìm thấy mã đơn hàng");
+    }
+    try {
+      await db
+        .update(invoices)
+        .set({
+          status: INVOICE_STATUS_ENUM.PENDING,
+          updatedAt: getCurrentDate(),
+          note: note
+            ? invoice.note
+              ? invoice.note + " " + note
+              : note
+            : invoice.note,
+        })
+        .where(eq(invoices.id, invoice.id));
       return ApiResponse.success();
     } catch (e) {
       return ApiResponse.error(e);

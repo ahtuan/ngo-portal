@@ -18,4 +18,8 @@ export const invoiceRequest = {
     http.post(`${invoiceEndpoint}/${byDateId}/refund`, body),
   delivery: async (byDateId: string, body: Invoice.Delivery) =>
     http.post(`${invoiceEndpoint}/${byDateId}/delivery`, body),
+  completePayment: async (byDateId: string) =>
+    http.post(`${invoiceEndpoint}/${byDateId}/complete-payment`, undefined),
+  keep: async (byDateId: string, note?: string) =>
+    http.post(`${invoiceEndpoint}/${byDateId}/keep`, { note }),
 };
