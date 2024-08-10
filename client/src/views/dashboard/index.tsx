@@ -1,7 +1,12 @@
 import React from "react";
+import TodayInsightWidget from "@views/dashboard/components/today-insight-widget";
 
 const Index = () => {
-  return <div>Dashboard</div>;
+  return (
+    <div>
+      <TodayInsightWidget />
+    </div>
+  );
 };
 
 export default Index;

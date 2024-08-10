@@ -47,6 +47,7 @@ export enum PAYMENT_TYPE {
   FULL = "FULL",
   REFUNDED = "REFUNDED",
   SHIPPING_FEE = "SHIPPING_FEE",
+  INVEST = "INVEST",
 }
 
 export const MATERIAL_TYPE = {
