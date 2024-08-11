@@ -24,6 +24,7 @@ const InvoiceItems = z.object({
   originalStock: z.number().optional(),
   sale: z.optional(SaleBody),
   afterSale: z.number(),
+  image: z.string().optional(),
 });
 
 const Stack = z.object({
