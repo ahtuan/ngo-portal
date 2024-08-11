@@ -50,7 +50,7 @@ export const payments = schema.table("payments", {
   invoiceId: integer("invoice_id")
     .notNull()
     .references(() => invoices.id),
-  paymentMethod: varchar("payment_method").notNull(),
+  paymentMethod: varchar("payment_method"),
   status: varchar("status", { length: 15 }).notNull(), // pending, complete,
   // failed
   amount: integer("amount").notNull(),
@@ -75,11 +75,25 @@ export namespace InvoiceResponse {
     quantity: number;
     price: number;
     total: number;
+    originalStock: number;
+    stock: number;
+    unit: string;
     sale?: Sale;
+  };
+  export type InvoiceItemRaw = {
+    byKgUuid: string | null;
+    byDateId: string | null;
+    quantity: string;
+    id: number;
+    parentId: number | null;
+    price: number;
+    productId: number | null;
+    categoryId: number | null;
   };
 
   export type StackItem = {
     id: number;
+    categoryUuidByKg: string;
     name: string;
     weight: number;
     price: number;

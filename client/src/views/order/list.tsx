@@ -43,6 +43,8 @@ import Search from "@@/data-table/search";
 import DatePicker from "@@/date-picker";
 import { DateRange } from "react-day-picker";
 import KeepModal from "@views/order/component/keep-modal";
+import Link from "next/link";
+import { OrderPath } from "@/constants/path";
 
 type RefundType = {
   byDateId: string;
@@ -206,6 +208,13 @@ const columns = (
               <DropdownMenuItem onClick={() => setByDateId(byDateId)}>
                 Chi tiết
               </DropdownMenuItem>
+              {[OrderStatus.PREPARED.value, OrderStatus.PENDING.value].includes(
+                status,
+              ) && (
+                <DropdownMenuItem>
+                  <Link href={OrderPath.Update(byDateId)}>Chỉnh sửa</Link>
+                </DropdownMenuItem>
+              )}
               {((payments.some(
                 (payment) => payment.status === PaymentStatus.PENDING,
               ) &&

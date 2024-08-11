@@ -14,12 +14,14 @@ export type SearchParamsProps = {
   status: string;
   from: string;
   to: string;
+  timestamp?: string;
 };
 
 const Page = ({ searchParams }: { searchParams: SearchParamsProps }) => {
   if (!searchParams.page || !searchParams.from) {
     searchParams.from = dayjs().utc(true).startOf("month").format("YYYY-MM-DD");
     searchParams.to = dayjs().utc(true).endOf("date").format("YYYY-MM-DD");
+    searchParams.timestamp = dayjs().unix().toString();
     return redirect(`${OrderPath.Base}?${getQueryString(searchParams)}`);
   }
 

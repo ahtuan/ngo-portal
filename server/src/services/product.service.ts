@@ -207,7 +207,7 @@ class ProductService {
       );
     }
 
-    // Create ID for Product
+    // Upsert ID for Product
     const byDateId = await this.getIdSequence();
     const categoryRef: {
       categoryId: number | null;
@@ -359,12 +359,22 @@ class ProductService {
     return data;
   }
 
-  async updateAfterInvoice(id: number, quantity: number, soldOut: number) {
+  /**
+   * Update sold out and status of product
+   * @param id Product id
+   * @param soldOut The number of product that had been sold
+   */
+  async updateAfterInvoice(id: number, soldOut: number) {
+    const product = await this.getById(id);
+    if (!product) {
+      throw new Error(`Không có sản phẩm với id: ${id}`);
+    }
+    const { quantity, status } = product;
     const update: {
       soldOut: number;
       status?: string;
     } = {
-      soldOut,
+      soldOut: soldOut > 0 ? soldOut : product.soldOut + soldOut,
     };
     if (soldOut === quantity) {
       update.status = PRODUCT_STATUS_ENUM.SOLD;
@@ -372,6 +382,8 @@ class ProductService {
       throw new Error(
         `Sản phẩm bán ra không được lớn hơn số lượng hiện có với id: ${id}, quantity: ${quantity}, soldOut: ${soldOut}`,
       );
+    } else if (status === PRODUCT_STATUS_ENUM.SOLD) {
+      update.status = PRODUCT_STATUS_ENUM.IN_STOCK;
     }
 
     await db

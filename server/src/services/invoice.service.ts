@@ -17,7 +17,7 @@ import {
 } from "@/constants/common";
 import ProductService from "@/services/product.service";
 import CategoryService from "@/services/category.service";
-import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, like, lte, or, sql } from "drizzle-orm";
 import { helperService } from "@/services/helper.service";
 import { NotFoundError } from "@/libs/error";
 import SaleService from "@/services/sale.service";
@@ -25,6 +25,8 @@ import { evaluateExp, fixed } from "@/libs/helpers";
 import { getCurrentDate } from "@/libs/date";
 import DeliveryService from "@/services/delivery.service";
 import dayjs from "dayjs";
+import { products } from "@/db/schemas/product.schema";
+import { byKgCategories } from "@/db/schemas/category.schema";
 
 class InvoiceService {
   private productService: ProductService;
@@ -164,14 +166,19 @@ class InvoiceService {
               price = category.price;
             }
           }
-
+          const stock = product.quantity - product.soldOut;
+          price = price || categoryPrice || 0;
           return {
             name: product.name,
             byDateId: product.byDateId,
-            price: price || categoryPrice || 0,
+            price,
+            afterSale: price,
             total: current.price,
             quantity: +current.quantity,
             weight: +product.weight,
+            originalStock: stock + +current.quantity,
+            stock: stock,
+            unit: product.categoryIdByKg ? "KG" : "CHIẾC",
             image: (
               await helperService.readImages(product.imageUrls ?? "", true)
             )[0],
@@ -220,6 +227,7 @@ class InvoiceService {
                 result.totalPrice += afterSale;
                 result.stacks.push({
                   id: current.id,
+                  categoryUuidByKg: category.uuid,
                   name: category.name,
                   weight: +current.quantity,
                   price: current.price,
@@ -307,6 +315,7 @@ class InvoiceService {
         orderCode: invoice.orderCode,
         deliveryInfo,
       };
+
       return ApiResponse.success(mapping);
     }
     return new NotFoundError();
@@ -405,6 +414,340 @@ class InvoiceService {
           }
 
           await db.insert(payments).values(paymentsData);
+        } catch (error) {
+          console.error(error);
+          transaction.rollback();
+          throw error;
+        }
+      });
+    } catch (error) {
+      return ApiResponse.error("Có lỗi xảy ra trong quá trình tạo đơn hàng");
+    }
+    return ApiResponse.success(byDateId);
+  }
+
+  async update(byDateId: string, body: Invoice.Create) {
+    const invoice = await this.getById(byDateId);
+
+    if (!invoice) {
+      return new NotFoundError("Không tìm thấy mã đơn hàng");
+    }
+    const invoiceId = invoice.id;
+    console.info("Start update invoice with invoice id: ", invoiceId);
+    console.debug("Payload with body: ", body);
+    const { items, stacks, actualPrice } = body;
+    try {
+      await db.transaction(async (transaction) => {
+        try {
+          // Update amount in invoices table
+          await db
+            .update(invoices)
+            .set({
+              price: actualPrice,
+            })
+            .where(eq(invoices.id, invoice.id));
+          console.info("Update invoice with new price: ", actualPrice);
+
+          // Select items stored in table
+          const invoiceItemsRaw: InvoiceResponse.InvoiceItemRaw[] = await db
+            .select({
+              id: invoiceItems.id,
+              parentId: invoiceItems.parentId,
+              quantity: invoiceItems.quantity,
+              price: invoiceItems.price,
+              productId: invoiceItems.productId,
+              byDateId: products.byDateId,
+              categoryId: invoiceItems.categoryId,
+              byKgUuid: byKgCategories.uuid,
+            })
+            .from(invoiceItems)
+            .where(eq(invoiceItems.invoiceId, invoiceId))
+            .leftJoin(products, eq(products.id, invoiceItems.productId))
+            .leftJoin(
+              byKgCategories,
+              eq(byKgCategories.id, invoiceItems.categoryId),
+            );
+          console.debug("Raw invoice items from database: ", invoiceItemsRaw);
+
+          console.info("Start flow update PCS items");
+          const itemPromises = this.handleUpdateItems(
+            invoiceId,
+            invoiceItemsRaw,
+            items,
+          );
+          console.info("End flow update PCS items");
+          console.info("Start flow update KG items with stack");
+          const currentStackUuidSet = new Set(
+            stacks?.map((item) => item.categoryUuidByKg) || [],
+          );
+          console.info(
+            "Current stack Uuid need to be update or insert: ",
+            currentStackUuidSet,
+          );
+          const stacksToDelete = invoiceItemsRaw
+            .filter(
+              (raw) =>
+                raw.byKgUuid !== null && !currentStackUuidSet.has(raw.byKgUuid),
+            )
+            .map((item) => item.id);
+          console.info(
+            "Invoice item id need to be deleted (not existed in" +
+              " current anymore)",
+            stacksToDelete,
+          );
+          if (stacksToDelete.length > 0) {
+            console.info("Start delete unnecessary invoice items");
+            await Promise.all(
+              stacksToDelete.map(async (id) => {
+                console.info("Delete stack items with parent id: ", id);
+                const deletedResults = await db
+                  .delete(invoiceItems)
+                  .where(eq(invoiceItems.parentId, id))
+                  .returning();
+                console.info(
+                  "Update status and soldout for product in stack",
+                  id,
+                );
+                await Promise.all(
+                  deletedResults.map((item) => {
+                    if (item.productId) {
+                      return this.productService.updateAfterInvoice(
+                        item.productId,
+                        -item.quantity,
+                      );
+                    }
+                  }),
+                );
+                console.info("Delete stack with id: ", id);
+                await db.delete(invoiceItems).where(eq(invoiceItems.id, id));
+              }),
+            );
+            console.info("Complete delete unnecessary invoice items");
+          }
+
+          console.debug("Stack items:", stacks);
+          const stackPromises = stacks?.length
+            ? stacks?.map(async (stack) => {
+                const existedStack = invoiceItemsRaw.find(
+                  (raw) =>
+                    raw.byDateId == null &&
+                    raw.byKgUuid === stack.categoryUuidByKg,
+                );
+                if (existedStack) {
+                  console.info(
+                    "Update stack with new price and quantity with" +
+                      " existed invoice items: ",
+                    existedStack.id,
+                  );
+                  console.debug(
+                    "Before update with existed items: ",
+                    existedStack,
+                  );
+                  await db
+                    .update(invoiceItems)
+                    .set({
+                      quantity: stack.weight.toString(),
+                      price: stack.price,
+                    })
+                    .where(eq(invoiceItems.id, existedStack.id));
+                  await this.handleUpdateItems(
+                    invoiceId,
+                    invoiceItemsRaw,
+                    stack.items,
+                    existedStack.id,
+                  );
+                } else {
+                  const categoryId = (
+                    await this.categoryService.getById(
+                      stack.categoryUuidByKg,
+                      true,
+                    )
+                  )?.id;
+                  console.info(
+                    "Insert new stack to database with categoryId: ",
+                    categoryId,
+                  );
+                  const stackSaleId =
+                    stack.sale?.uuid && stack.sale.isApplied
+                      ? (await this.saleService.getById(stack.sale.uuid))?.id
+                      : null;
+                  console.info(" And Sale Id", stackSaleId);
+                  const { parentId } = (
+                    await db
+                      .insert(invoiceItems)
+                      .values({
+                        invoiceId,
+                        quantity: stack.weight.toString(),
+                        price: stack.price,
+                        categoryId,
+                        productId: null,
+                        saleId: stackSaleId,
+                      })
+                      .returning({
+                        parentId: invoiceItems.id,
+                      })
+                  )[0];
+                  console.info(
+                    "Complete insert new stack to invoice items" +
+                      " table with id: ",
+                    parentId,
+                  );
+                  await this.insertItems(stack.items, invoiceId, parentId);
+                  console.info(
+                    "Complete insert stack items to invoice items" +
+                      " table with parent id: ",
+                    parentId,
+                  );
+                }
+              })
+            : [];
+          await Promise.all([itemPromises, ...stackPromises]);
+          console.info("End of update Stack flow");
+          // Update or add more payment
+          console.info("Start update payment flow");
+          const rawPayments = await db.query.payments.findMany({
+            where: (payment, { eq }) => eq(payment.invoiceId, invoice.id),
+          });
+          console.debug("Current payments in database: ", rawPayments);
+          const remainingPaymentExisted = rawPayments.find(
+            (item) => item.paymentType === PAYMENT_TYPE.REMAINING,
+          );
+          console.debug("Payment with Remaining type", remainingPaymentExisted);
+          const [sumPayment, charged] = rawPayments.reduce(
+            (prev, current) => {
+              let [sum, charged] = prev;
+              sum += current.amount;
+              if (current.status === PAYMENT_STATUS.COMPLETE) {
+                return [sum, charged + current.amount];
+              }
+
+              return [sum, charged];
+            },
+            [0, 0],
+          );
+          console.info(
+            "Total payments in database: ",
+            sumPayment,
+            "and" + " charged: ",
+            charged,
+          );
+          const insertOrUpdatePendingPayment = (
+            invoiceId: number,
+            amount: number,
+            type: string = PAYMENT_TYPE.REMAINING,
+            id?: number,
+          ) => {
+            type = type || PAYMENT_TYPE.REMAINING;
+            if (id) {
+              console.info(
+                "Update payment in database with: ",
+                id,
+                "and" + " amount: ",
+                amount,
+              );
+              return db
+                .update(payments)
+                .set({
+                  amount: amount,
+                })
+                .where(eq(payments.id, id));
+            }
+            console.info(
+              "Insert new payment to database with: ",
+              id,
+              "and" + " amount: ",
+              amount,
+            );
+            return db.insert(payments).values({
+              invoiceId,
+              amount: amount,
+              paymentType: type,
+              status: PAYMENT_STATUS.PENDING,
+            });
+          };
+
+          console.info("Current payment for invoice: ", actualPrice);
+          if (actualPrice > sumPayment) {
+            console.info(
+              "actualPrice > sumPayment - Delete Refund that" +
+                " still pending",
+            );
+            const deletePromise = db
+              .delete(payments)
+              .where(
+                and(
+                  eq(payments.invoiceId, invoice.id),
+                  eq(payments.paymentType, PAYMENT_TYPE.REFUNDED),
+                ),
+              );
+
+            let remainingPromise = insertOrUpdatePendingPayment(
+              invoice.id,
+              actualPrice - charged,
+              PAYMENT_TYPE.REMAINING,
+              remainingPaymentExisted?.id,
+            );
+            await Promise.all([deletePromise, remainingPromise]);
+            console.info(
+              "Complete delete REFUNED payment and update" +
+                " remaining amount to database",
+            );
+          } else if (actualPrice < sumPayment) {
+            console.info("actualPrice < sumPayment");
+            if (actualPrice > charged) {
+              console.info("and actualPrice > charged");
+              console.info(
+                "Increase Remaining amount from ",
+                remainingPaymentExisted?.amount,
+                " to ",
+                actualPrice - charged,
+              );
+              await insertOrUpdatePendingPayment(
+                invoice.id,
+                actualPrice - charged,
+                PAYMENT_TYPE.REMAINING,
+                remainingPaymentExisted?.id,
+              );
+            } else if (actualPrice === charged) {
+              console.info(
+                "and actualPrice = charged - Delete all of remaining amount",
+              );
+              await db
+                .delete(payments)
+                .where(
+                  and(
+                    eq(payments.invoiceId, invoice.id),
+                    eq(payments.paymentType, PAYMENT_TYPE.REMAINING),
+                  ),
+                );
+            } else {
+              console.info(
+                "and actualPrice < charged - Need to refund to" +
+                  " customer with amount: ",
+                (body.actualPrice - charged) * -1,
+              );
+              const refundPaymentExisted = rawPayments.find(
+                (item) => item.paymentType === PAYMENT_TYPE.REFUNDED,
+              );
+              await insertOrUpdatePendingPayment(
+                invoice.id,
+                (body.actualPrice - charged) * -1,
+                PAYMENT_TYPE.REFUNDED,
+                refundPaymentExisted?.id,
+              );
+              console.info("Delete remaining payment");
+              await db
+                .delete(payments)
+                .where(
+                  and(
+                    eq(payments.invoiceId, invoice.id),
+                    eq(payments.paymentType, PAYMENT_TYPE.REMAINING),
+                  ),
+                );
+            }
+          }
+          console.info("Complete update payment for invoice: ", invoiceId);
+          console.info("End update invoice flow with id: ", invoiceId);
         } catch (error) {
           console.error(error);
           transaction.rollback();
@@ -563,7 +906,7 @@ class InvoiceService {
         const result = await prevPromise;
         const product = await this.productService.getById(current.byDateId);
         if (product) {
-          const { id: productId, quantity, soldOut } = product;
+          const { id: productId, soldOut } = product;
           // TODO Update stock in product table for that product
           result.push({
             invoiceId,
@@ -574,7 +917,6 @@ class InvoiceService {
           });
           await this.productService.updateAfterInvoice(
             productId,
-            quantity,
             current.quantity + soldOut,
           );
         }
@@ -605,6 +947,113 @@ class InvoiceService {
       return undefined;
     }
     return data;
+  }
+
+  private async handleUpdateItems(
+    invoiceId: number,
+    oldItems: InvoiceResponse.InvoiceItemRaw[],
+    newItems?: Invoice.Item[],
+    parentId?: number,
+  ) {
+    // Delete items that unnecessary
+    console.info("Start update invoice items with parentId: ", parentId);
+    const currentIdsSet = new Set(newItems?.map((item) => item.byDateId) || []);
+    console.info(
+      "Current invoice items with byDateId need to be changed: ",
+      currentIdsSet,
+    );
+    const itemsToDelete = oldItems.filter(
+      (item) =>
+        item.byDateId &&
+        (parentId ? item.parentId === parentId : item.parentId === null) &&
+        !currentIdsSet.has(item.byDateId),
+    );
+    console.info(
+      "Invoice items with id need to be delete (not" +
+        " existed in current anymore): ",
+      itemsToDelete,
+    );
+    if (itemsToDelete.length) {
+      const itemIdsToDelete = itemsToDelete.map((item) => item.id);
+      console.info("Start delete invoice items with ids: ", itemIdsToDelete);
+      const deletedResult = await db
+        .delete(invoiceItems)
+        .where(inArray(invoiceItems.id, itemIdsToDelete))
+        .returning();
+      await Promise.all(
+        itemsToDelete.map(async (item) => {
+          if (item.productId) {
+            return this.productService.updateAfterInvoice(
+              item.productId,
+              -item.quantity,
+            );
+          }
+        }),
+      );
+      console.info("Complete delete invoice items: ", deletedResult.length);
+    }
+    console.info(
+      "Start update or insert new invoice items to" + " database: ",
+      newItems,
+    );
+
+    return await Promise.all(
+      newItems?.map(async (item) => {
+        const { quantity, price, byDateId } = item;
+        // Check item is existed in invoiceItemsRaw or not
+        const existingItem = oldItems.find((raw) => raw.byDateId === byDateId);
+        const product = await this.productService.getById(byDateId);
+        if (!product?.id) {
+          console.warn(`Product with byDateId ${byDateId} not found.`);
+          return;
+        }
+
+        let productId = existingItem?.productId || product.id;
+        let soldOut = 0;
+
+        if (existingItem) {
+          soldOut = quantity - +existingItem.quantity + product.soldOut;
+          console.info(
+            "Update invoice items with existing one and" +
+              " calculate soldOut: ",
+            soldOut,
+          );
+          console.debug("Existed invoice item: ", existingItem);
+          await db
+            .update(invoiceItems)
+            .set({
+              price,
+              quantity: quantity.toString(),
+            })
+            .where(eq(invoiceItems.id, existingItem.id));
+          console.info(
+            "Complete update invoice item with new price" + " and quantity: ",
+          );
+        } else {
+          console.info("Insert new invoice item with productId: ", productId);
+          productId = product.id;
+          soldOut = quantity + product.soldOut;
+          console.info("Calculate soldOut: ", soldOut);
+          await db.insert(invoiceItems).values({
+            invoiceId,
+            quantity: quantity.toString(),
+            price,
+            productId,
+            parentId,
+          });
+          console.info("Insert completed");
+        }
+
+        console.info(
+          "Update soldOut to product: ",
+          productId,
+          "soldOut: ",
+          soldOut,
+        );
+        await this.productService.updateAfterInvoice(productId, soldOut);
+        console.info("Complete update product");
+      }) || [],
+    );
   }
 }
 

@@ -87,6 +87,8 @@ export const OrderPath = {
   Base: baseOrder,
   Create: `${baseOrder}/create`,
   Online: `${baseOrder}/online`,
+  Update: (byDateId: string) =>
+    `${baseOrder}/${byDateId}?time=${new Date().getTime()}`,
 };
 
 const baseSetting = "/setting";

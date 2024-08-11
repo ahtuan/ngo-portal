@@ -8,10 +8,14 @@ export const invoiceRequest = {
     return response.data;
   },
   getDetail: async (url: string) => {
-    const response = await http.get<Invoice.Detail>(url);
+    const response = await http.get<Invoice.Detail>(url, {
+      cache: "no-cache",
+    });
     return response.data;
   },
   create: async (data: Invoice.RawCreate) => http.post(invoiceEndpoint, data),
+  update: async (byDateId: string, data: Invoice.RawCreate) =>
+    http.put(`${invoiceEndpoint}/${byDateId}`, data),
   complete: async (byDateId: string) =>
     http.post(`${invoiceEndpoint}/${byDateId}/complete`, undefined),
   refund: async (byDateId: string, body: Invoice.Refund) =>

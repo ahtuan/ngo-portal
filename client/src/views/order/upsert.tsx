@@ -14,7 +14,10 @@ import { PAYMENT_TYPE } from "@/constants/enums";
 import { ProductDetail } from "@/schemas/product.schema";
 import { useToast } from "@@/ui/use-toast";
 import { evaluateExp, fixed } from "@/lib/utils";
-import { invoiceRequest } from "@/api-requests/invoice.request";
+import {
+  invoiceEndpoint,
+  invoiceRequest,
+} from "@/api-requests/invoice.request";
 import useSWR, { mutate } from "swr";
 import {
   saleEndpoint as cacheKey,
@@ -22,16 +25,20 @@ import {
 } from "@/api-requests/sale.request";
 import { ClientSale } from "@/schemas/sale.schema";
 import { OrderPath } from "@/constants/path";
+import { useRouter } from "next/navigation";
 
 export type CreateOrderProps = {
   form: UseFormReturn<Invoice.DedicatedCreated>;
 };
 type CreateProps = {
   isOnline?: boolean;
+  byDateId?: string;
+  data?: Invoice.Detail;
 };
 
-const Create = ({ isOnline }: CreateProps) => {
+const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
   const { toast } = useToast();
+  const router = useRouter();
   const { data: invoiceSales } = useSWR(
     cacheKey + "/valid-sale",
     saleRequest.getForInvoiceOnly,
@@ -39,13 +46,17 @@ const Create = ({ isOnline }: CreateProps) => {
   const form = useForm<Invoice.DedicatedCreated>({
     resolver: zodResolver(InvoiceBody),
     defaultValues: {
-      items: [],
+      items: data?.items || [],
       paymentType: isOnline ? PAYMENT_TYPE.BANK.value : PAYMENT_TYPE.CASH.value,
-      actualPrice: 0,
-      stacks: [],
-      sale: undefined,
+      actualPrice: data?.actualPrice || 0,
+      stacks: data?.stacks || [],
+      sale: data?.sale,
       isOnline: isOnline,
       deposit: isOnline ? 50000 : undefined,
+      totalPrice: data?.totalPrice || 0,
+      totalQuantity: data?.totalQuantity || 0,
+      afterSale: data?.afterSale || 0,
+      payments: data?.payments,
     },
   });
   const { control } = form;
@@ -114,6 +125,7 @@ const Create = ({ isOnline }: CreateProps) => {
       },
       [0, 0],
     );
+
     const [kgQuantity, kgPrice] = stackList.reduce(
       (previousValue, currentValue) => {
         let [quantity, total] = previousValue;
@@ -407,12 +419,22 @@ const Create = ({ isOnline }: CreateProps) => {
 
   const handleSubmit = async (values: Invoice.RawCreate) => {
     let message = "";
+
     try {
       if (values.stacks?.length || values.items.length) {
-        const response = await invoiceRequest.create(values);
-        message = response?.message || "Tạo đơn hàng thành công";
+        if (byDateId) {
+          const response = await invoiceRequest.update(byDateId, values);
+          message = response?.message || "Chỉnh sửa đơn hàng thành công";
+        } else {
+          const response = await invoiceRequest.create(values);
+          message = response?.message || "Tạo đơn hàng thành công";
+        }
+
         form.reset();
-        await mutate(`${OrderPath.Base}?page=1`);
+        await mutate(`${invoiceEndpoint}?page=1`);
+        if (byDateId) {
+          router.push(`${OrderPath.Base}?page=1`);
+        }
       } else {
         message = "Đơn phải có sản phẩm";
       }
@@ -424,7 +446,6 @@ const Create = ({ isOnline }: CreateProps) => {
       description: message,
     });
   };
-
   return (
     <>
       <Form {...form}>
@@ -438,7 +459,7 @@ const Create = ({ isOnline }: CreateProps) => {
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-6">
             <Scan onAppend={onAppend} />
             <Customer />
-            <Total form={form} isOnline={isOnline} />
+            <Total form={form} isOnline={isOnline} isEdited={!!byDateId} />
           </div>
           <Items
             fields={fields}
@@ -452,4 +473,4 @@ const Create = ({ isOnline }: CreateProps) => {
   );
 };
 
-export default Create;
+export default Upsert;

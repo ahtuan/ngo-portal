@@ -27,7 +27,7 @@ class AuthService {
       return new EntityError("Tài khoản không được kích hoạt");
     }
 
-    //TODO Create jwt token and response
+    //TODO Upsert jwt token and response
     return ApiResponse.success<Auth.SignInResponse>({
       token: "",
     });

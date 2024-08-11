@@ -1,8 +1,8 @@
 import React from "react";
-import Create from "@views/order/create";
+import Upsert from "@views/order/upsert";
 
 const Page = () => {
-  return <Create />;
+  return <Upsert />;
 };
 
 export default Page;

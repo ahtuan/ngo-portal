@@ -76,7 +76,7 @@ class CategoryService {
     console.log("result", result);
     if (!result) {
       console.log("not exit");
-      // Create if not exist in database
+      // Upsert if not exist in database
       const insertedData = await db
         .insert(isKgTable ? byKgCategories : categories)
         .values({

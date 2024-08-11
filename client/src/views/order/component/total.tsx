@@ -9,10 +9,11 @@ import {
   SelectValue,
 } from "@@/ui/select";
 import { PAYMENT_TYPE } from "@/constants/enums";
-import { CreateOrderProps } from "@views/order/create";
+import { CreateOrderProps } from "@views/order/upsert";
 import { formatCurrency } from "@/lib/utils";
 import Currency from "@@/currency";
 import Sale from "@views/order/component/sale";
+import { PaymentStatus } from "@/constants/status";
 
 type RowProps = {
   text: React.ReactNode;
@@ -35,16 +36,20 @@ export const RowRender = ({
 const Total = ({
   form,
   isOnline,
+  isEdited,
 }: CreateOrderProps & {
   isOnline?: boolean;
+  isEdited?: boolean;
 }) => {
-  const [paymentType, totalPrice, totalQuantity, afterSale, sale] = form.watch([
-    "paymentType",
-    "totalPrice",
-    "totalQuantity",
-    "afterSale",
-    "sale",
-  ]);
+  const [paymentType, totalPrice, totalQuantity, afterSale, sale, payments] =
+    form.watch([
+      "paymentType",
+      "totalPrice",
+      "totalQuantity",
+      "afterSale",
+      "sale",
+      "payments",
+    ]);
   const [amount, setAmount] = useState<number>(0);
   const getAmount = (value: number) => {
     return `${formatCurrency(value) || 0} đ`;
@@ -55,6 +60,12 @@ const Total = ({
       e.preventDefault();
     }
   };
+  const charged = payments?.reduce((prev, current) => {
+    if (current.status === PaymentStatus.COMPLETE) {
+      return prev + current.amount;
+    }
+    return prev;
+  }, 0);
 
   return (
     <Card>
@@ -92,18 +103,26 @@ const Total = ({
           />
         </RowRender>
         {isOnline && (
-          <RowRender text="Tiền cọc">
-            <FormField
-              control={form.control}
-              name="deposit"
-              render={({ field }) => (
-                <FormItem>
-                  <Currency {...field} onKeyDown={onKeyDown} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </RowRender>
+          <>
+            {isEdited ? (
+              <RowRender text="Đã thanh toán">
+                {formatCurrency(charged)}
+              </RowRender>
+            ) : (
+              <RowRender text="Tiền cọc">
+                <FormField
+                  control={form.control}
+                  name="deposit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Currency {...field} onKeyDown={onKeyDown} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </RowRender>
+            )}
+          </>
         )}
         <RowRender text="Phương thức thanh toán">
           <FormField

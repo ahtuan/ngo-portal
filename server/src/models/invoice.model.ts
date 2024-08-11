@@ -10,6 +10,7 @@ const filter = t.Partial(
     status: t.String(),
     from: t.String(),
     to: t.String(),
+    timestamp: t.Optional(t.String()),
   }),
 );
 const SaleCampaign = t.Object({
