@@ -290,7 +290,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
       );
       // If stack (by category) never be in the list
       // and then add the new one for stack with first item got from data
-      const total = data.weight * data.price;
+      const total = fixed(data.weight * data.price, 0);
       const newItem: Invoice.ItemType = {
         ...general,
         quantity: 1,

@@ -911,7 +911,7 @@ class InvoiceService {
           result.push({
             invoiceId,
             quantity: current.quantity.toString(),
-            price: current.total,
+            price: fixed(current.total, 0),
             productId,
             parentId,
           });
