@@ -134,6 +134,7 @@ export namespace InvoiceResponse {
     isOnline: boolean;
     orderCode: string | null;
     deliveryInfo?: Delivery;
+    totalCost: number;
   };
 
   export type InsertPayment = typeof payments.$inferInsert;

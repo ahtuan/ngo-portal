@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import Currency from "@@/currency";
 import Sale from "@views/order/component/sale";
 import { PaymentStatus } from "@/constants/status";
+import PriceTooltip from "@views/order/component/price-tooltip";
 
 type RowProps = {
   text: React.ReactNode;
@@ -41,15 +42,23 @@ const Total = ({
   isOnline?: boolean;
   isEdited?: boolean;
 }) => {
-  const [paymentType, totalPrice, totalQuantity, afterSale, sale, payments] =
-    form.watch([
-      "paymentType",
-      "totalPrice",
-      "totalQuantity",
-      "afterSale",
-      "sale",
-      "payments",
-    ]);
+  const [
+    paymentType,
+    totalPrice,
+    totalQuantity,
+    afterSale,
+    sale,
+    payments,
+    totalCost,
+  ] = form.watch([
+    "paymentType",
+    "totalPrice",
+    "totalQuantity",
+    "afterSale",
+    "sale",
+    "payments",
+    "totalCost",
+  ]);
   const [amount, setAmount] = useState<number>(0);
   const getAmount = (value: number) => {
     return `${formatCurrency(value) || 0} đ`;
@@ -71,7 +80,7 @@ const Total = ({
     <Card>
       <CardContent className="grid gap-2 mt-4">
         <RowRender text="Tổng số lượng">{totalQuantity}</RowRender>
-        <RowRender text="Thành tiền">
+        <RowRender text={<PriceTooltip cost={totalCost} />}>
           <span
             className={sale ? "line-through" + " text-muted-foreground" : ""}
           >

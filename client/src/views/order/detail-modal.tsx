@@ -22,6 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@@/ui/accordion";
+import PriceTooltip from "@views/order/component/price-tooltip";
 
 type Props = {
   data: Invoice.Detail;
@@ -214,7 +215,7 @@ const DetailModal = ({ data, onClose }: Props) => {
         <Card>
           <CardContent className="grid gap-2 mt-4">
             <RowRender text="Tổng số lượng">{data.totalQuantity}</RowRender>
-            <RowRender text="Thành tiền">
+            <RowRender text={<PriceTooltip cost={data.totalCost} />}>
               {formatCurrency(data.totalPrice, "đ")}
             </RowRender>
             <RowRender text="Thực thu">

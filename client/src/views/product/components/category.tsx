@@ -102,7 +102,6 @@ const Category = ({ form }: CardItemProps) => {
       form.setValue("categoryUuid", cateType.value);
     }
   }, [name]);
-  console.log("form state", form.formState.errors);
   return (
     <Card>
       <CardHeader>

@@ -25,6 +25,7 @@ const InvoiceItems = z.object({
   sale: z.optional(SaleBody),
   afterSale: z.number(),
   image: z.string().optional(),
+  cost: z.number(),
 });
 
 const Stack = z.object({
@@ -68,6 +69,7 @@ export namespace Invoice {
     totalPrice: number;
     afterSale: number;
     payments: Payment[];
+    totalCost: number;
   } & RawCreate;
   export type ItemType = z.TypeOf<typeof InvoiceItems> & {
     image?: string;
@@ -112,6 +114,7 @@ export namespace Invoice {
     payments: Payment[];
     orderCode: string;
     deliveryInfo?: DeliveryInfo;
+    totalCost: number;
   } & DedicatedCreated;
 
   export type Sale = z.TypeOf<typeof SaleBody>;

@@ -69,13 +69,9 @@ class CategoryService {
   }
 
   async upsert(body: Category.Create) {
-    console.log("body", body);
     const result = await this.getById(body.uuid, body.unit === UNIT_ENUM.KG);
     const isKgTable = body.name.toUpperCase().includes("(KG)");
-    console.log("isKgTable", isKgTable);
-    console.log("result", result);
     if (!result) {
-      console.log("not exit");
       // Upsert if not exist in database
       const insertedData = await db
         .insert(isKgTable ? byKgCategories : categories)

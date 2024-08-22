@@ -182,11 +182,12 @@ class InvoiceService {
             image: (
               await helperService.readImages(product.imageUrls ?? "", true)
             )[0],
+            cost: product.cost,
           };
         }
       };
 
-      const { totalPrice, totalQuantity, stacks, items } =
+      const { totalPrice, totalQuantity, stacks, items, totalCost } =
         await rawItems.reduce(
           async (prev, current) => {
             const result = await prev;
@@ -202,11 +203,12 @@ class InvoiceService {
               result.totalPrice += current.price;
               let item = await getItems(current);
               if (item) {
+                result.totalCost += item.cost * +current.quantity;
                 item.price = fixed(current.price / (item?.quantity || 1), 0); // if have change on the price => must be cal again
                 result.items.push(item);
               }
             }
-            // for case item sell by Kg
+            // for case item sell by Kg (handle for parent row)
             else if (current.categoryId) {
               const category = await this.categoryService.getById(
                 current.categoryId,
@@ -254,6 +256,7 @@ class InvoiceService {
               if (stack) {
                 const item = await getItems(current, stack.price);
                 if (item) {
+                  result.totalCost += item.cost * +current.quantity;
                   result.totalQuantity += +current.quantity;
                   stack.items.push(item);
                 }
@@ -267,12 +270,14 @@ class InvoiceService {
             items: [],
             stacks: [],
             sale: undefined,
+            totalCost: 0,
           } as {
             totalPrice: number;
             totalQuantity: number;
             items: InvoiceResponse.InvoiceItem[];
             stacks: InvoiceResponse.StackItem[];
             sale?: InvoiceResponse.Sale;
+            totalCost: number;
           }),
         );
       const sale = invoice.saleId
@@ -314,6 +319,7 @@ class InvoiceService {
         isOnline: invoice.isOnline,
         orderCode: invoice.orderCode,
         deliveryInfo,
+        totalCost,
       };
 
       return ApiResponse.success(mapping);

@@ -38,7 +38,6 @@ type Props = {
   mode?: "create" | "edit";
 };
 const Upsert = ({ detailData, mode = "create" }: Props) => {
-  console.log("detailData", detailData);
   const inventory = useSearchParams().get("inventory") ?? "";
   const { toast } = useToast();
   const router = useRouter();

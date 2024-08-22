@@ -4,7 +4,8 @@ import { PATH } from "@/constants/path";
 import dayjs from "dayjs";
 import { Parser, Value } from "expr-eval";
 
-import utc from "dayjs/plugin/utc";
+import utc from "dayjs/plugin/utc"; // import utc from 'dayjs/plugin/utc' // ES
+// 2015
 // import utc from 'dayjs/plugin/utc' // ES 2015
 // import timezone from 'dayjs/plugin/timezone' // ES 2015
 
@@ -161,7 +162,6 @@ export const getQueryChanged = (
   let gencParams = generateSearchParams(queryString);
   gencParams[name] = joinedValue;
   gencParams.page = "1";
-  console.log("Object.entries(gencParams)", Object.entries(gencParams));
   const queryChangedString = Object.entries(gencParams)
     .map(([key, value]) =>
       value ? `${key}=${key === name ? joinedValue : value}` : "",

@@ -57,6 +57,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
       totalQuantity: data?.totalQuantity || 0,
       afterSale: data?.afterSale || 0,
       payments: data?.payments,
+      totalCost: data?.totalCost || 0,
     },
   });
   const { control } = form;
@@ -115,12 +116,14 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
   const onUpdateTotal = () => {
     const itemsList = form.getValues("items");
     const stackList = form.getValues("stacks") || [];
+    let totalCost = 0;
     const [pcsQuantity, pcsPrice] = itemsList.reduce(
       (previousValue, currentValue) => {
         let [quantity, total] = previousValue;
 
         quantity += currentValue.quantity;
         total += currentValue.afterSale;
+        totalCost += currentValue.cost * currentValue.quantity;
         return [quantity, total];
       },
       [0, 0],
@@ -130,6 +133,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
       (previousValue, currentValue) => {
         let [quantity, total] = previousValue;
         quantity += currentValue.items.reduce((prev, current) => {
+          totalCost += current.cost * current.quantity;
           return prev + current.quantity;
         }, 0);
         total += currentValue.afterSale;
@@ -138,6 +142,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
       [0, 0],
     );
     const totalPrice = pcsPrice + kgPrice;
+    form.setValue("totalCost", totalCost);
     const availableSale = invoiceSales
       ?.filter((sale) =>
         evaluateExp(sale.condition, {
@@ -283,6 +288,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
       originalStock: stock,
       stock: stock - 1,
       image: data.imageUrls?.[0] || "/images/placeholder.svg",
+      cost: data.cost,
     };
     if (data.categoryUuidByKg) {
       const index = stackFields.findIndex(
@@ -295,7 +301,6 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
         ...general,
         quantity: 1,
         total: total,
-
         afterSale: total,
       };
       if (index === -1) {
