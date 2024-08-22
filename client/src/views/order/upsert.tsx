@@ -37,6 +37,7 @@ type CreateProps = {
 };
 
 const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
+  console.log("data", data);
   const { toast } = useToast();
   const router = useRouter();
   const { data: invoiceSales } = useSWR(

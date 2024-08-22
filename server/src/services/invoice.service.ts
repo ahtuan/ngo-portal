@@ -1005,7 +1005,7 @@ class InvoiceService {
 
     return await Promise.all(
       newItems?.map(async (item) => {
-        const { quantity, price, byDateId } = item;
+        const { quantity, price, byDateId, total } = item;
         // Check item is existed in invoiceItemsRaw or not
         const existingItem = oldItems.find((raw) => raw.byDateId === byDateId);
         const product = await this.productService.getById(byDateId);
@@ -1028,7 +1028,7 @@ class InvoiceService {
           await db
             .update(invoiceItems)
             .set({
-              price,
+              price: total,
               quantity: quantity.toString(),
             })
             .where(eq(invoiceItems.id, existingItem.id));
@@ -1043,7 +1043,7 @@ class InvoiceService {
           await db.insert(invoiceItems).values({
             invoiceId,
             quantity: quantity.toString(),
-            price,
+            price: total,
             productId,
             parentId,
           });
