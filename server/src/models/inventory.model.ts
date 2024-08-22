@@ -8,6 +8,9 @@ const body = t.Object({
   grossWeight: t.String({
     message: "Lô hàng phải có khối lượng",
   }),
+  actualWeight: t.String({
+    message: "Lô hàng phải có khối lượng",
+  }),
   source: t.String({
     message: "Lô hàng phải có xuất xứ",
   }),

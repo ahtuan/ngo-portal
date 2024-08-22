@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -52,20 +52,21 @@ const UpsertForm = ({ data, onClose }: Props) => {
       unit: "kg",
       status: data?.status ?? InventoryStatus.CREATED.value,
       grossWeight: data?.grossWeight ?? 1,
+      actualWeight: data?.actualWeight,
       description: data?.description ?? "",
       price: data?.price,
     },
   });
 
-  const priceWatches = form.watch(["price", "grossWeight"]);
+  const priceWatches = form.watch(["price", "grossWeight", "actualWeight"]);
   const status = form.watch("status");
 
   const getPricePerUnit = (isActual: boolean = false) => {
-    let price = priceWatches[1];
+    let weight = priceWatches[1];
     if (isActual) {
-      price = data?.actualWeight || 900;
+      weight = priceWatches[2];
     }
-    return (formatCurrency(Math.floor(priceWatches[0] / price)) || 0) + " đ";
+    return (formatCurrency(Math.floor(priceWatches[0] / weight)) || 0) + " đ";
   };
 
   const onSubmit = async (values: InventoryCreate) => {
@@ -75,6 +76,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
       const payload: Partial<InventorySubmit> = {
         ...values,
         grossWeight: values.grossWeight.toString(),
+        actualWeight: values.actualWeight.toString(),
       };
       Object.entries(values).map(([key, value]) => {
         const validKey = key as
@@ -82,7 +84,8 @@ const UpsertForm = ({ data, onClose }: Props) => {
           | "grossWeight"
           | "status"
           | "description"
-          | "source";
+          | "source"
+          | "actualWeight";
         if (data[validKey]?.toString() === value?.toString()) {
           delete payload[validKey];
         }
@@ -95,6 +98,7 @@ const UpsertForm = ({ data, onClose }: Props) => {
         ...values,
         grossWeight: values.grossWeight.toString(), // Because of this field
         // store as decimal so BE not support in number type
+        actualWeight: values.actualWeight.toString(),
       });
       message = createRes.message;
     }
@@ -107,6 +111,11 @@ const UpsertForm = ({ data, onClose }: Props) => {
     onClose?.();
   };
 
+  useEffect(() => {
+    if (!data) {
+      form.setValue("actualWeight", priceWatches[1]);
+    }
+  }, [priceWatches[1]]);
   return (
     <Form {...form}>
       <form className="grid gap-1" onSubmit={form.handleSubmit(onSubmit)}>
@@ -189,6 +198,15 @@ const UpsertForm = ({ data, onClose }: Props) => {
         />
         <FormField
           control={form.control}
+          name="actualWeight"
+          render={({ field }) => (
+            <Item label="Cân nặng thực tế">
+              <Input type="number" {...field} />
+            </Item>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="price"
           render={({ field }) => (
             <Item label="Giá nhập">
@@ -200,16 +218,16 @@ const UpsertForm = ({ data, onClose }: Props) => {
           <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70  sm:text-right">
             Giá ước lượng
           </span>
-          <p className="sm:col-span-3">{getPricePerUnit()}</p>
+          <p className="sm:col-span-3">{getPricePerUnit()}/kg</p>
         </div>
-        {status === InventoryStatus.IN_STOCK.value && (
-          <div className="sm:grid sm:grid-cols-4 sm:items-center sm:gap-4 pt-2 text-muted-foreground">
-            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 sm:text-right">
-              Giá đề xuất
-            </span>
-            <p className="sm:col-span-3">{getPricePerUnit(true)}</p>
-          </div>
-        )}
+
+        <div className="sm:grid sm:grid-cols-4 sm:items-center sm:gap-4 pt-2 text-muted-foreground">
+          <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 sm:text-right">
+            Giá thực tế
+          </span>
+          <p className="sm:col-span-3">{getPricePerUnit(true)}/kg</p>
+        </div>
+
         <div className="flex justify-end border border-0 border-t pt-6 mt-4">
           <Button type="submit" className="w-24">
             Lưu

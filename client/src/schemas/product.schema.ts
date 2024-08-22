@@ -67,6 +67,8 @@ export type ProductDetail = {
   categoryNameByKg?: string;
   soldOut: number;
   sale?: Sale;
+  cost: number;
+  pricePerKg: number;
 } & ProductCreate;
 
 export type ProductBarCode = {

@@ -10,8 +10,16 @@ import {
   FormMessage,
 } from "@@/ui/form";
 import { CardItemProps } from "@views/product/upsert";
+import { Label } from "@@/ui/label";
+import { fixed, formatCurrency } from "@/lib/utils";
 
-const Detail = ({ form }: CardItemProps) => {
+type Props = {
+  pricePerKg?: number;
+} & CardItemProps;
+
+const Detail = ({ form, pricePerKg }: Props) => {
+  const weight = form.watch("weight");
+
   return (
     <Card>
       <CardHeader>
@@ -50,7 +58,7 @@ Tình trạng:`}
               </FormItem>
             )}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <FormField
               control={form.control}
               name="weight"
@@ -64,6 +72,15 @@ Tình trạng:`}
                 </FormItem>
               )}
             />
+            <div>
+              <Label>Giá cost</Label>
+              <p className="mt-4 text-sm">
+                {formatCurrency(
+                  fixed((pricePerKg || 0) * (weight / 1000), 0),
+                  "đ",
+                )}
+              </p>
+            </div>
             <FormField
               control={form.control}
               name="quantity"

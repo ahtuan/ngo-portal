@@ -13,9 +13,10 @@ export const inventories = schema.table(
     source: text("source").notNull(),
     price: integer("price").notNull(),
     grossWeight: decimal("gross_weight").notNull(),
-    actualWeight: decimal("actual_weight"),
+    actualWeight: decimal("actual_weight").notNull(),
     status: varchar("status", { length: 20 }).default(INVENTORY_ENUM.CREATED),
     unit: varchar("unit", { length: 20 }).default("kg"),
+    pricePerKg: integer("price_per_kg").notNull().default(0),
     ...metaDataMixin,
   },
   (t) => ({
@@ -35,9 +36,13 @@ export type InventoryType = Omit<SelectInventory, "id"> & {
 };
 export type InventoryCreateType = Omit<
   InsertInventory,
-  "createdAt" | "updatedAt" | "id" | "uuid"
+  "createdAt" | "updatedAt" | "id" | "uuid" | "pricePerKg"
 >;
-export type InventoryUpdateType = Partial<InventoryCreateType>;
+export type InventoryUpdateType = Partial<
+  InventoryCreateType & {
+    pricePerKg: number;
+  }
+>;
 
 export namespace InventoryResponse {
   export type Report = {

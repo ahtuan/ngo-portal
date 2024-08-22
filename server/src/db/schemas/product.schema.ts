@@ -22,6 +22,7 @@ export const products = schema.table(
     name: varchar("name", { length: 256 }).notNull(),
     description: text("description"),
     price: integer("price"),
+    cost: integer("cost").notNull().default(0),
     weight: decimal("weight").notNull(),
     quantity: integer("quantity").notNull(),
     soldOut: integer("sold_out").notNull().default(0),

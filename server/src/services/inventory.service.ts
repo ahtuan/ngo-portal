@@ -13,6 +13,7 @@ import { eq, sql, sum } from "drizzle-orm";
 import ProductService from "@/services/product.service";
 import { products } from "@/db/schemas/product.schema";
 import { byKgCategories } from "@/db/schemas/category.schema";
+import { fixed } from "@/libs/helpers";
 
 class InventoryService {
   private productService: ProductService;
@@ -118,10 +119,12 @@ class InventoryService {
 
   async create(body: InventoryCreateType) {
     const id = await this.getIdSequence();
+    const pricePerKg = fixed(body.price / +body.actualWeight);
     const insertedData = await db
       .insert(inventories)
       .values({
         ...body,
+        pricePerKg,
         id,
       })
       .returning();
@@ -132,6 +135,21 @@ class InventoryService {
     const response = await this.getById(uuid);
     if (!response.data) {
       return response;
+    }
+
+    if (body.price || body.actualWeight) {
+      body.pricePerKg = fixed(
+        (body.price || response.data.price) /
+          +(body.actualWeight || response.data.actualWeight),
+      );
+
+      await db.execute(sql`
+        UPDATE raw.products p 
+        SET 
+            cost = p.weight * ${body.pricePerKg}
+        WHERE 
+            inventory_id = '${response.data.inventoryId}'
+      `);
     }
     const updatedData = await db
       .update(inventories)

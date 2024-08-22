@@ -295,6 +295,7 @@ const Upsert = ({ isOnline, byDateId, data }: CreateProps) => {
         ...general,
         quantity: 1,
         total: total,
+
         afterSale: total,
       };
       if (index === -1) {

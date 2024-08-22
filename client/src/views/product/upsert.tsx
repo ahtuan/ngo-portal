@@ -38,6 +38,7 @@ type Props = {
   mode?: "create" | "edit";
 };
 const Upsert = ({ detailData, mode = "create" }: Props) => {
+  console.log("detailData", detailData);
   const inventory = useSearchParams().get("inventory") ?? "";
   const { toast } = useToast();
   const router = useRouter();
@@ -151,7 +152,10 @@ const Upsert = ({ detailData, mode = "create" }: Props) => {
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Detail form={form} />
+              <Detail
+                form={form}
+                pricePerKg={detailData?.pricePerKg || inventoryData?.pricePerKg}
+              />
               <Category form={form} />
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">

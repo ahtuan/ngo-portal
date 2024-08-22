@@ -13,10 +13,11 @@ import { helperService } from "@/services/helper.service";
 import { byKgCategories, categories } from "@/db/schemas/category.schema";
 import { getCurrentDate } from "@/libs/date";
 import * as process from "node:process";
-import { defaultValue } from "@/libs/helpers";
+import { defaultValue, fixed } from "@/libs/helpers";
 import SaleService from "@/services/sale.service";
 import { SaleDB } from "@/db/schemas/sale.schema";
 import { Parser } from "expr-eval";
+import { inventories } from "@/db/schemas/inventory.schema";
 
 const baseSelect = {
   id: products.id,
@@ -37,6 +38,7 @@ const baseSelect = {
   imageUrls: products.imageUrls,
   quantity: products.quantity,
   soldOut: products.soldOut,
+  cost: products.cost,
 };
 
 class ProductService {
@@ -89,6 +91,7 @@ class ProductService {
       .with(sq)
       .select()
       .from(sq)
+
       .limit(limit)
       .offset(offset * limit);
 
@@ -126,6 +129,7 @@ class ProductService {
           await helperService.readImages(product.imageUrls ?? "", true)
         )[0],
         unit: product.categoryUuidByKg ? UNIT_ENUM.KG : UNIT_ENUM.PCS,
+        cost: product.cost,
       })),
     );
 
@@ -141,11 +145,16 @@ class ProductService {
 
   async getDetail(byDateId: string) {
     const result = await db
-      .select({ ...baseSelect, categoryIdByKg: byKgCategories.id })
+      .select({
+        ...baseSelect,
+        categoryIdByKg: byKgCategories.id,
+        pricePerKg: inventories.pricePerKg,
+      })
       .from(products)
       .where(eq(products.byDateId, byDateId))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .leftJoin(byKgCategories, eq(products.categoryIdByKg, byKgCategories.id));
+      .leftJoin(byKgCategories, eq(products.categoryIdByKg, byKgCategories.id))
+      .leftJoin(inventories, eq(products.inventoryId, inventories.id));
     const rawData = result[0];
     if (!rawData) {
       return new NotFoundError("Không tìm thấy mã sản phẩm: " + byDateId);
@@ -258,6 +267,7 @@ class ProductService {
       material: this.getMaterial(body.name),
       weight: body.weight.toString(),
       imageUrls: imgUrls.join(";"),
+      cost: fixed(body.weight * inventory.pricePerKg),
     };
 
     // Insert into database
@@ -271,6 +281,16 @@ class ProductService {
     if (!response) {
       return response;
     }
+    const inventory = await db.query.inventories.findFirst({
+      where: (inventories, { eq }) => eq(inventories.id, response.inventoryId),
+    });
+
+    if (!inventory) {
+      return new NotFoundError(
+        `Không tìm thấy thông tin lô hàng ${response.inventoryId}`,
+      );
+    }
+
     const { categoryUuid, categoryUuidByKg } = body;
     let modifiedData: {
       categoryId?: number | null;
@@ -327,6 +347,9 @@ class ProductService {
         ...modifiedData,
         imageUrls: modifiedData.imageUrls,
         weight: body.weight?.toString(),
+        cost: body.weight
+          ? fixed(body.weight * inventory.pricePerKg)
+          : response.cost,
         updatedAt: getCurrentDate(),
       })
       .where(eq(products.id, response.id))

@@ -17,6 +17,7 @@ declare namespace Product {
     unit: string | null;
     quantity: number;
     soldOut: number;
+    cost: number;
   };
 
   type Sale = {
@@ -30,6 +31,7 @@ declare namespace Product {
   type Detail = {
     imageUrls: string[];
     sale?: Sale;
+    pricePerKg: number | null;
   } & Omit<Response, "mainImage" | "unit">;
 
   type ByIdBody = {
@@ -59,6 +61,7 @@ declare namespace Product {
     weight: string;
     imageUrls: string;
     material: string;
+    cost: number;
   } & Omit<CreateBody, "categoryUuid" | "weight" | "imageUrls">;
 
   type UpdateBody = {
