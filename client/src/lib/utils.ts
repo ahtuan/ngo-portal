@@ -124,7 +124,10 @@ export const normalizePath = (path: string) => {
   return path.startsWith("/") ? path.slice(1) : path;
 };
 
-export const formatPrice = (price: number) => {
+export const formatPrice = (price?: number) => {
+  if (!price) {
+    return price?.toString() || "0";
+  }
   const units = ["", "K", "M", "B", "T"];
   const unitIndex = Math.floor(Math.log10(Math.abs(price)) / 3);
 

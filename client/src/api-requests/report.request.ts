@@ -1,14 +1,15 @@
 import http from "@/lib/http";
-import { Report } from "@/schemas/report.schema";
 
 export const reportEndpoint = "/api/report";
 export const reportRequest = {
   // TODO Optimise caching
-  getTodayIncomeAndRecent: async (url: string) => {
+  get: async <T>(url: string) => {
     if (!url.startsWith("/api/report")) {
       url = `${reportEndpoint}/${url}`;
     }
-    const response = await http.get<Report.RecentIncome[]>(url);
+    const response = await http.get<T>(url, {
+      cache: "no-cache",
+    });
     return response.data;
   },
 };

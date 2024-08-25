@@ -1,10 +1,18 @@
 import React from "react";
-import TodayInsightWidget from "@views/dashboard/components/today-insight-widget";
+import RecentInsightWidget from "@views/dashboard/components/recent-insight-widget";
+import TodayWidget from "@views/dashboard/components/today-widget";
+import MonthRevenueCompareWidget from "@views/dashboard/components/month-revenue-compare-widget";
 
 const Index = () => {
   return (
-    <div>
-      <TodayInsightWidget />
+    <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid gap-4">
+        <TodayWidget />
+        <RecentInsightWidget />
+      </div>
+      <div>
+        <MonthRevenueCompareWidget />
+      </div>
     </div>
   );
 };

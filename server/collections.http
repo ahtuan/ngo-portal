@@ -171,3 +171,18 @@ Content-Type: application/json
 
 ### Get all Sales
 GET {{host}}/api/sale
+
+### SEED REport
+GET {{host}}/api/report/seed
+
+### recent-income
+GET {{host}}/api/report/recent-income
+
+### today-insight
+GET {{host}}/api/report/today-insight
+
+### Cron REport
+GET {{host}}/api/report/cron
+
+### compare-month-income
+GET {{host}}/api/report/compare-month-income

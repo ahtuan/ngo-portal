@@ -270,10 +270,18 @@ const ChartLegendContent = React.forwardRef<
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean;
       nameKey?: string;
+      layout?: "vertical" | "horizontal";
     }
 >(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
+    {
+      className,
+      hideIcon = false,
+      payload,
+      verticalAlign = "bottom",
+      nameKey,
+      layout = "horizontal",
+    },
     ref,
   ) => {
     const { config } = useChart();
@@ -288,6 +296,7 @@ const ChartLegendContent = React.forwardRef<
         className={cn(
           "flex items-center justify-center gap-4",
           verticalAlign === "top" ? "pb-3" : "pt-3",
+          layout === "vertical" ? "flex-col pt-0" : "",
           className,
         )}
       >
@@ -300,6 +309,7 @@ const ChartLegendContent = React.forwardRef<
               key={item.value}
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground",
+                layout === "vertical" ? "w-full" : "",
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
