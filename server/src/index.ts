@@ -12,6 +12,8 @@ import { invoiceController } from "@/controllers/invoice.controller";
 import { saleController } from "@/controllers/sale.controller";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
+import { reportController } from "@/controllers/report.controller";
+import { crons } from "@/crons";
 
 const corsConfig = {
   origin: "*",
@@ -45,12 +47,14 @@ const app = new Elysia({ prefix: "/api" })
       secret: process.env.JWT_SECRET || "default",
     }),
   )
+  .use(crons)
   .use(authController)
   .use(categoryController)
   .use(inventoryController)
   .use(productController)
   .use(invoiceController)
   .use(saleController)
+  .use(reportController)
   .listen(process.env.API_PORT || 3001);
 
 // Expose methods

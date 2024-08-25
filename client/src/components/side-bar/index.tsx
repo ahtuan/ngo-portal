@@ -17,6 +17,7 @@ import { checkActiveRoute } from "@/lib/utils";
 import Image from "next/image";
 import Logo from "/public/logo.svg";
 import { PATH } from "@/constants/path";
+import { ModeToggle } from "@@/mode-toggle";
 
 const primaryMenu = [
   {
@@ -77,6 +78,7 @@ const Index = () => {
         ))}
       </nav>
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
+        <ModeToggle />
         {secondaryMenu.map((item) => (
           <MenuItem key={item.path} {...item} />
         ))}
