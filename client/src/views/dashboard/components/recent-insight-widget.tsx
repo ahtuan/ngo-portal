@@ -45,7 +45,7 @@ const RecentInsightWidget = () => {
       <CardContent className="flex flex-row items-baseline gap-4 pb-0 pt-4">
         <ChartContainer
           config={{
-            amounts: { label: "Doanh thu", color: "hsl(var(--chart-1))" },
+            amount: { label: "Doanh thu", color: "hsl(var(--chart-1))" },
           }}
           className="mx-auto h-[7rem] w-full"
         >
@@ -56,7 +56,7 @@ const RecentInsightWidget = () => {
           >
             <Bar
               dataKey="amount"
-              fill="var(--color-amounts)"
+              fill="var(--color-amount)"
               radius={2}
               fillOpacity={0.2}
               activeIndex={6}
