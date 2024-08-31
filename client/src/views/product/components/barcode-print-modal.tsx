@@ -10,7 +10,6 @@ import Barcode from "react-barcode";
 import { Button } from "@@/ui/button";
 
 import { ProductBarCode } from "@/schemas/product.schema";
-import { ToggleGroup, ToggleGroupItem } from "@@/ui/toggle-group";
 import { formatPrice } from "@/lib/utils";
 import { productRequest } from "@/api-requests/product.request";
 import { useToast } from "@@/ui/use-toast";
@@ -52,6 +51,7 @@ const BarcodePrintModal = ({
   const [size, setSize] = useState<Size>(LabelSize.small);
   const [quantity, setQuantity] = useState<number>(product.quantity);
   const [printedLeft, setPrintedLeft] = useState<number>(product.quantity);
+  const [isMultiple, setIsMultiple] = useState(false);
 
   const [includePrice, setIncludePrice] = useState<boolean | undefined>(
     product.isUsedCategoryPrice,
@@ -64,7 +64,9 @@ const BarcodePrintModal = ({
     try {
       await productRequest.print({
         byDateId: product.id,
-        price: includePrice ? formatPrice(product.price) : "",
+        price: includePrice
+          ? formatPrice(product.price) + (isMultiple ? "/Bộ" : "")
+          : "",
         ...size,
         quantity: quantity,
       });
@@ -85,15 +87,6 @@ const BarcodePrintModal = ({
     }
   };
 
-  const getSizeComponent = (size: Size) => {
-    return (
-      <>
-        <p>Chiều dài: {size.width}</p>&nbsp;-&nbsp;
-        <p>Chiều rộng: {size.height}</p>
-      </>
-    );
-  };
-
   const onChangeDialog = (open: boolean) => {
     if (!open) {
       setProduct();
@@ -104,7 +97,7 @@ const BarcodePrintModal = ({
   if (!product) {
     return;
   }
-
+  console.log("product", product);
   return (
     <Dialog open={isOpen} onOpenChange={onChangeDialog}>
       <DialogContent className="sm:max-w-[600px] gap-6">
@@ -115,39 +108,42 @@ const BarcodePrintModal = ({
           </DialogHeader>
         )}
         <div className="grid grid-cols-2">
-          <Barcode value={product.id} />
+          <div>
+            <Barcode value={product.id} displayValue={false} />
+            <div className={"flex justify-between"}>
+              <p>{product.id}</p>
+              {includePrice && (
+                <p className={"mr-16"}>
+                  {formatPrice(product.price) + (isMultiple ? "/Bộ" : "")}
+                </p>
+              )}
+            </div>
+          </div>
           <div className="mb-3 grid gap-4">
             <div>
-              <Label>Kích thước khổ in</Label>
-              <ToggleGroup
-                type="single"
-                defaultValue="small"
-                variant="outline"
-                className="flex flex-col gap-4"
-              >
-                {Object.entries(LabelSize).map(([key, size]) => (
-                  <ToggleGroupItem key={key} value={key} className="p-4">
-                    {getSizeComponent(size)}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+              <Label htmlFor="quantity">Số lượng</Label>
+              <Input
+                type="number"
+                name="quantity"
+                value={quantity}
+                onChange={(event) => setQuantity(event.target.valueAsNumber)}
+              />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="quantity">Số lượng</Label>
-                <Input
-                  type="number"
-                  name="quantity"
-                  value={quantity}
-                  onChange={(event) => setQuantity(event.target.valueAsNumber)}
-                />
-              </div>
+            <div className="grid gap-4 grid-cols-2">
               <div className="flex flex-col h-full space-y-2 pt-1.5">
                 <Label htmlFor="includePrice">In giá</Label>
                 <Switch
                   checked={includePrice}
                   onCheckedChange={setIncludePrice}
                   name="includePrice"
+                />
+              </div>
+              <div className="flex flex-col h-full space-y-2 pt-1.5">
+                <Label htmlFor="isMultiple">In theo bộ</Label>
+                <Switch
+                  checked={isMultiple}
+                  onCheckedChange={setIsMultiple}
+                  name="isMultiple"
                 />
               </div>
             </div>
