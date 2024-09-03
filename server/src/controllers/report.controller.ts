@@ -1,5 +1,7 @@
 import Elysia from "elysia";
 import { reportService } from "@/services/report.service";
+import dayjs from "dayjs";
+import { reportModel } from "@/models/report.model";
 
 export const reportController = new Elysia({
   name: "Controller.Report",
@@ -8,10 +10,16 @@ export const reportController = new Elysia({
   .decorate({
     reportService: reportService,
   })
-  .get(
-    "/recent-income",
-    async ({ reportService: service }) => await service.getRecentIncome(),
-  )
+  .use(reportModel)
+  .get("/recent-income", async ({ reportService: service }) => {
+    const now = dayjs().utc(true).endOf("date");
+    const numberOfDays = 6;
+    const fromDate = now.set("date", now.date() - numberOfDays).startOf("date");
+    return await service.getPeriodRevenue(
+      fromDate.format("YYYY-MM-DD"),
+      now.format("YYYY-MM-DD"),
+    );
+  })
   .get(
     "today-insight",
     async ({ reportService: service }) => await service.getTodayInsight(),
@@ -27,4 +35,12 @@ export const reportController = new Elysia({
   .get(
     "/compare-month-revenue",
     async ({ reportService: service }) => await service.getMonthCompare(),
+  )
+  .get(
+    "period-revenue",
+    async ({ reportService: service, query: { from, to } }) =>
+      await service.getPeriodRevenue(from, to),
+    {
+      query: "period",
+    },
   );

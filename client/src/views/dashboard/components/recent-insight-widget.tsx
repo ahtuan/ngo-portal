@@ -47,7 +47,7 @@ const RecentInsightWidget = () => {
           config={{
             amount: { label: "Doanh thu", color: "hsl(var(--chart-1))" },
           }}
-          className="mx-auto h-[7rem] w-full"
+          className="mx-auto w-full"
         >
           <BarChart
             accessibilityLayer
@@ -66,9 +66,8 @@ const RecentInsightWidget = () => {
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={-8}
               tickFormatter={(value) => {
-                return new Date(value).toLocaleDateString("en-US", {
+                return new Date(value).toLocaleDateString("vi-vn", {
                   weekday: "short",
                 });
               }}

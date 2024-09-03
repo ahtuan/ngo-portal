@@ -186,3 +186,6 @@ GET {{host}}/api/report/cron
 
 ### compare-month-income
 GET {{host}}/api/report/compare-month-income
+
+### Get period incom
+GET {{host}}/api/report/period-income?from=2024-08-01&to=2024-08-31

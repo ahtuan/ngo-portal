@@ -128,7 +128,7 @@ export const formatPrice = (price?: number) => {
   if (!price) {
     return price?.toString() || "0";
   }
-  const units = ["", "K", "M", "B", "T"];
+  const units = ["đ", "K", "M", "B", "T"];
   const unitIndex = Math.floor(Math.log10(Math.abs(price)) / 3);
 
   // Tính giá trị rút gọn
@@ -198,14 +198,11 @@ export const fixed = (value: number, decimals: number = 2) => {
 };
 
 export const formatDate = (
-  date?: string | Date,
+  date?: string | Date | dayjs.Dayjs,
   format: string = "YYYY-MM-DD HH:mm",
   utc: boolean = false,
 ) => {
-  if (date) {
-    return dayjs(date).utc(utc).format(format);
-  }
-  return;
+  return dayjs(date).utc(utc).format(format);
 };
 
 const weekdayVietnamese = {

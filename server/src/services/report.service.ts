@@ -68,14 +68,29 @@ class ReportService {
     };
     return ApiResponse.success(resultObj);
   }
-  async getRecentIncome() {
-    const now = dayjs().utc(true).endOf("date");
-    const numberOfDays = 7;
-    const fromDate = now
-      .set("date", now.date() - numberOfDays)
-      .startOf("date")
-      .toDate();
 
+  // async getRecentIncome() {
+  //   const now = dayjs().utc(true).endOf("date");
+  //   const numberOfDays = 6;
+  //   const fromDate = now
+  //     .set("date", now.date() - numberOfDays)
+  //     .startOf("date")
+  //     .toDate();
+  //   const result = await this.getPeriodIncome(fromDate, now.toDate());
+  //   return ApiResponse.success(result);
+  // }
+
+  async getPeriodRevenue(from: string, to?: string) {
+    console.log({
+      from: from,
+      to: to,
+    });
+    const toDate = dayjs(to).utc(true).endOf("date").toDate();
+    const fromDate = dayjs(from).utc(true).startOf("date").toDate();
+    console.log({
+      fromDate: fromDate,
+      toDate: toDate,
+    });
     const rawReports = await db
       .select({
         date: reports.byDateId,
@@ -84,24 +99,16 @@ class ReportService {
         bank: reports.bank,
       })
       .from(reports)
-      .where(
-        and(
-          gt(reports.byDateId, fromDate),
-          lte(reports.byDateId, now.toDate()),
-        ),
-      )
+      .where(and(gt(reports.byDateId, fromDate), lte(reports.byDateId, toDate)))
       .orderBy(asc(reports.byDateId));
 
     // Generate an array of the 7 most recent dates
-    const recentDates = Array.from({ length: numberOfDays }, (_, index) => {
-      const date = now.set("date", now.date() - index);
-      return getDateFormat(date);
-    }).reverse();
+    const recentDates = this.getDateInPeriod(fromDate, toDate);
 
     // Fill in the missing dates with default data
     const newFilledArray = await Promise.all(
       recentDates.map(async (date) => {
-        if (date === getDateFormat(now)) {
+        if (date === getDateFormat()) {
           const todayIncome = await this.todayIncome();
           return {
             date: getDateFormat(date, true),
@@ -122,7 +129,6 @@ class ReportService {
         };
       }),
     );
-
     return ApiResponse.success(newFilledArray);
   }
 
@@ -279,6 +285,18 @@ class ReportService {
       bank,
     };
     return todayReport;
+  }
+
+  private getDateInPeriod(startDate: Date, endDate: Date) {
+    const dates: string[] = [];
+    let currentDate = startDate;
+
+    while (currentDate <= endDate) {
+      dates.push(getDateFormat(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
   }
 }
 
