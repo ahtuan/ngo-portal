@@ -1,12 +1,7 @@
 import React from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@@/ui/tooltip";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { formatCurrency } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@@/ui/popover";
 
 type Props = {
   cost?: number;
@@ -17,17 +12,18 @@ const PriceTooltip = ({ cost }: Props) => {
       onFocusCapture={(e) => {
         e.stopPropagation();
       }}
+      onClick={(e) => {
+        e.preventDefault();
+      }}
     >
       <span>Thành tiền</span>
       {cost ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <InfoCircledIcon className="ml-2 h-4 w-4 cursor-pointer" />
-            </TooltipTrigger>
-            <TooltipContent>{formatCurrency(cost, "đ")}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Popover>
+          <PopoverTrigger>
+            <InfoCircledIcon className="ml-2 h-4 w-4 cursor-pointer" />
+          </PopoverTrigger>
+          <PopoverContent>{formatCurrency(cost, "đ")}</PopoverContent>
+        </Popover>
       ) : null}
     </div>
   );

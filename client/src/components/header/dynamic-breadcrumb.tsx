@@ -15,7 +15,7 @@ const DynamicBreadcrumb = () => {
   }, [pathName]);
 
   return (
-    <Breadcrumb className="hidden md:flex">
+    <Breadcrumb>
       <DynamicBreadcrumbList items={breadcrumb} />
     </Breadcrumb>
   );

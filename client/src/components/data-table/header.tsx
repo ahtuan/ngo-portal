@@ -23,15 +23,15 @@ const Header = <T extends {}>({
   allowManualHide,
 }: Props<T>) => {
   return (
-    <div className="flex justify-between py-4">
-      <div className="flex gap-2">
+    <div className="flex justify-between py-4 ">
+      <div className="flex gap-2 flex-col sm:flex-row">
         {search}
         {filter}
       </div>
       {allowManualHide && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="ml-auto hidden sm:flex">
               Điều chỉnh cột <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

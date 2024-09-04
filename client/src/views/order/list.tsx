@@ -406,7 +406,7 @@ const List = ({ queryString, searchParams }: Props) => {
           />
         }
         filter={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
             <DatePicker
               mode="range"
               value={
@@ -423,38 +423,40 @@ const List = ({ queryString, searchParams }: Props) => {
               onSelect={onDateChange}
               disabled={(date) => date > new Date()}
             />
-            <FacetedFilter
-              options={[
-                { label: "Tất cả", value: "all" },
-                { label: "Đơn trực tuyến", value: "true" },
-                { label: "Đơn trực tiếp", value: "false" },
-              ]}
-              selectedValues={[searchParams.isOnline]}
-              title="Phân loại"
-              onFilter={(value) => onFilter("isOnline", value)}
-              mode="single"
-            />
-            <FacetedFilter
-              options={Object.values(OrderStatus)}
-              selectedValues={
-                searchParams.status?.split(";")?.filter(Boolean) || []
-              }
-              title="Trạng thái"
-              onFilter={(value) => onFilter("status", value)}
-            />
+            <div className="flex gap-2">
+              <FacetedFilter
+                options={[
+                  { label: "Tất cả", value: "all" },
+                  { label: "Đơn trực tuyến", value: "true" },
+                  { label: "Đơn trực tiếp", value: "false" },
+                ]}
+                selectedValues={[searchParams.isOnline]}
+                title="Phân loại"
+                onFilter={(value) => onFilter("isOnline", value)}
+                mode="single"
+              />
+              <FacetedFilter
+                options={Object.values(OrderStatus)}
+                selectedValues={
+                  searchParams.status?.split(";")?.filter(Boolean) || []
+                }
+                title="Trạng thái"
+                onFilter={(value) => onFilter("status", value)}
+              />
 
-            {(searchParams.status ||
-              searchParams.keyword ||
-              searchParams.isOnline) && (
-              <Button
-                variant="ghost"
-                onClick={handleReset}
-                className="h-8 px-2 lg:px-3"
-              >
-                Bỏ lọc
-                <Cross2Icon className="ml-2 h-4 w-4" />
-              </Button>
-            )}
+              {(searchParams.status ||
+                searchParams.keyword ||
+                searchParams.isOnline) && (
+                <Button
+                  variant="ghost"
+                  onClick={handleReset}
+                  className="h-8 px-2 lg:px-3"
+                >
+                  Bỏ lọc
+                  <Cross2Icon className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         }
       />

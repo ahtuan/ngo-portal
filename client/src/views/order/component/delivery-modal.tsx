@@ -8,6 +8,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -79,9 +80,10 @@ const RefundModal = ({ onClose, byDateId, refresh }: Props) => {
               name="shippingFee"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Tiền vận chuyển (khoảng chênh lệch với 30k)
-                  </FormLabel>
+                  <FormLabel>Tiền vận chuyển</FormLabel>
+                  <FormDescription className="!mt-0">
+                    34,5K nếu COD, còn lại 30K. Tự giao để trống
+                  </FormDescription>
                   <Currency {...field} onKeyDown={onKeyDown} />
                   <FormMessage />
                 </FormItem>

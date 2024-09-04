@@ -26,7 +26,8 @@ const MenuItem = ({
             disabled ? "link-disabled" : "",
             "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8",
             active
-              ? "bg-primary text-primary-foreground hover:text-primary-foreground"
+              ? "bg-primary text-primary-foreground" +
+                  " hover:text-primary-foreground"
               : "",
           )}
           replace={true}

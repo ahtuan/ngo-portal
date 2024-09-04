@@ -12,7 +12,7 @@ const Header = ({ isOnline }: HeaderProps) => {
     return `${OrderPath.Base}?page=1`;
   }, []);
   return (
-    <>
+    <div className="flex space-x-2 w-full">
       <Link href={getBackLink()}>
         <Button variant="outline" size="icon" className="h-7 w-7">
           <ChevronLeft className="h-4 w-4" />
@@ -23,7 +23,7 @@ const Header = ({ isOnline }: HeaderProps) => {
         {isOnline ? "Tạo đơn trực tuyến" : `Tạo đơn hàng`}
       </h1>
 
-      <div className="hidden items-center gap-2 md:ml-auto md:flex">
+      <div className="items-center  ml-auto space-x-2">
         <Link href={getBackLink()}>
           <Button variant="outline" size="sm">
             Huỷ
@@ -32,7 +32,7 @@ const Header = ({ isOnline }: HeaderProps) => {
 
         <Button size="sm">Hoàn tất</Button>
       </div>
-    </>
+    </div>
   );
 };
 

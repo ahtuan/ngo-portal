@@ -10,11 +10,11 @@ type Props = {
 
 const Order = ({ queryString, searchParams }: Props) => {
   return (
-    <Card>
-      <CardHeader className="pb-0">
+    <Card className="max-w-[calc(100dvw-2rem)] ">
+      <CardHeader className="pb-0 px-4 sm:px-6 pt-4 sm:pt-6">
         <CardTitle>Danh sách đơn hàng</CardTitle>
       </CardHeader>
-      <CardContent className="flex min-h-[calc(100dvh-8rem)]">
+      <CardContent className="flex min-h-[calc(100dvh-13rem)] sm:min-h-[calc(100dvh-8rem)] px-4 sm:px-6">
         <Suspense>
           <List queryString={queryString} searchParams={searchParams} />
         </Suspense>

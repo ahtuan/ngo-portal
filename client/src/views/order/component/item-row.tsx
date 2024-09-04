@@ -88,8 +88,10 @@ const ItemRow = ({
         </div>
       </TableCell>
       <TableCell>{field.byDateId}</TableCell>
-      <TableCell>
-        {field.name} {field.sale && <Sale {...field.sale} />}
+      <TableCell className="invisible sm:visible">
+        <span className="hidden sm:block">
+          {field.name} {field.sale && <Sale {...field.sale} />}
+        </span>
       </TableCell>
       <TableCell className="flex items-center leading-9">
         <span>

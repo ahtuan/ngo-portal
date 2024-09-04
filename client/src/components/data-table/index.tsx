@@ -44,7 +44,7 @@ const DataTable = <T extends {}>({
   search,
   filter,
   loading,
-  minHeightClass = "min-h-[calc(100%-7rem)]",
+  minHeightClass = "min-h-[calc(100%-13rem)] sm:min-h-[calc(100%-7rem)]",
   columnVisibility: columnVisibilityDefault = {},
   allowManualHide = true,
 }: Props<T>) => {
@@ -77,7 +77,7 @@ const DataTable = <T extends {}>({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-[100dvw]">
       <Header<T>
         table={table}
         search={search}

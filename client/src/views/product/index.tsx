@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import DetectInventory from "@views/product/components/detect-inventory";
 import List from "@views/product/list";
 import { Card, CardContent, CardHeader, CardTitle } from "@@/ui/card";
 import { SearchParamsProps } from "@/app/(dashboard)/product/page";
@@ -16,7 +15,7 @@ type Props = {
 const Index = ({ queryString, searchParams }: Props) => {
   return (
     <>
-      <Card>
+      <Card className="max-w-[calc(100dvw-2rem)] ">
         <CardHeader className="pt-3 pb-0 flex justify-between flex-row items-center">
           <CardTitle>Danh sách sản phẩm</CardTitle>
           <Link href={`${InventoryPath.Base}`}>
@@ -32,7 +31,7 @@ const Index = ({ queryString, searchParams }: Props) => {
           </Suspense>
         </CardContent>
       </Card>
-      <DetectInventory />
+      {/*<DetectInventory />*/}
     </>
   );
 };

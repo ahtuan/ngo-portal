@@ -6,7 +6,7 @@ import MonthRevenue from "@views/dashboard/components/month-revenue";
 
 const Index = () => {
   return (
-    <div className="grid gap-4 p-4 sm:p-0">
+    <div className="grid gap-4">
       <div className="grid md:grid-cols-3 gap-4">
         <TodayWidget />
         <RecentInsightWidget />
