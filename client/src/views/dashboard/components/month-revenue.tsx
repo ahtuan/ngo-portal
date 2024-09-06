@@ -49,9 +49,7 @@ const MonthRevenue = () => {
       onSuccess: (data) => {
         if (data) {
           const sum = data.reduce((prev, curr) => prev + curr.amount, 0);
-          setAvg(
-            fixed(sum / dayjs(range.from).utc(true).daysInMonth() || 0, 0),
-          );
+          setAvg(fixed(sum / dayjs().utc(true).get("date") || 0, 0));
         }
       },
     },
